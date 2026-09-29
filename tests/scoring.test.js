@@ -94,7 +94,8 @@ test("sole trader: 'Only me' as the admin does not fail a tool (24a decision 14)
   const c = load("sole");
   const t = { ...base, owner: "", admins: "One person" };
   // Not red and not Fix now. Control stays amber, because green needs two or
-  // more admins: "does not fail" is not the same as "passes".
+  // more admins: "does not fail" is not the same as "passes". Confirmed as
+  // intended by Paul, 29 Sep 2026 (PR #1, question 2).
   assert.equal(c.control(t), "Amber");
   assert.equal(c.action(t), "Keep");
   // The same answers for a charity do fail.

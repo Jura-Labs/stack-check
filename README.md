@@ -79,8 +79,8 @@ manual workflow until launch.
 
 ## Licences
 
-- **Code:** MIT ([LICENSE](LICENSE)).
-- **Text, questions, scoring rules, tool facts and the register:** CC BY 4.0
+- **Code:** MIT, © 2026 Paul - Jura Labs ([LICENSE](LICENSE)).
+- **Text, questions, scoring rules, tool facts and the register:** © 2026 Jura Labs CIC, CC BY 4.0
   ([LICENSE-CONTENT](LICENSE-CONTENT)). Suggested credit: "Based on Stack
   Check and the Stay in command register by Jura Labs (juralabs.org),
   CC BY 4.0."
