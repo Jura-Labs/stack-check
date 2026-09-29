@@ -39,7 +39,7 @@ function cardHtml(c,tools){
     '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
-    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener">Full card in the guide, with set-up steps and costs</a></p></div>';
+    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer">Full card in the guide, with set-up steps and costs<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
 function fmtDate(d){if(!d)return "";var x=new Date(d+"T00:00:00");if(isNaN(x))return d;return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function daysTo(d){if(!d)return null;var x=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((x-n)/86400000);}
@@ -231,7 +231,7 @@ function curve(a,b){
   var mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,dx=b[0]-a[0],dy=b[1]-a[1];
   return "M"+a[0].toFixed(1)+" "+a[1].toFixed(1)+" Q"+(mx-dy*.18).toFixed(1)+" "+(my+dx*.18).toFixed(1)+" "+b[0].toFixed(1)+" "+b[1].toFixed(1);
 }
-function svgWrap(M,inner,label){return '<svg class="map" viewBox="'+M.vb+'" role="img" aria-label="'+esc(label+" The same information is in the list next to the map.")+'">'+inner+'</svg>';}
+function svgWrap(M,inner,label){return '<svg class="map" viewBox="'+M.vb+'" role="img" aria-label="'+esc(label)+'">'+inner+'</svg>';}
 function overviewMap(tools){
   var codes=tools.map(placeOf),M=pickMap(codes);
   var by={},held={},law={};
@@ -242,7 +242,15 @@ function overviewMap(tools){
     var r=Math.min(9+n*2.2,M.box[g.c]?15:20),y=p[1]+(M.box[g.c]?4:0);places.push({c:g.c,site:g.site,p:[p[0],y]});
     pins+='<g class="m-pin'+(outside(g.c)?" m-out":g.c==="UNKNOWN"?" m-unk":"")+'"><title>'+esc((g.site?SITE_NAME[g.site]:PLACE[g.c])+": "+g.ts.map(function(t){return t.name;}).join(", "))+'</title><circle cx="'+p[0]+'" cy="'+y+'" r="'+r+'"'+(sens?' class="m-sens"':pers?' class="m-pers"':"")+'/><text x="'+p[0]+'" y="'+(y+4)+'" text-anchor="middle">'+n+'</text></g>';});
   s+=lines+pins+labelsFor(M,places);
-  return svgWrap(M,s,"Map of where your tools keep data: "+Object.keys(by).map(function(k){return (by[k].site?SITE_NAME[by[k].site]:PLACE[by[k].c])+" "+by[k].ts.length;}).join(", "));
+  return svgWrap(M,s,"Map of where your tools keep data: "+Object.keys(by).map(function(k){return (by[k].site?SITE_NAME[by[k].site]:PLACE[by[k].c])+" "+by[k].ts.length;}).join(", ")+". The table after the map lists each place, its tools, and whose law applies.")+mapTable(by);
+}
+// The map as a table: every place, the tools there, and the supplier's home
+// country where it differs (whose law applies). Everything the map shows.
+function mapTable(by){
+  var rows=Object.keys(by).map(function(k){var g=by[k];
+    var law=g.ts.filter(function(t){return lawAway(t);}).map(function(t){return t.name+": "+(PLACE[lawAway(t)]||lawAway(t));});
+    return '<tr><th scope="row">'+esc(g.site?SITE_NAME[g.site]+", "+(PLACE[g.c]||g.c):(PLACE[g.c]||g.c))+'</th><td>'+esc(g.ts.map(function(t){return t.name+(t.data==="Sensitive"?" (sensitive data)":personal(t)?" (personal data)":"");}).join(", "))+'</td><td>'+(law.length?esc(law.join("; ")):'<span class="muted">Same country, or not stated</span>')+'</td></tr>';}).join("");
+  return '<details class="maptable" open><summary>The map as a table</summary><div class="tablewrap" role="region" aria-label="The map as a table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col">Where the data is kept</th><th scope="col">Tools</th><th scope="col">Supplier based elsewhere (whose law applies)</th></tr></thead><tbody>'+rows+'</tbody></table></div></details>';
 }
 function journeyMap(j,infos){
   var codes=infos.map(function(i){return i.extra==="paper"?"OFFICE":i.extra==="personal"?"UNKNOWN":placeOf(i.t);});
@@ -281,7 +289,7 @@ function factsPanel(t){
     row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans?": "+l.plans:""))+
     row("Export",l.x)+row("Two-step sign-in (MFA)",l.mfa)+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
     row("Nonprofit offer",l.np)+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
-    '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a></li>';}).join("")+'</ul></details>';
+    '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
 function placeSelect(field,t,label,hint){
   return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><select id="'+field+'-'+t.key+'"><option value="">Not sure</option>'+
@@ -310,7 +318,8 @@ function radios(name,options,val,labels){
     return '<label class="opt" for="'+id+'"><input type="radio" id="'+id+'" name="'+name+'" value="'+esc(o)+'"'+(val===o?" checked":"")+'><span>'+esc(labels&&labels[i]?labels[i]:o)+'</span></label>';}).join("")+'</div>';
 }
 function q(field,t,legend,hint,labels){
-  return '<fieldset class="q"><legend>'+legend+'</legend>'+radios(field+"-"+t.key,OPT[field],t[field],labels)+(hint?'<span class="hint">'+hint+'</span>':"")+'</fieldset>';
+  var hid="hint-"+field+"-"+t.key;
+  return '<fieldset class="q"'+(hint?' aria-describedby="'+hid+'"':"")+'><legend>'+legend+'</legend>'+radios(field+"-"+t.key,OPT[field],t[field],labels)+(hint?'<span class="hint" id="'+hid+'">'+hint+'</span>':"")+'</fieldset>';
 }
 function txt(field,t,label,hint,ph,type){
   return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><input type="'+(type||"text")+'" id="'+field+'-'+t.key+'" value="'+esc(t[field])+'"'+(ph?' placeholder="'+esc(ph)+'"':"")+(type==="number"?' min="0" step="1" inputmode="numeric"':"")+'>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
@@ -333,7 +342,7 @@ function renderPick(){
   var customs=state.tools.filter(function(t){return !t.lib;});
   var euOpts=PLACE_OPTS.filter(function(c){return c!=="GB"&&c!=="US"&&c!=="OTHER";});
   var h='<section class="panel stack" aria-labelledby="orgH"><h2 id="orgH">Who is this for?</h2>'+
-    radios("org",ORGS.map(function(o){return o[0];}),state.org,ORGS.map(function(o){return o[1];}))+
+    '<fieldset class="q"><legend class="vh">Who is this for?</legend>'+radios("org",ORGS.map(function(o){return o[0];}),state.org,ORGS.map(function(o){return o[1];}))+'</fieldset>'+
     '<p class="small muted">This changes the words, such as "trustees" or "board", and the example journeys. The scoring is the same'+(SOLE()?', except that being the only admin is treated as normal and handled as one item':'')+'.</p>'+
     '<fieldset class="q"><legend>Where are you based?</legend>'+radios("loc",LOCS.map(function(o){return o[0];}),state.loc||"UK",LOCS.map(function(o){return o[1];}))+'</fieldset>'+
     (state.loc==="EU"?'<div class="s3 field"><label for="home">Which country? (for the map)</label><select id="home">'+euOpts.map(function(c){return '<option value="'+c+'"'+((state.home||"EU")===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select></div>':"")+
@@ -350,7 +359,7 @@ function renderPick(){
     h+='</div></div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
-     '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"></div>'+
+     '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"><span id="newNameErr" class="small err" role="status"></span></div>'+
      '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: online donations"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+t.key+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
@@ -373,9 +382,9 @@ function renderPick(){
     var again=view.querySelector('[data-lib="'+id+'"]');if(again)again.focus();
   });});
   view.querySelectorAll("[data-remove]").forEach(function(b){b.addEventListener("click",function(){
-    state.tools=state.tools.filter(function(t){return t.key!==b.dataset.remove;});render();});});
+    state.tools=state.tools.filter(function(t){return t.key!==b.dataset.remove;});render();document.getElementById("newName").focus();});});
   document.getElementById("addTool").addEventListener("click",function(){
-    var n=document.getElementById("newName").value.trim();if(!n){document.getElementById("newName").focus();return;}
+    var n=document.getElementById("newName").value.trim(),nm=document.getElementById("newName");if(!n){nm.setAttribute("aria-invalid","true");nm.setAttribute("aria-describedby","newNameErr");var er=document.getElementById("newNameErr");if(er)er.textContent="Type the tool's name first.";nm.focus();return;}
     state.tools.push(fromLib({name:n,job:document.getElementById("newJob").value.trim()}));leaveExample();render();document.getElementById("newName").focus();
   });
   document.getElementById("toAsk").addEventListener("click",function(){go(2);});
@@ -395,8 +404,8 @@ function renderAsk(){
   if(!state.tools.length){go(1);return;}
   if(state.cur>=state.tools.length)state.cur=state.tools.length-1;
   var t=state.tools[state.cur],i=state.cur,n=state.tools.length,k=t.key,d=dev(t);
-  var h='<div class="progress" role="list" aria-label="Tools">'+state.tools.map(function(x,j){
-    return '<button type="button" role="listitem" class="pdot'+(answered(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+(answered(x)?"✓ ":"")+esc(x.name)+'</button>';}).join("")+'</div>';
+  var h='<ul class="progress" aria-label="Your tools">'+state.tools.map(function(x,j){
+    return '<li><button type="button" class="pdot'+(answered(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+(answered(x)?'<span aria-hidden="true">✓ </span><span class="vh">Answered: </span>':"")+esc(x.name)+'</button></li>';}).join("")+'</ul>';
   h+='<section class="panel stack" aria-labelledby="askH"><div class="cardhead"><h2 id="askH">'+esc(t.name)+'</h2><span class="muted small">Tool '+(i+1)+' of '+n+'</span></div>';
   h+=factsPanel(t);
   // The essentials
@@ -446,7 +455,7 @@ function renderAsk(){
   var nm=["ai","rights","env","fits"].filter(function(f){return t[f];}).length;
   h+='<details class="facts"'+(nm?" open":"")+'><summary id="missionSum">'+ML()+' check (optional, '+nm+' of 4 answered)</summary><div class="s14 qgrid">'+
     q("ai",t,"Does the supplier use our data to train AI?","Check its privacy or AI page. Ask this of every supplier, not only AI companies."+(t.lib&&BYID[t.lib]&&BYID[t.lib].ai?' <b>Our research: '+esc({"yes":"yes, by default","no":"no","depends-on-plan":"it depends on the plan","not-applicable":"not applicable","unclear":"not clear"}[BYID[t.lib].ai]||BYID[t.lib].ai)+'.</b> See "What we found" above.':""))+
-    q("rights",t,"Are there human rights concerns?",'Could this supplier or technology contribute to harm to people, for example through surveillance, discrimination, exploitation of workers, or targeting vulnerable groups? The <a href="https://www.business-humanrights.org" target="_blank" rel="noopener">Business and Human Rights Resource Centre</a> is a good place to look.')+
+    q("rights",t,"Are there human rights concerns?",'Could this supplier or technology contribute to harm to people, for example through surveillance, discrimination, exploitation of workers, or targeting vulnerable groups? The <a href="https://www.business-humanrights.org" target="_blank" rel="noopener noreferrer">Business and Human Rights Resource Centre<span class="vh"> (opens in a new tab)</span></a> is a good place to look.')+
     q("env",t,"Are there environmental concerns?","Consider energy use and data-centre claims, AI compute, duplicate tools doing the same job, and how long your devices last.")+
     q("fits",t,NP()?"Does it fit our mission and values?":"Does it fit our values?",PUBHINT())+
     txt("approved",t,"Who approved the trade-off?","Write down who accepted it, and when.","For example: Chair, June 2026")+
@@ -463,9 +472,9 @@ function renderAsk(){
   ["loc","hq","renewalDate"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("change",function(){t[f]=e.value;leaveExample();save();});});
   var asks=document.getElementById("askSupplier");if(asks)asks.addEventListener("click",function(){copy(supplierEmail(t));});
   ["cost","hours","users"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("input",function(){t[f]=e.value===""?"":Math.max(0,Number(e.value)||0);leaveExample();save();});});
-  view.querySelectorAll("[data-jump]").forEach(function(b){b.addEventListener("click",function(){state.cur=+b.dataset.jump;render();});});
-  document.getElementById("prevT").addEventListener("click",function(){if(i===0)go(1);else{state.cur--;render();}});
-  document.getElementById("nextT").addEventListener("click",function(){if(i===n-1)go(3);else{state.cur++;render();window.scrollTo({top:0});}});
+  view.querySelectorAll("[data-jump]").forEach(function(b){b.addEventListener("click",function(){state.cur=+b.dataset.jump;render();focusHeading("#askH");});});
+  document.getElementById("prevT").addEventListener("click",function(){if(i===0)go(1);else{state.cur--;render();window.scrollTo({top:0});focusHeading("#askH");}});
+  document.getElementById("nextT").addEventListener("click",function(){if(i===n-1)go(3);else{state.cur++;render();window.scrollTo({top:0});focusHeading("#askH");}});
   function partial(){
     document.getElementById("lightsRow").innerHTML=lightsRow(t);
     document.getElementById("whyBox").innerHTML=whyList(t);
@@ -523,7 +532,7 @@ function renderResults(){
 
   // Register table
   h+='<section class="stack" aria-labelledby="regH"><div class="s17 row"><h2 id="regH">Your register</h2><div class="legend" aria-hidden="true"><span>'+bare("Green","")+'</span><span>'+bare("Amber","")+'</span><span>'+bare("Red","")+'</span></div></div>'+
-   '<div class="tablewrap" role="region" aria-labelledby="regH" tabindex="0"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
+   '<div class="tablewrap" role="region" aria-label="Register table (scrolls sideways)" tabindex="0"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
   ts.forEach(function(t){
     h+='<tr><td><b>'+esc(t.name)+'</b><div class="small muted">'+esc(t.job)+'</div></td><td>'+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</td><td>'+esc(t.data||"–")+'</td><td>'+bare(safety(t),"Safety")+'</td><td>'+bare(control(t),"Control")+'</td><td>'+bare(exitL(t),"Exit")+'</td><td>'+bare(t.value,"Value")+'</td><td>'+bare(mission(t),ML())+'</td><td>'+esc(ACT(action(t))||"–")+'</td>'+
       '<td class="decision"><label class="small vh" for="dec-'+t.key+'">Decision for '+esc(t.name)+'</label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></td>'+
@@ -555,10 +564,10 @@ function renderResults(){
   h+='<section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h2 id="cmpH">Compare two tools</h2><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
-    '<div class="tablewrap" role="region" aria-labelledby="cmpH" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
+    '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
     crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans?": "+B.plans:""))+
     crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",A.np,B.np)+
-    crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a></li>';}).join("")+'</ul></td></tr>'+
+    crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td></tr>'+
     '</tbody></table></div></section>';
 
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
@@ -586,7 +595,7 @@ function renderResults(){
   cB.addEventListener("change",function(){state.cmpB=cB.value;render();document.getElementById("cmpB").focus();});
   view.querySelectorAll("[data-cmpb]").forEach(function(b){b.addEventListener("click",function(){state.cmpB=b.dataset.cmpb;render();var e=view.querySelector('[data-cmpb="'+b.dataset.cmpb+'"]');if(e)e.focus();});});
   document.getElementById("back2").addEventListener("click",function(){go(2);});
-  document.getElementById("clearAll").addEventListener("click",function(){document.getElementById("confirmClear").hidden=false;document.getElementById("clearYes").focus();});
+  document.getElementById("clearAll").addEventListener("click",function(){document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();});
   document.getElementById("copyRows").addEventListener("click",function(){copy(tsv());});
   document.getElementById("copyBoard").addEventListener("click",function(){copy(board());});
 }
@@ -767,14 +776,18 @@ var STEP_NAMES=["List your tools","Answer the questions","Decide","Follow the da
 function stepTitle(){document.title="Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check";}
 // On a step change, move focus to the new step's first heading, so keyboard and
 // screen-reader users start at the top of the new content (WCAG 2.4.3).
-function go(n){state.step=n;render();window.scrollTo({top:0});var h=document.querySelector("#view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
+function focusHeading(sel){var h=document.querySelector(sel||"#view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
+function go(n){state.step=n;render();window.scrollTo({top:0});focusHeading();}
 // Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11).
 function padForSteps(){var nav=document.querySelector("nav.steps");if(nav)document.documentElement.style.scrollPaddingTop=(nav.offsetHeight+8)+"px";}
 window.addEventListener("resize",padForSteps);
 
 document.querySelectorAll("nav.steps [data-step]").forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.step);});});
-document.getElementById("startOwn").addEventListener("click",function(){state=blank();render();});
-document.getElementById("clearNo").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;});
-document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();render();});
+document.getElementById("startOwn").addEventListener("click",function(){state=blank();go(1);});
+// M2: the clear-everything question starts on the safe answer; Escape keeps the answers.
+function closeClear(){document.getElementById("confirmClear").hidden=true;var c=document.getElementById("clearAll");if(c)c.focus();}
+document.getElementById("clearNo").addEventListener("click",closeClear);
+document.getElementById("confirmClear").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeClear();}});
+document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();go(1);});
 render();
 padForSteps();

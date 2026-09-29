@@ -75,7 +75,7 @@ nav.steps .sub{display:block;font-weight:400;font-size:.76rem;color:var(--muted)
 input[type=text],input[type=number],select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5rem .6rem;min-height:40px;width:100%}
 
 /* Step 2 */
-.progress{display:flex;flex-wrap:wrap;gap:.35rem}
+.progress{display:flex;flex-wrap:wrap;gap:.35rem;list-style:none;margin:0;padding:0}
 .pdot{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.25rem .55rem;font-size:.8rem;cursor:pointer;min-height:32px}
 .pdot.done{background:var(--tint)}
 .pdot[aria-current="true"]{border-color:var(--accent);font-weight:650}
@@ -180,7 +180,7 @@ footer{margin-top:2rem;font-size:.82rem;color:var(--muted);display:grid;gap:.4re
 .m-pin circle.m-pers{stroke:var(--ink);stroke-width:2}.m-pin circle.m-sens{stroke:var(--ink);stroke-width:4}
 .m-pin.m-out circle{fill:var(--warn)}.m-pin.m-unk circle{fill:var(--bad)}
 .m-step circle{fill:var(--good);stroke:var(--surface);stroke-width:2}.m-step.m-watch circle{fill:var(--warn)}.m-step.m-risk circle{fill:var(--bad)}
-.m-step text{fill:#fff}
+.m-step text{fill:var(--accent-ink)}
 .m-line{fill:none;stroke:var(--muted);stroke-width:2.2}.m-line.m-watch{stroke:var(--warn)}.m-line.m-risk{stroke:var(--bad)}.m-line.m-cross{stroke-dasharray:7 5;stroke-width:3}
 .m-arrowhead{fill:var(--muted)}
 .m-law{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:2 4;opacity:.8}
@@ -251,3 +251,41 @@ footer a{color:inherit}
    shows the focus ring when the input has keyboard focus. */
 input[type=file].vh + label.btn{cursor:pointer}
 input[type=file].vh:focus-visible + label.btn{outline:3px solid var(--focus);outline-offset:2px}
+
+/* S1 (audit 29 Sep): visually hidden labels inside the register table are
+   absolutely positioned; without a containing block they stretched the whole
+   page sideways (WCAG 1.4.10). */
+.tablewrap{position:relative}
+
+/* M3: skip link, visible when focused. */
+.skip{position:absolute;left:16px;top:-100px;z-index:10;background:var(--surface);color:var(--ink);border:2px solid var(--focus);border-radius:8px;padding:.5rem .8rem}
+.skip:focus{top:8px}
+#view:focus{outline:none}
+
+.err{color:var(--bad);font-weight:600}
+details.maptable summary{cursor:pointer;font-weight:600;margin:.4rem 0}
+
+/* S4: forced colours (Windows high contrast). Chosen answers, the current
+   step and the current tool must not rely on colour or box-shadow. */
+@media (forced-colors:active){
+  .opt input:checked + span{forced-color-adjust:none;background:Highlight;color:HighlightText;border:3px solid Highlight}
+  .opt input:checked + span::before{content:"\2713  "}
+  nav.steps button[aria-current="step"]{border:3px solid CanvasText;border-bottom-width:6px}
+  .pdot[aria-current="true"]{border:3px solid CanvasText;text-decoration:underline}
+  .chip[aria-pressed="true"]{border:3px solid CanvasText}
+}
+/* Grid children may shrink below their content, so a wide table inside
+   (such as the map table in <details>) scrolls in its own region instead of
+   widening the page (WCAG 1.4.10). */
+.stack>*{min-width:0}
+
+/* M4 (audit 29 Sep): edges of controls at 3:1 or more against both the card
+   and the page background (WCAG 1.4.11). --line stays for decorative rules. */
+:root{--control:#7C8C85}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--control:#65786F}}
+:root[data-theme="dark"]{--control:#65786F}
+input[type=text],input[type=number],input[type=date],select,.opt span,.chip,.btn,.pdot,nav.steps button{border-color:var(--control)}
+
+/* M5: at high zoom or on short screens the sticky step bar would cover a
+   third or more of the view, so it scrolls with the page instead. */
+@media (max-height:560px){nav.steps{position:static}}

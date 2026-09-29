@@ -52,7 +52,7 @@ test("step change: focus moves to the new step's heading, and the page title nam
 test("the register table can be scrolled from the keyboard", async ({ page }) => {
   await fresh(page);
   await step(page, 3);
-  const region = page.locator('.tablewrap[role="region"][aria-labelledby="regH"]');
+  const region = page.locator('.tablewrap[role="region"][aria-label^="Register table"]');
   await expect(region).toHaveAttribute("tabindex", "0");
 });
 
