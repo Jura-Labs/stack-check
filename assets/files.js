@@ -92,6 +92,7 @@ function stateFromFile(text) {
     o.stops = (j && Array.isArray(j.stops) ? j.stops : []).slice(0, 50).map(plainObject);
     return o;
   });
+  migrateDevices(tools);
   return {
     v: 6,
     showLaw: s.showLaw !== false,

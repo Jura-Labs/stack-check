@@ -142,7 +142,7 @@ var KEY="stackcheck.v5";
 // The example is never saved, so looking at it cannot overwrite someone's own list.
 function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
-function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];return s;}catch(e){return null;}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];migrateDevices(s.tools);return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
 var state=null;state=load()||example();
 // Every visit starts on the start screen (step 0); Carry on returns to where they were.
@@ -333,6 +333,16 @@ function txt(field,t,label,hint,ph,type){
 var view=document.getElementById("view");
 
 // Essentials for the tick in step 2 (24a decision 13). Scoring still uses answered().
+// Devices answer two plain questions (Paul, 29 Sep: the combined one was too hard). The register's
+// single "Sign-in protected" column is Yes only when both are yes, No when either is no or only some.
+// Saved answers from before the split: a Yes or Not sure carries over to both questions. A No
+// cannot say which part failed, so both stay unanswered and the red light stays until answered.
+function migrateDevices(tools){(tools||[]).forEach(function(t){if(t.kind==="Devices"&&!t.enc&&!t.upd&&(t.signin==="Yes"||t.signin==="Don't know")){t.enc=t.signin;t.upd=t.signin;}});}
+function deviceSignin(t){var e=t.enc,u=t.upd;
+  if(e==="No"||e==="Some of them"||u==="No")return "No";
+  if(e==="Yes"&&u==="Yes")return "Yes";
+  if(e&&u)return "Don't know";
+  return "";}
 function essentialsDone(t){return answered(t)&&!!t.signin&&!!t.copy&&(dev(t)||(!!t.account&&!!t.admins))&&!!t.depend;}
 function stepCounts(){var n=state.tools.length,a=state.tools.filter(essentialsDone).length;
   var s1=document.querySelector("#nav1 .sub"),s2=document.querySelector("#nav2 .sub");
@@ -457,7 +467,8 @@ function renderAsk(){
     q("admins",t,sole?"Can anyone else get in?":"Admins",sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:null)+
     q("depend",t,"How much do you depend on it?","Critical: you would struggle to work for a week without it.")+
     q("data",t,"Data held",DATAHINT())+
-    (d?q("signin",t,"Encrypted and still getting security updates?","BitLocker on Windows, FileVault on a Mac. And the operating system is still supported.")
+    (d?q("enc",t,"If one is lost or stolen, is the information on it locked?","This is called encryption. On Windows look for BitLocker or Device encryption in Settings; on a Mac, FileVault. Not sure? Ask whoever set them up.",["Yes, all of them","Only some","No","Not sure"])+
+       q("upd",t,"Do they still get security updates?","Windows 10 stopped getting free security updates in October 2025. Windows 11, and recent Mac, iPhone and Android versions, still get them.",["Yes","No","Not sure"])
       :q("signin",t,"Two-step sign-in on for everyone?","Two-step sign-in (also called MFA or 2FA) asks for a code from a phone app, a text message or a security key as well as the password. \"Not offered\" means the tool has no two-step sign-in at all.",["Yes","No","Not offered","Not sure"]))+
     q("copy",t,"Your own copy?",'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
     '</div>';
@@ -505,6 +516,7 @@ function renderAsk(){
   var rerender={kind:1,data:1};
   Object.keys(OPT).forEach(function(f){view.querySelectorAll('input[name="'+f+'-'+k+'"]').forEach(function(r){r.addEventListener("change",function(){
     t[f]=r.value;leaveExample();
+    if(f==="enc"||f==="upd")t.signin=deviceSignin(t);
     if(f==="where"&&t.loc&&((r.value===EU)!==!!UKEU[t.loc])){t.loc="";var ls=document.getElementById("loc-"+k);if(ls)ls.value="";}
     if(rerender[f]){render();var e=document.getElementById(r.id);if(e)e.focus();}else partial();});});});
   ["job","owner","renewal","approved"].forEach(function(f){var e=document.getElementById(f+"-"+k);e.addEventListener("input",function(){t[f]=e.value;leaveExample();partial();});});

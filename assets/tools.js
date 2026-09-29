@@ -8,6 +8,9 @@ var OPT={
  depend:["Critical","Important","Minor"],
  data:["None","Internal","Personal","Sensitive"],
  signin:["Yes","No","Not offered","Don't know"],
+ // Devices: two plain questions; together they make the Safety answer (deviceSignin in app.js).
+ enc:["Yes","Some of them","No","Don't know"],
+ upd:["Yes","No","Don't know"],
  where:["UK, EU or EEA","Elsewhere","Don't know"],
  based:["UK or Europe","Elsewhere"],
  open:["Yes","No"],
@@ -32,4 +35,4 @@ LIB.push({g:"Laptops and phones",items:[
   {id:"byod",name:"Staff's own laptops or phones",job:"Staff devices",k:"Devices",note:"Personal devices used for work are hard to secure, and hard to wipe when someone leaves."}
 ]});
 var BYID={};LIB.forEach(function(g){g.items.forEach(function(t){t.group=g.g;BYID[t.id]=t;});});
-var FIELDS=["name","job","kind","owner","account","admins","cost","hours","depend","data","renewal","signin","where","based","open","terms","exp","copy","ai","rights","env","fits","approved","value","decision","next","due","renewalDate","loc","hq","users"];
+var FIELDS=["name","job","kind","owner","account","admins","cost","hours","depend","data","renewal","signin","enc","upd","where","based","open","terms","exp","copy","ai","rights","env","fits","approved","value","decision","next","due","renewalDate","loc","hq","users"];

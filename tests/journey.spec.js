@@ -93,3 +93,57 @@ test("the board summary: one line for second admins, no £0 costs, a date, and u
   expect(text).not.toContain("Listed licence costs");
   expect(text).toContain("1 tool is not answered yet and not included below.");
 });
+
+// Paul, 29 Sep: "users find this too difficult to understand" (the combined
+// "Encrypted and still getting security updates?" question for devices).
+test("devices: two plain questions instead of one, and no 'Not offered'", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await page.click('[data-lib="win11"]');
+  await step(page, 2);
+  await expect(page.getByRole("group", { name: "If one is lost or stolen, is the information on it locked?" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Do they still get security updates?" })).toBeVisible();
+  await expect(page.locator("#view")).not.toContainText("Encrypted and still getting");
+  await expect(page.locator("#view")).not.toContainText("Not offered");
+});
+
+test("devices: Safety comes from both answers, as the register's one column", async ({ page }) => {
+  await fresh(page);
+  const got = await page.evaluate(() => {
+    const t = { kind: "Devices", name: "Laptops", data: "Personal", owner: "Office", depend: "Important", copy: "Yes" };
+    const out = {};
+    for (const [e, u] of [["Yes", "Yes"], ["Some of them", "Yes"], ["Yes", "No"], ["Yes", "Don't know"], ["Yes", ""]]) {
+      t.enc = e; t.upd = u; t.signin = deviceSignin(t);
+      out[e + "/" + u] = [t.signin, safety(t)];
+    }
+    return out;
+  });
+  expect(got).toEqual({
+    "Yes/Yes": ["Yes", "Green"],
+    "Some of them/Yes": ["No", "Red"],
+    "Yes/No": ["No", "Red"],
+    "Yes/Don't know": ["Don't know", "Red"],
+    "Yes/": ["", ""],
+  });
+});
+
+test("devices: answering both questions in the page sets the Safety light", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await page.click('[data-lib="mac"]');
+  await step(page, 2);
+  const key = await page.evaluate(() => state.tools[0].key);
+  await page.locator(`input[name="enc-${key}"][value="Yes"]`).check({ force: true });
+  await page.locator(`input[name="upd-${key}"][value="Yes"]`).check({ force: true });
+  expect(await page.evaluate(() => state.tools[0].signin)).toBe("Yes");
+});
+
+test("devices: an answer saved before the split carries over", async ({ page }) => {
+  await fresh(page);
+  const t = await page.evaluate(() => {
+    const tools = [{ kind: "Devices", name: "Macs", signin: "Yes" }, { kind: "Devices", name: "Old", signin: "No" }];
+    migrateDevices(tools);
+    return tools.map((x) => [x.enc || "", x.upd || "", x.signin]);
+  });
+  expect(t).toEqual([["Yes", "Yes", "Yes"], ["", "", "No"]]);
+});
