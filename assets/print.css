@@ -1,0 +1,8 @@
+/* Print: a clean board paper from the results step (Print to PDF).
+   First pass; the full print layout is a doc 24 phase 5 item. */
+nav.steps,.banner,.btn,.privacy,footer a[href$=".md"]{display:none!important}
+body{background:#fff;color:#000}
+.panel,.tile,.card,.prio li{break-inside:avoid;border-color:#999}
+.light{border:1px solid currentColor}
+.tablewrap{overflow:visible}
+table{min-width:0}
