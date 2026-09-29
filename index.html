@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://analytics.juralabs.org; style-src 'self'; img-src 'self'; connect-src https://analytics.juralabs.org; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <meta name="referrer" content="no-referrer">
+<!-- Umami, page views only (Drive doc 24a decision 5): counted only on check.juralabs.org; never the query or hash; Do Not Track respected; no custom events anywhere in the tool. -->
+<script defer src="https://analytics.juralabs.org/script.js" data-website-id="4fe2c185-82ce-433b-8d40-0256ba356f04" data-domains="check.juralabs.org" data-exclude-search="true" data-exclude-hash="true" data-do-not-track="true"></script>
 <!-- Pre-launch: remove noindex when Paul launches after the user tests (decision 2026-09-29-stack-check-repo-and-pages). -->
 <meta name="robots" content="noindex">
 <title>Stack Check</title>
@@ -22,6 +24,7 @@
 <script src="assets/map.js" defer></script>
 <script src="assets/example.js" defer></script>
 <script src="assets/scoring.js" defer></script>
+<script src="assets/files.js" defer></script>
 <script src="assets/app.js" defer></script>
 </head>
 <body>
@@ -64,6 +67,7 @@
   <footer>
     <p>Pre-filled facts about each tool come from the suppliers' own pages, checked on 29 September 2026. This check gives general guidance, not legal advice.</p>
     <p>© 2026 Jura Labs CIC. The questions, scoring rules and text are licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener license">Creative Commons Attribution 4.0 (CC BY 4.0)</a>. You can share and adapt them, including commercially, as long as you credit Jura Labs. Suggested credit: "Based on the Stay in command register by Jura Labs (juralabs.org), CC BY 4.0."</p>
+    <p>We count visits with Umami, our own cookie-free analytics hosted in the EU. It records that the page was visited, never what you enter.</p>
     <p>Stack Check <span id="version">2.1.0-dev</span>. <a href="CHANGELOG.md">What changed</a>. <a href="https://github.com/Jura-Labs/stack-check">Source code</a> (MIT). <a href="https://juralabs.org/updates/stay-in-command-of-your-technology">The guide</a>.</p>
   </footer>
 </div>
