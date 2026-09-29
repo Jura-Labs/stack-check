@@ -466,11 +466,11 @@ function renderAsk(){
     q("account",t,"Account",sole?"Is it a business account, or a personal one you also use for work?":"Is it an organisation account, or someone's personal account?",sole?["Business","Personal"]:null)+
     q("admins",t,sole?"Can anyone else get in?":"Admins",sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:null)+
     q("depend",t,"How much do you depend on it?","Critical: you would struggle to work for a week without it.")+
-    q("data",t,"Data held",DATAHINT())+
+    q("data",t,"What data or content do you store in this tool?",DATAHINT())+
     (d?q("enc",t,"If one is lost or stolen, is the information on it locked?","This is called encryption. On Windows look for BitLocker or Device encryption in Settings; on a Mac, FileVault. Not sure? Ask whoever set them up.",["Yes, all of them","Only some","No","Not sure"])+
        q("upd",t,"Do they still get security updates?","Windows 10 stopped getting free security updates in October 2025. Windows 11, and recent Mac, iPhone and Android versions, still get them.",["Yes","No","Not sure"])
       :q("signin",t,"Two-step sign-in on for everyone?","Two-step sign-in (also called MFA or 2FA) asks for a code from a phone app, a text message or a security key as well as the password. \"Not offered\" means the tool has no two-step sign-in at all.",["Yes","No","Not offered","Not sure"]))+
-    q("copy",t,"Your own copy?",'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
+    q("copy",t,"Do you have a backup of this data?",'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
     '</div>';
   if(personal(t))h+='<div class="pause" role="note"><b>If it holds personal data, pause.</b><span>Some information can cause real damage or harm if it is lost or leaked. Are we comfortable putting personal information here? You need a written contract with the supplier, and you may need a data protection impact assessment (DPIA).</span></div>';
   h+='</div>';

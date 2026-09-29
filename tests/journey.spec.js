@@ -147,3 +147,12 @@ test("devices: an answer saved before the split carries over", async ({ page }) 
   });
   expect(t).toEqual([["Yes", "Yes", "Yes"], ["", "", "No"]]);
 });
+
+test("plain question wording: what data or content, and backup (Paul, 29 Sep)", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await page.click('[data-lib="xero"]');
+  await step(page, 2);
+  await expect(page.getByRole("group", { name: "What data or content do you store in this tool?" })).toBeVisible();
+  await expect(page.getByRole("group", { name: "Do you have a backup of this data?" })).toBeVisible();
+});
