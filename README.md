@@ -25,7 +25,7 @@ known limits.
 
 Four steps:
 
-1. **List your tools.** Tick them from a library of about 70 common tools,
+1. **List your tools.** Tick them from a library of about 100 common tools,
    or add your own.
 2. **Answer the questions.** The essentials first, one tool at a time. Facts
    about each supplier are filled in from the supplier's own pages, and you

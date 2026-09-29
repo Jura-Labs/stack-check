@@ -27,5 +27,16 @@ guide 2.1, register v2.1, Stack Check 2.1.x.
   tab names the step.
 - The register and compare tables can be scrolled from the keyboard.
 - Focused fields are kept clear of the sticky step bar.
+- 27 tools added to the library, researched from suppliers' own pages on
+  29 September 2026: UK money and admin (HMRC online services, FreeAgent,
+  Zettle, SumUp), staff, payroll and HR (BrightPay, Sage Payroll, BrightHR,
+  Breathe HR), websites and shops (Shopify, Squarespace, Wix), Calendly,
+  Zapier, social media and advertising (Facebook Page, Instagram, LinkedIn
+  Company Page, Meta Business Suite, Google Ads), and Danish tools
+  (e-conomic, Dinero, Billy, MobilePay, Betalingsservice, ForeningLet,
+  Membersite, e-Boks, Digital Post). The library now has 100 tools.
+- Two accounting tools are now grouped under "Tools doing the same job"
+  (the rule matched no real accounting tool before), and payroll and HR
+  tools are grouped too.
 - Visits are counted with Umami (page views only, on check.juralabs.org
   only, never the page address's query or hash, Do Not Track respected).

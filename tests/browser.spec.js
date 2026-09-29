@@ -60,3 +60,26 @@ test("tools doing the same job: two accounting tools are grouped (the rule match
   await expect(dup).toContainText("Xero");
   await expect(dup).not.toContainText("Online banking");
 });
+
+test("every tool in the library can be chosen, answered and shown on the results and map", async ({ page }) => {
+  const errors = watchErrors(page);
+  await fresh(page);
+  await page.click("#startOwn");
+  await step(page, 1);
+  const n = await page.evaluate(() => {
+    const all = [];
+    LIB.forEach((g) => g.items.forEach((l) => all.push(l)));
+    state.tools = all.map((l) => Object.assign(fromLib(l), { owner: "Office manager", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", copy: "No" }));
+    render();
+    return all.length;
+  });
+  expect(n).toBeGreaterThanOrEqual(100);
+  for (const s of [2, 3, 4]) {
+    await step(page, s);
+    await expect(page.locator("#view h2").first()).toBeVisible();
+  }
+  await step(page, 3);
+  await expect(page.locator("#regH")).toBeVisible();
+  expect(await page.locator("#view table tbody tr").count()).toBeGreaterThanOrEqual(n);
+  expect(errors).toEqual([]);
+});

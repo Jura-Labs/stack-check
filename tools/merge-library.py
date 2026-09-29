@@ -43,7 +43,7 @@ def check(e, codes, errors, where):
         if k not in e:
             errors.append(f"{where}: missing {k}")
     for k in e:
-        if k not in KEYS:
+        if k not in KEYS and k != "checked":  # a per-entry checked date is allowed and not stored
             errors.append(f"{where}: unexpected key {k}")
     for k, allowed in ALLOWED.items():
         if k in e and e[k] is not None and e[k] not in allowed:
@@ -57,7 +57,7 @@ def check(e, codes, errors, where):
         if v not in (None, "") and v not in codes:
             errors.append(f"{where}: {k}={v!r} is not a place code")
     for v in e.get("locs") or []:
-        if not re.fullmatch(r"[A-Z]{2}|EU", str(v)):
+        if not re.fullmatch(r"[A-Z]{2}|EU|UNKNOWN", str(v)):
             errors.append(f"{where}: locs has {v!r}, not a two-letter country code")
     src = e.get("src") or []
     if not src:
