@@ -274,10 +274,10 @@ function journeyMap(j,infos){
 }
 function mapLegend(journey){
   return '<div class="legend small">'+(journey?'<span><b>1 2 3</b> the steps, in order</span><span><span class="lg lg-cross"></span>leaves the UK or EU</span>':'<span>Numbers: how many tools keep data there. A dark ring means sensitive data.</span>')+
-    '<span><label class="s2 row"><input type="checkbox" id="lawToggle"'+(state.showLaw?" checked":"")+'> Show whose law applies <span class="lg lg-law"></span></label></span></div>'+
+    '<span><label class="s2 row"><input type="checkbox" id="lawToggle'+(journey?"J":"")+'" data-law'+(state.showLaw?" checked":"")+'> Show whose law applies <span class="lg lg-law"></span></label></span></div>'+
     '<p class="small muted">Places are shown at country level, because most suppliers do not say more than that. A supplier\'s home country matters because its own law still applies to it, wherever the data sits.</p>';
 }
-function bindLaw(){var l=document.getElementById("lawToggle");if(l)l.addEventListener("change",function(){state.showLaw=l.checked;render();var e=document.getElementById("lawToggle");if(e)e.focus();});}
+function bindLaw(){view.querySelectorAll("[data-law]").forEach(function(l){l.addEventListener("change",function(){state.showLaw=l.checked;render();var e=document.getElementById(l.id);if(e)e.focus();});});}
 function factsPanel(t){
   var l=t.lib&&BYID[t.lib];
   if(!l||!l.src)return t.note?'<p class="note">'+esc(t.note)+'</p>':"";
@@ -523,12 +523,9 @@ function renderResults(){
   // Tools doing the same job
   var dupGroups=[];DUPS.forEach(function(f){var g=ts.filter(f[1]);if(g.length>=2)dupGroups.push({name:f[0],tools:g});});
   if(dupGroups.length){h+='<section class="stack" aria-labelledby="dupH"><div class="s4 stack"><h2 id="dupH">Tools doing the same job</h2><p class="muted">Two tools doing the same job is not always wrong. It is worth one question: do we need both?</p></div><ul class="dup">'+dupGroups.map(function(g){var c=g.tools.reduce(function(a,t){return a+(Number(t.cost)||0);},0);return '<li><b>'+esc(g.name.charAt(0).toUpperCase()+g.name.slice(1))+':</b> '+esc(g.tools.map(function(t){return t.name;}).join(", "))+(c?'. <span class="muted">Together: '+money(c)+' a year.</span>':"")+'</li>';}).join("")+'</ul></section>';}
-  // Where your data lives
-  var zones=[["UK, EU or EEA","",function(t){return !dev(t)&&t.where===EU;}],["Outside the UK, EU or EEA","out",function(t){return !dev(t)&&t.where===ELSE;}],["Not sure","unk",function(t){return !dev(t)&&(t.where===DK||!t.where);}],["On your devices","dev",dev]];
-  h+='<section class="stack" aria-labelledby="whereH"><div class="s4 stack"><h2 id="whereH">Where your data lives</h2><p class="muted">Control is not about where a company is based. It is about whether you understand and manage the relationship. Use this to see what to document, not as a list of things to move.</p></div>'+overviewMap(done)+mapLegend(false)+'<p class="small muted">The same, as a list. Tools with a heavy border hold sensitive data.</p><div class="strip">';
-  zones.forEach(function(z){var here=ts.filter(z[2]);
-    h+='<div class="zone '+z[1]+'"><h3>'+esc(z[0])+' <span class="muted small">('+here.length+')</span></h3><div class="tchips">'+(here.length?here.map(function(t){return '<span class="tchip'+(t.data==="Sensitive"?" sens":t.data==="Personal"?" pers":"")+'">'+esc(t.name)+(t.based===ELSE&&z[1]===""?' <span class="muted">(supplier elsewhere)</span>':"")+'</span>';}).join(""):'<span class="small muted">None</span>')+'</div></div>';});
-  h+='</div></section>';
+  // Where your data lives: a one-line summary here; the map is on step 4 (Paul, 29 Sep)
+  var zc=function(f){return ts.filter(f).length;};
+  h+='<section class="stack" aria-labelledby="whereSumH"><div class="s17 row"><h2 id="whereSumH">Where your data lives</h2><button type="button" class="btn" id="toData">See it on the map</button></div><p class="muted">'+zc(function(t){return !dev(t)&&t.where===EU;})+' in the UK, EU or EEA, '+zc(function(t){return !dev(t)&&t.where===ELSE;})+' outside, '+zc(function(t){return !dev(t)&&(t.where===DK||!t.where);})+' not sure, and '+zc(dev)+' on your devices. The map and "Follow one person" are on step 4, Your data.</p></section>';
 
   // Register table
   h+='<section class="stack" aria-labelledby="regH"><div class="s17 row"><h2 id="regH">Your register</h2><div class="legend" aria-hidden="true"><span>'+bare("Green","")+'</span><span>'+bare("Amber","")+'</span><span>'+bare("Red","")+'</span></div></div>'+
@@ -539,15 +536,23 @@ function renderResults(){
       '<td><label for="next-'+t.key+'" class="vh">Next step for '+esc(t.name)+'</label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></td>'+
       '<td><label for="due-'+t.key+'" class="vh">Date for '+esc(t.name)+'</label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></td></tr>';
   });
-  h+='</tbody></table></div><p class="small muted">Record your own decision in one of four words: Keep, Reduce dependency, Replace or Retire. Then one concrete next step, with a date.</p></section>';
+  h+='</tbody></table></div><p class="small muted">Record your own decision in one of four words: Keep, Reduce dependency, Replace or Retire. Then one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
+  h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
+   '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
+   '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
+   '<div class="s4 stack"><h3>Keep your answers, or pass them to a colleague</h3><p class="small muted">Save a file to your computer. Open it later, on any computer, to carry on. The file is not sent anywhere: you choose where it goes.</p></div>'+
+   '<div class="row"><button type="button" class="btn" id="saveFile">Save to a file</button><input type="file" id="openFile" class="vh" accept=".json,application/json"><label class="btn" for="openFile">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
+   '<textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
+  // Thinking of changing a tool? Reference cards and Compare, folded (Paul, 29 Sep)
+  h+='<section class="stack" aria-labelledby="chgH"><div class="s4 stack"><h2 id="chgH">Thinking of changing a tool?</h2><p class="muted">Most decisions will be to keep a tool or reduce dependency on it. When you do plan a change, these help.</p></div>';
   // Reference cards for tools you plan to change
   var byFam={},reduceLines=[];
   ts.forEach(function(t){var f=familyOf(t);if(!f)return;if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
   var famKeys=Object.keys(byFam);
   if(famKeys.length||reduceLines.length){
-    h+='<section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h2 id="cardH">Before you move</h2><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
+    h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+(famKeys.length+reduceLines.length)+' tool'+(famKeys.length+reduceLines.length===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
     if(reduceLines.length)h+='<ul class="dup">'+reduceLines.map(function(x){return '<li><b>'+esc(x[0].name)+', reduce dependency:</b> '+esc(x[1].reduce)+'</li>';}).join("")+'</ul>';
-    h+=famKeys.map(function(f){return cardHtml(CARDS[f],byFam[f]);}).join("")+'</section>';
+    h+=famKeys.map(function(f){return cardHtml(CARDS[f],byFam[f]);}).join("")+'</section></details>';
   }
   // Compare two tools
   var libAll=[];LIB.forEach(function(g){g.items.forEach(function(l){if(l.src)libAll.push(l);});});
@@ -561,33 +566,30 @@ function renderResults(){
   var RESW={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Not clear"};
   function crow(k,fa,fb){return '<tr><th scope="row">'+k+'</th><td>'+esc(fa||"Not stated")+'</td><td>'+esc(fb||"Not stated")+'</td></tr>';}
   function co(l){return (l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par:"");}
-  h+='<section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h2 id="cmpH">Compare two tools</h2><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
+  h+='<details class="fold" data-fold="cmp"'+(state.foldCmp?" open":"")+'><summary>Compare two tools: supplier facts side by side</summary><section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h3 id="cmpH">Compare two tools</h3><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
     '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
     crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans?": "+B.plans:""))+
     crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",A.np,B.np)+
     crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td></tr>'+
-    '</tbody></table></div></section>';
+    '</tbody></table></div></section></details>';
 
-  h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
-   '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
-   '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
-   '<div class="s4 stack"><h3>Keep your answers, or pass them to a colleague</h3><p class="small muted">Save a file to your computer. Open it later, on any computer, to carry on. The file is not sent anywhere: you choose where it goes.</p></div>'+
-   '<div class="row"><button type="button" class="btn" id="saveFile">Save to a file</button><input type="file" id="openFile" class="vh" accept=".json,application/json"><label class="btn" for="openFile">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
-   '<textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
-  h+='<div class="navrow"><button type="button" class="btn" id="back2">Change answers</button><span class="row"><button type="button" class="btn ghost" id="clearAll">Clear everything</button><button type="button" class="btn primary" id="to4">Next: follow the data</button></span></div>';
+  h+='</section>';
+  h+='<div class="navrow"><button type="button" class="btn" id="back2">Change answers</button><span class="row"><button type="button" class="btn ghost" id="clearAll">Clear everything</button><button type="button" class="btn primary" id="to4">Next: your data</button></span></div>';
   view.innerHTML=h;
 
   bindLaw();
   var co=document.getElementById("copyOwners");if(co)co.addEventListener("click",function(){copy(ownersText());});
   document.getElementById("to4").addEventListener("click",function(){go(4);});
+  document.getElementById("toData").addEventListener("click",function(){go(4);});
+  view.querySelectorAll("details[data-fold]").forEach(function(d){d.addEventListener("toggle",function(){if(d.dataset.fold==="cards")state.foldCards=d.open;else state.foldCmp=d.open;save();});});
   document.getElementById("dlCsv").addEventListener("click",downloadCsv);
   document.getElementById("printIt").addEventListener("click",function(){window.print();});
   document.getElementById("saveFile").addEventListener("click",function(){saveToFile();document.getElementById("fileStatus").textContent="Saved. Look in your downloads folder.";});
   bindOpenFile(document.getElementById("openFile"),document.getElementById("fileStatus"));
   var f=document.getElementById("finish");if(f)f.addEventListener("click",function(){state.cur=ts.findIndex(function(t){return !answered(t);});go(2);});
-  view.querySelectorAll("[data-dec]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.dec;});t.decision=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();});});
+  view.querySelectorAll("[data-dec]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.dec;});t.decision=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();var ds=document.getElementById("decStatus");if(ds&&(s.value==="Replace"||s.value==="Retire"||s.value==="Reduce dependency")&&familyOf(t))ds.textContent="Advice for "+t.name+" is under Thinking of changing a tool, below.";});});
   view.querySelectorAll("[data-next]").forEach(function(s){s.addEventListener("input",function(){var t=ts.find(function(x){return x.key===s.dataset.next;});t.next=s.value;leaveExample();save();});});
   view.querySelectorAll("[data-due]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.due;});t.due=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();});});
   var cA=document.getElementById("cmpA"),cB=document.getElementById("cmpB");
@@ -663,16 +665,28 @@ function journeyStats(j){
   j.stops.forEach(function(s,n){if(n>0&&MBY[s.how]&&MBY[s.how].lvl==="risk")risks.push(infos[n-1].name+" to "+infos[n].name+": "+s.how.toLowerCase());});
   return {infos:infos,places:Object.keys(places).length,outside:outside,copies:copies,risks:risks};
 }
+function whereSection(){
+  var ts=state.tools,done=ts.filter(answered),h='';
+  var zones=[["UK, EU or EEA","",function(t){return !dev(t)&&t.where===EU;}],["Outside the UK, EU or EEA","out",function(t){return !dev(t)&&t.where===ELSE;}],["Not sure","unk",function(t){return !dev(t)&&(t.where===DK||!t.where);}],["On your devices","dev",dev]];
+  h+='<section class="stack" aria-labelledby="whereH"><div class="s4 stack"><h2 id="whereH">Where your data lives</h2><p class="muted">Control is not about where a company is based. It is about whether you understand and manage the relationship. Use this to see what to document, not as a list of things to move.</p></div>'+overviewMap(done)+mapLegend(false)+'<p class="small muted">The same, as a list. Tools with a heavy border hold sensitive data.</p><div class="strip">';
+  zones.forEach(function(z){var here=ts.filter(z[2]);
+    h+='<div class="zone '+z[1]+'"><h3>'+esc(z[0])+' <span class="muted small">('+here.length+')</span></h3><div class="tchips">'+(here.length?here.map(function(t){return '<span class="tchip'+(t.data==="Sensitive"?" sens":t.data==="Personal"?" pers":"")+'">'+esc(t.name)+(t.based===ELSE&&z[1]===""?' <span class="muted">(supplier elsewhere)</span>':"")+'</span>';}).join(""):'<span class="small muted">None</span>')+'</div></div>';});
+  h+='</div></section>';
+
+  return h;
+}
+var DATA_END='<div class="navrow"><button type="button" class="btn" id="back3">Back to Decide</button><button type="button" class="btn" id="printData">Print or save as PDF</button></div>';
+function bindDataEnd(){document.getElementById("back3").addEventListener("click",function(){go(3);});document.getElementById("printData").addEventListener("click",function(){window.print();});bindLaw();}
 function renderJourneys(){
   state.journeys=state.journeys||[];
   var J=state.journeys;
   if(state.jcur==null||state.jcur>=J.length)state.jcur=J.length?0:-1;
-  var h='<section class="stack" aria-labelledby="jH"><div class="s4 stack"><h2 id="jH">Follow the data</h2><p class="muted">Pick one kind of person whose details you hold. List every place their information goes, in order, and how it gets there. The map shows where copies build up and where the risks sit.</p></div>';
+  var h=whereSection()+'<section class="stack" aria-labelledby="jH"><div class="s4 stack"><h2 id="jH">Follow one person</h2><p class="muted">Pick one kind of person whose details you hold. List every place their information goes, in order, and how it gets there. The map shows where copies build up and where the risks sit.</p></div>';
   h+='<div class="jtabs">'+J.map(function(j,i){return '<button type="button" class="chip" data-j="'+i+'" aria-pressed="'+(i===state.jcur)+'">'+esc(j.title)+'</button>';}).join("")+'</div>';
   h+='<div class="s18 addrow"><div class="field"><label for="newJ">Add a journey</label><select id="newJ">'+TEMPL().map(function(t,i){return '<option value="'+i+'">'+esc(t.title)+'</option>';}).join("")+'</select></div><div class="s8 field"><button type="button" class="btn" id="addJ">Add journey</button></div></div></section>';
   if(state.jcur<0){
     h+='<div class="panel"><p>No journeys yet. Start with the people whose data would do most harm if it leaked: usually the people you support, then donors.</p></div>';
-    view.innerHTML=h;bindJTop();return;
+    view.innerHTML=h+DATA_END;bindJTop();bindDataEnd();return;
   }
   var j=J[state.jcur],st=journeyStats(j);
   var opts=state.tools.map(function(t){return [t.key,t.name];}).concat([["x:paper","Paper forms"],["x:personal","Someone's personal email or phone"]]);
@@ -708,8 +722,8 @@ function renderJourneys(){
   mp+='<div class="row"><button type="button" class="btn" id="copyJ">Copy this journey as text</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   if(j.stops.length)h+='<section class="s13 panel stack" aria-label="Journey map"><h3>'+esc(j.title)+': on the map</h3>'+journeyMap(j,st.infos)+mapLegend(true)+'</section>';
   h+='<div class="jgrid">'+ed+mp+'</div>';
-  view.innerHTML=h;
-  bindJTop();bindLaw();
+  view.innerHTML=h+DATA_END;
+  bindJTop();bindDataEnd();
   function re(focusId){render();if(focusId){var e=document.getElementById(focusId);if(e)e.focus();}}
   var jt=document.getElementById("jt");jt.addEventListener("change",function(){j.title=jt.value.trim()||"Untitled journey";leaveExample();re("jt");});
   var jw=document.getElementById("jw");jw.addEventListener("change",function(){j.who=jw.value;leaveExample();re("jw");});
@@ -772,7 +786,7 @@ function copy(text){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){area.hidden=true;msg.textContent="Copied. Paste it where you need it.";},fallback);}
   else fallback();
 }
-var STEP_NAMES=["List your tools","Answer the questions","Decide","Follow the data"];
+var STEP_NAMES=["List your tools","Answer the questions","Decide","Your data"];
 function stepTitle(){document.title="Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check";}
 // On a step change, move focus to the new step's first heading, so keyboard and
 // screen-reader users start at the top of the new content (WCAG 2.4.3).

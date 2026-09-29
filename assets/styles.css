@@ -289,3 +289,9 @@ input[type=text],input[type=number],input[type=date],select,.opt span,.chip,.btn
 /* M5: at high zoom or on short screens the sticky step bar would cover a
    third or more of the view, so it scrolls with the page instead. */
 @media (max-height:560px){nav.steps{position:static}}
+
+/* Folded sections on Decide ("Thinking of changing a tool?"). */
+details.fold{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:.2rem .9rem}
+details.fold>summary{cursor:pointer;font-weight:650;padding:.6rem 0;min-height:44px;display:list-item}
+details.fold[open]>summary{border-bottom:1px solid var(--line);margin-bottom:.8rem}
+details.fold>section{padding-bottom:.9rem}

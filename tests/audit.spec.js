@@ -7,9 +7,11 @@ test("S1: the results page never scrolls sideways; only the register table does"
   for (const width of [320, 640, 1093, 1280, 1366]) {
     await page.setViewportSize({ width, height: 800 });
     await fresh(page);
-    await step(page, 3);
-    const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
-    expect(over, `page overflow at ${width}px`).toBeLessThanOrEqual(0);
+    for (const s of [3, 4]) {
+      await step(page, s);
+      const over = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      expect(over, `page overflow on step ${s} at ${width}px`).toBeLessThanOrEqual(0);
+    }
   }
 });
 
@@ -83,7 +85,7 @@ test("S5: journey map step numbers use the accent ink, readable in dark mode", a
 
 test("S6: the map has a table with every place, its tools, and whose law applies", async ({ page }) => {
   await fresh(page);
-  await step(page, 3);
+  await step(page, 4);
   const table = page.getByRole("region", { name: /The map as a table/ });
   await expect(table).toBeVisible();
   expect(await table.locator("tbody tr").count()).toBe(await page.locator("svg.map").first().locator(".m-pin").count());

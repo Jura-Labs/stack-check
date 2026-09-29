@@ -11,3 +11,11 @@ h2,h3{break-after:avoid}
 table{min-width:0;font-size:9pt}
 select,input[type=text],input[type=date]{border:0;background:transparent;appearance:none;-webkit-appearance:none;padding:0;min-height:0}
 .map{max-height:120mm;width:auto}
+
+/* Decide prints as the board paper: folded extras are not printed.
+   "Your data" prints the map, its table and the journeys (Paul, 29 Sep). */
+details.fold{display:none}
+details.maptable{display:block}
+details.maptable>summary{display:none}
+.jgrid{display:block}
+#edH,#edH ~ *{display:none!important}
