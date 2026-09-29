@@ -523,9 +523,9 @@ function renderResults(){
    '<div class="tablewrap"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
   ts.forEach(function(t){
     h+='<tr><td><b>'+esc(t.name)+'</b><div class="small muted">'+esc(t.job)+'</div></td><td>'+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</td><td>'+esc(t.data||"–")+'</td><td>'+bare(safety(t),"Safety")+'</td><td>'+bare(control(t),"Control")+'</td><td>'+bare(exitL(t),"Exit")+'</td><td>'+bare(t.value,"Value")+'</td><td>'+bare(mission(t),ML())+'</td><td>'+esc(ACT(action(t))||"–")+'</td>'+
-      '<td class="decision"><label class="small" for="dec-'+t.key+'" hidden>Decision for '+esc(t.name)+'</label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></td>'+
-      '<td><label for="next-'+t.key+'" hidden>Next step for '+esc(t.name)+'</label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></td>'+
-      '<td><label for="due-'+t.key+'" hidden>Date for '+esc(t.name)+'</label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></td></tr>';
+      '<td class="decision"><label class="small vh" for="dec-'+t.key+'">Decision for '+esc(t.name)+'</label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></td>'+
+      '<td><label for="next-'+t.key+'" class="vh">Next step for '+esc(t.name)+'</label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></td>'+
+      '<td><label for="due-'+t.key+'" class="vh">Date for '+esc(t.name)+'</label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></td></tr>';
   });
   h+='</tbody></table></div><p class="small muted">Record your own decision in one of four words: Keep, Reduce dependency, Replace or Retire. Then one concrete next step, with a date.</p></section>';
   // Reference cards for tools you plan to change
