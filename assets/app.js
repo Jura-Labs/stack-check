@@ -231,7 +231,7 @@ function curve(a,b){
   var mx=(a[0]+b[0])/2,my=(a[1]+b[1])/2,dx=b[0]-a[0],dy=b[1]-a[1];
   return "M"+a[0].toFixed(1)+" "+a[1].toFixed(1)+" Q"+(mx-dy*.18).toFixed(1)+" "+(my+dx*.18).toFixed(1)+" "+b[0].toFixed(1)+" "+b[1].toFixed(1);
 }
-function svgWrap(M,inner,label){return '<svg class="map" viewBox="'+M.vb+'" role="img" aria-label="'+esc(label)+'">'+inner+'</svg>';}
+function svgWrap(M,inner,label){return '<svg class="map" viewBox="'+M.vb+'" role="img" aria-label="'+esc(label+" The same information is in the list next to the map.")+'">'+inner+'</svg>';}
 function overviewMap(tools){
   var codes=tools.map(placeOf),M=pickMap(codes);
   var by={},held={},law={};
@@ -321,6 +321,7 @@ function render(){
   document.getElementById("exampleBanner").hidden=state.mode!=="example";
   [1,2,3,4].forEach(function(n){var b=document.getElementById("nav"+n);if(state.step===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
   if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
+  stepTitle();
   save();
 }
 function leaveExample(){if(state.mode==="example")state.mode="own";document.getElementById("exampleBanner").hidden=true;}
@@ -337,7 +338,8 @@ function renderPick(){
     '<fieldset class="q"><legend>Where are you based?</legend>'+radios("loc",LOCS.map(function(o){return o[0];}),state.loc||"UK",LOCS.map(function(o){return o[1];}))+'</fieldset>'+
     (state.loc==="EU"?'<div class="s3 field"><label for="home">Which country? (for the map)</label><select id="home">'+euOpts.map(function(c){return '<option value="'+c+'"'+((state.home||"EU")===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select></div>':"")+
     OUTSIDE_NOTE()+
-    '<div class="s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+[["GBP","Pound sterling (£)"],["EUR","Euro (€)"],["USD","US dollar (US$)"],["CAD","Canadian dollar (CA$)"],["DKK","Danish krone (DKK)"],["SEK","Swedish krona (SEK)"],["NOK","Norwegian krone (NOK)"],["CHF","Swiss franc (CHF)"]].map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">Use one currency for the whole register. The check does not convert between currencies.</span></div></section>';
+    '<div class="s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+[["GBP","Pound sterling (£)"],["EUR","Euro (€)"],["USD","US dollar (US$)"],["CAD","Canadian dollar (CA$)"],["DKK","Danish krone (DKK)"],["SEK","Swedish krona (SEK)"],["NOK","Norwegian krone (NOK)"],["CHF","Swiss franc (CHF)"]].map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">Use one currency for the whole register. The check does not convert between currencies.</span></div></section>'+
+    '<section class="panel stack" aria-labelledby="fileH"><h2 id="fileH">Carrying on from a saved file?</h2><p class="small muted">If you or a colleague saved your answers to a file, open it here. It replaces what is in this browser now.</p><div class="row"><input type="file" id="openFile1" class="vh" accept=".json,application/json"><label class="btn" for="openFile1">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
   h+='<section class="panel stack" aria-labelledby="askTeamH"><div class="s4 stack"><h2 id="askTeamH">Before you start, ask your team</h2><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p></div>'+
     '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, the ones one person signed up for, AI tools, online banking, and the laptops. Do not debate whether each tool is good or bad. Just find out what you have. The essentials take about 2 minutes per tool. You can add more detail later.</p></div>'+
@@ -354,6 +356,7 @@ function renderPick(){
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+t.key+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
   h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h;
+  bindOpenFile(document.getElementById("openFile1"),document.getElementById("fileStatus"));
   document.getElementById("ccy").addEventListener("change",function(e){state.ccy=e.target.value;save();});
   var hm=document.getElementById("home");if(hm)hm.addEventListener("change",function(e){state.home=e.target.value;save();});
   view.querySelectorAll('input[name="org"]').forEach(function(r){r.addEventListener("change",function(){state.org=r.value;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
@@ -520,7 +523,7 @@ function renderResults(){
 
   // Register table
   h+='<section class="stack" aria-labelledby="regH"><div class="s17 row"><h2 id="regH">Your register</h2><div class="legend" aria-hidden="true"><span>'+bare("Green","")+'</span><span>'+bare("Amber","")+'</span><span>'+bare("Red","")+'</span></div></div>'+
-   '<div class="tablewrap"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
+   '<div class="tablewrap" role="region" aria-labelledby="regH" tabindex="0"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
   ts.forEach(function(t){
     h+='<tr><td><b>'+esc(t.name)+'</b><div class="small muted">'+esc(t.job)+'</div></td><td>'+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</td><td>'+esc(t.data||"–")+'</td><td>'+bare(safety(t),"Safety")+'</td><td>'+bare(control(t),"Control")+'</td><td>'+bare(exitL(t),"Exit")+'</td><td>'+bare(t.value,"Value")+'</td><td>'+bare(mission(t),ML())+'</td><td>'+esc(ACT(action(t))||"–")+'</td>'+
       '<td class="decision"><label class="small vh" for="dec-'+t.key+'">Decision for '+esc(t.name)+'</label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></td>'+
@@ -552,7 +555,7 @@ function renderResults(){
   h+='<section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h2 id="cmpH">Compare two tools</h2><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
-    '<div class="tablewrap"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
+    '<div class="tablewrap" role="region" aria-labelledby="cmpH" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
     crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans?": "+B.plans:""))+
     crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",A.np,B.np)+
     crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener">'+esc(x[0])+'</a></li>';}).join("")+'</ul></td></tr>'+
@@ -560,6 +563,9 @@ function renderResults(){
 
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
    '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
+   '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
+   '<div class="s4 stack"><h3>Keep your answers, or pass them to a colleague</h3><p class="small muted">Save a file to your computer. Open it later, on any computer, to carry on. The file is not sent anywhere: you choose where it goes.</p></div>'+
+   '<div class="row"><button type="button" class="btn" id="saveFile">Save to a file</button><input type="file" id="openFile" class="vh" accept=".json,application/json"><label class="btn" for="openFile">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
    '<textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   h+='<div class="navrow"><button type="button" class="btn" id="back2">Change answers</button><span class="row"><button type="button" class="btn ghost" id="clearAll">Clear everything</button><button type="button" class="btn primary" id="to4">Next: follow the data</button></span></div>';
   view.innerHTML=h;
@@ -567,6 +573,10 @@ function renderResults(){
   bindLaw();
   var co=document.getElementById("copyOwners");if(co)co.addEventListener("click",function(){copy(ownersText());});
   document.getElementById("to4").addEventListener("click",function(){go(4);});
+  document.getElementById("dlCsv").addEventListener("click",downloadCsv);
+  document.getElementById("printIt").addEventListener("click",function(){window.print();});
+  document.getElementById("saveFile").addEventListener("click",function(){saveToFile();document.getElementById("fileStatus").textContent="Saved. Look in your downloads folder.";});
+  bindOpenFile(document.getElementById("openFile"),document.getElementById("fileStatus"));
   var f=document.getElementById("finish");if(f)f.addEventListener("click",function(){state.cur=ts.findIndex(function(t){return !answered(t);});go(2);});
   view.querySelectorAll("[data-dec]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.dec;});t.decision=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();});});
   view.querySelectorAll("[data-next]").forEach(function(s){s.addEventListener("input",function(){var t=ts.find(function(x){return x.key===s.dataset.next;});t.next=s.value;leaveExample();save();});});
@@ -721,12 +731,13 @@ function journeyText(j,st){
   return L.join("\n");
 }
 // Columns in the same order as the register spreadsheet (A to AF)
-function tsv(){
+function registerRows(){
   var H=["Tool","Suggested action","SAFETY","CONTROL","EXIT","VALUE (you judge)","MISSION","Job it does","Kind","Owner (a named role)","Account","Admins","Users","Cost per year ("+(state.ccy||"GBP")+")","Staff hours per month","How much we depend on it","Data held","Renewal or notice date","Sign-in protected","Where data is kept","Supplier based in","Open source","Data protection terms in place","Full export in standard format","Own copy, restore tested","Our data trains AI?","Human rights concerns","Environmental concerns","Fits our mission and values","Trade-off approved by","Your decision","Next step","Next renewal date","Next step by"];
   var rows=state.tools.map(function(t){return [t.name,ACT(action(t)),safety(t),control(t),exitL(t),t.value,mission(t),t.job,t.kind,t.owner,t.account,t.admins,t.users,t.cost,t.hours,t.depend,t.data,t.renewal,t.signin,t.where,t.based,dev(t)?"":t.open,t.terms,t.exp,t.copy,t.ai,t.rights,t.env,t.fits,t.approved,t.decision,t.next,t.renewalDate,t.due]
-    .map(function(v){return String(v==null?"":v).replace(/[\t\n]/g," ");}).join("\t");});
-  return [H.join("\t")].concat(rows).join("\n");
+    .map(function(v){return String(v==null?"":v).replace(/[\t\n\r]/g," ");});});
+  return [H].concat(rows);
 }
+function tsv(){return registerRows().map(function(r){return r.join("\t");}).join("\n");}
 function board(){
   var d=state.tools.filter(answered);
   function by(a){return d.filter(function(t){return action(t)===a;});}
@@ -752,10 +763,18 @@ function copy(text){
   if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(text).then(function(){area.hidden=true;msg.textContent="Copied. Paste it where you need it.";},fallback);}
   else fallback();
 }
-function go(n){state.step=n;render();window.scrollTo({top:0});var nb=document.getElementById("nav"+n);if(nb)nb.focus({preventScroll:true});}
+var STEP_NAMES=["List your tools","Answer the questions","Decide","Follow the data"];
+function stepTitle(){document.title="Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check";}
+// On a step change, move focus to the new step's first heading, so keyboard and
+// screen-reader users start at the top of the new content (WCAG 2.4.3).
+function go(n){state.step=n;render();window.scrollTo({top:0});var h=document.querySelector("#view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
+// Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11).
+function padForSteps(){var nav=document.querySelector("nav.steps");if(nav)document.documentElement.style.scrollPaddingTop=(nav.offsetHeight+8)+"px";}
+window.addEventListener("resize",padForSteps);
 
 document.querySelectorAll("nav.steps [data-step]").forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.step);});});
 document.getElementById("startOwn").addEventListener("click",function(){state=blank();render();});
 document.getElementById("clearNo").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;});
 document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();render();});
 render();
+padForSteps();

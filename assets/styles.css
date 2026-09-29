@@ -246,3 +246,8 @@ footer a{color:inherit}
    a label from the accessibility tree, which left the register table's
    decision, next-step and date fields with no name (axe: select-name, label). */
 .vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* File inputs are visually hidden; their label is the visible button, so it
+   shows the focus ring when the input has keyboard focus. */
+input[type=file].vh + label.btn{cursor:pointer}
+input[type=file].vh:focus-visible + label.btn{outline:3px solid var(--focus);outline-offset:2px}
