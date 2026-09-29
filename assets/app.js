@@ -3,6 +3,8 @@
 "use strict";
 /*UI*/
 // Reference cards, condensed from the guide. Full cards live on the guide page.
+// Other names people search for. Matched as well as the tool's name and job.
+var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","hmrc-online":"gift aid paye","e-conomic":"visma","billy":"shine","digital-post":"mitid virk","online-banking":"bank"};
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
  documents:{title:"Documents",anchor:"#card-1-documents",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
@@ -326,8 +328,15 @@ function txt(field,t,label,hint,ph,type){
 }
 var view=document.getElementById("view");
 
+// Essentials for the tick in step 2 (24a decision 13). Scoring still uses answered().
+function essentialsDone(t){return answered(t)&&!!t.signin&&!!t.copy&&(dev(t)||(!!t.account&&!!t.admins))&&!!t.depend;}
+function stepCounts(){var n=state.tools.length,a=state.tools.filter(essentialsDone).length;
+  var s1=document.querySelector("#nav1 .sub"),s2=document.querySelector("#nav2 .sub");
+  if(s1)s1.textContent=n?n+" tool"+(n===1?"":"s")+" chosen":"Tick what you use";
+  if(s2)s2.textContent=n?a+" of "+n+" answered":"For each tool";}
 function render(){
   document.getElementById("exampleBanner").hidden=state.mode!=="example";
+  stepCounts();
   [1,2,3,4].forEach(function(n){var b=document.getElementById("nav"+n);if(state.step===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
   if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
   stepTitle();
@@ -352,10 +361,10 @@ function renderPick(){
   h+='<section class="panel stack" aria-labelledby="askTeamH"><div class="s4 stack"><h2 id="askTeamH">Before you start, ask your team</h2><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p></div>'+
     '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, the ones one person signed up for, AI tools, online banking, and the laptops. Do not debate whether each tool is good or bad. Just find out what you have. The essentials take about 2 minutes per tool. You can add more detail later.</p></div>'+
-    '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off"></div><div class="groups">';
+    '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
-    g.items.forEach(function(t){h+='<button type="button" class="chip" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
+    g.items.forEach(function(t){h+='<button type="button" class="chip" data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
     h+='</div></div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
@@ -364,7 +373,8 @@ function renderPick(){
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+t.key+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
   h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
-  view.innerHTML=h;
+  view.innerHTML=h+(state.tools.length?SAVE_ROW:"");
+  bindSaveRow();
   bindOpenFile(document.getElementById("openFile1"),document.getElementById("fileStatus"));
   document.getElementById("ccy").addEventListener("change",function(e){state.ccy=e.target.value;save();});
   var hm=document.getElementById("home");if(hm)hm.addEventListener("change",function(e){state.home=e.target.value;save();});
@@ -372,14 +382,19 @@ function renderPick(){
   view.querySelectorAll('input[name="loc"]').forEach(function(r){r.addEventListener("change",function(){state.loc=r.value;
     state.home=r.value==="UK"?"GB":r.value==="EU"?(state.home&&PLACE[state.home]&&state.home!=="GB"&&state.home!=="US"?state.home:"EU"):r.value;
     state.ccy={UK:"GBP",EU:"EUR",CA:"CAD",US:"USD"}[r.value]||state.ccy;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
-  var ft=document.getElementById("findTool");ft.addEventListener("input",function(){var qv=ft.value.trim().toLowerCase();
-    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=!qv||c.textContent.toLowerCase().indexOf(qv)>=0;c.hidden=!show;if(show)any=true;});g.hidden=!any;});});
+  var ft=document.getElementById("findTool");
+  function filterTools(){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
+    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=!qv||c.dataset.find.indexOf(qv)>=0;c.hidden=!show;if(show){any=true;hits++;}});g.hidden=!any;});
+    var none=document.getElementById("findNone");none.textContent=qv&&!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':"";
+    if(qv&&!hits){var nn=document.getElementById("newName");if(nn&&!nn.value)nn.value=ft.value.trim();}}
+  ft.addEventListener("input",filterTools);if(ft.value)filterTools();
   document.getElementById("copyAsk").addEventListener("click",function(){copy(ASK);});
   view.querySelectorAll("[data-lib]").forEach(function(b){b.addEventListener("click",function(){
     var id=b.dataset.lib,idx=state.tools.findIndex(function(t){return t.lib===id;});
     if(idx>=0)state.tools.splice(idx,1);else state.tools.push(fromLib(BYID[id]));
     leaveExample();state.cur=0;render();
     var again=view.querySelector('[data-lib="'+id+'"]');if(again)again.focus();
+    var pc=document.getElementById("pickCount");if(pc)pc.textContent=(idx>=0?"Removed ":"Added ")+BYID[id].name+". "+state.tools.length+" tool"+(state.tools.length===1?"":"s")+" chosen.";
   });});
   view.querySelectorAll("[data-remove]").forEach(function(b){b.addEventListener("click",function(){
     state.tools=state.tools.filter(function(t){return t.key!==b.dataset.remove;});render();document.getElementById("newName").focus();});});
@@ -391,6 +406,7 @@ function renderPick(){
 }
 
 // ---------- Step 2 ----------
+function pdotLabel(x){return (essentialsDone(x)?'<span aria-hidden="true">✓ </span><span class="vh">Answered: </span>':"")+esc(x.name);}
 function lightsRow(t){
   var a=action(t);
   return '<span class="muted">So far:</span>'+light(safety(t),"Safety")+light(control(t),"Control")+light(exitL(t),"Exit")+light(t.value,"Value")+light(mission(t),ML())+
@@ -405,8 +421,8 @@ function renderAsk(){
   if(state.cur>=state.tools.length)state.cur=state.tools.length-1;
   var t=state.tools[state.cur],i=state.cur,n=state.tools.length,k=t.key,d=dev(t);
   var h='<ul class="progress" aria-label="Your tools">'+state.tools.map(function(x,j){
-    return '<li><button type="button" class="pdot'+(answered(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+(answered(x)?'<span aria-hidden="true">✓ </span><span class="vh">Answered: </span>':"")+esc(x.name)+'</button></li>';}).join("")+'</ul>';
-  h+='<section class="panel stack" aria-labelledby="askH"><div class="cardhead"><h2 id="askH">'+esc(t.name)+'</h2><span class="muted small">Tool '+(i+1)+' of '+n+'</span></div>';
+    return '<li><button type="button" class="pdot'+(essentialsDone(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+pdotLabel(x)+'</button></li>';}).join("")+'</ul>';
+  h+='<section class="panel stack" aria-labelledby="askH"><div class="cardhead"><h2 id="askH">'+esc(t.name)+'</h2><span class="muted small">Tool '+(i+1)+' of '+n+'. '+state.tools.filter(essentialsDone).length+' answered, '+(n-state.tools.filter(essentialsDone).length)+' to go.</span></div>';
   h+=factsPanel(t);
   // The essentials
   var sole=SOLE();
@@ -461,7 +477,7 @@ function renderAsk(){
     txt("approved",t,"Who approved the trade-off?","Write down who accepted it, and when.","For example: Chair, June 2026")+
     '</div></details>';
   h+='<div class="s5 stack"><div class="row small" id="lightsRow">'+lightsRow(t)+'</div><div id="whyBox">'+whyList(t)+'</div></div>';
-  h+='</section><div class="navrow"><button type="button" class="btn" id="prevT">'+(i===0?"Back to the list":"Previous tool")+'</button><button type="button" class="btn primary" id="nextT">'+(i===n-1?"See what to do":"Next tool")+'</button></div>';
+  h+='</section><div class="navrow"><button type="button" class="btn" id="prevT">'+(i===0?"Back to the list":"Previous tool")+'</button><span class="row">'+(i<n-1?'<button type="button" class="btn ghost" id="toResults">See what to do now</button>':"")+'<button type="button" class="btn primary" id="nextT">'+(i===n-1?"See what to do":"Next tool")+'</button></span></div>'+SAVE_ROW;
   view.innerHTML=h;
   var rerender={kind:1,data:1};
   Object.keys(OPT).forEach(function(f){view.querySelectorAll('input[name="'+f+'-'+k+'"]').forEach(function(r){r.addEventListener("change",function(){
@@ -474,12 +490,14 @@ function renderAsk(){
   ["cost","hours","users"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("input",function(){t[f]=e.value===""?"":Math.max(0,Number(e.value)||0);leaveExample();save();});});
   view.querySelectorAll("[data-jump]").forEach(function(b){b.addEventListener("click",function(){state.cur=+b.dataset.jump;render();focusHeading("#askH");});});
   document.getElementById("prevT").addEventListener("click",function(){if(i===0)go(1);else{state.cur--;render();window.scrollTo({top:0});focusHeading("#askH");}});
+  var tr=document.getElementById("toResults");if(tr)tr.addEventListener("click",function(){go(3);});
+  bindSaveRow();
   document.getElementById("nextT").addEventListener("click",function(){if(i===n-1)go(3);else{state.cur++;render();window.scrollTo({top:0});focusHeading("#askH");}});
   function partial(){
     document.getElementById("lightsRow").innerHTML=lightsRow(t);
     document.getElementById("whyBox").innerHTML=whyList(t);
     var sm=document.getElementById("missionSum");if(sm)sm.textContent=ML()+" check (optional, "+["ai","rights","env","fits"].filter(function(f){return t[f];}).length+" of 4 answered)";
-    var dot=view.querySelector('[data-jump="'+i+'"]');if(dot){dot.classList.toggle("done",answered(t));dot.textContent=(answered(t)?"✓ ":"")+t.name;}
+    var dot=view.querySelector('[data-jump="'+i+'"]');if(dot){dot.classList.toggle("done",essentialsDone(t));dot.innerHTML=pdotLabel(t);}stepCounts();
     save();
   }
 }
@@ -675,8 +693,10 @@ function whereSection(){
 
   return h;
 }
-var DATA_END='<div class="navrow"><button type="button" class="btn" id="back3">Back to Decide</button><button type="button" class="btn" id="printData">Print or save as PDF</button></div>';
-function bindDataEnd(){document.getElementById("back3").addEventListener("click",function(){go(3);});document.getElementById("printData").addEventListener("click",function(){window.print();});bindLaw();}
+var SAVE_ROW='<div class="row small savebar"><button type="button" class="btn ghost" id="saveAny">Save to a file</button><span class="muted">to carry on later or on another computer.</span><span id="saveAnyStatus" class="toast" role="status" aria-live="polite"></span></div>';
+function bindSaveRow(){var b=document.getElementById("saveAny");if(b)b.addEventListener("click",function(){saveToFile();document.getElementById("saveAnyStatus").textContent="Saved. Look in your downloads folder.";});}
+var DATA_END='<div class="navrow"><button type="button" class="btn" id="back3">Back to Decide</button><button type="button" class="btn" id="printData">Print or save as PDF</button></div>'+SAVE_ROW;
+function bindDataEnd(){bindSaveRow();document.getElementById("back3").addEventListener("click",function(){go(3);});document.getElementById("printData").addEventListener("click",function(){window.print();});bindLaw();}
 function renderJourneys(){
   state.journeys=state.journeys||[];
   var J=state.journeys;
@@ -685,7 +705,7 @@ function renderJourneys(){
   h+='<div class="jtabs">'+J.map(function(j,i){return '<button type="button" class="chip" data-j="'+i+'" aria-pressed="'+(i===state.jcur)+'">'+esc(j.title)+'</button>';}).join("")+'</div>';
   h+='<div class="s18 addrow"><div class="field"><label for="newJ">Add a journey</label><select id="newJ">'+TEMPL().map(function(t,i){return '<option value="'+i+'">'+esc(t.title)+'</option>';}).join("")+'</select></div><div class="s8 field"><button type="button" class="btn" id="addJ">Add journey</button></div></div></section>';
   if(state.jcur<0){
-    h+='<div class="panel"><p>No journeys yet. Start with the people whose data would do most harm if it leaked: usually the people you support, then donors.</p></div>';
+    h+='<div class="panel"><p>No journeys yet. Start with the people whose data would do most harm if it leaked: '+(NP()?"usually the people you support, then donors.":"usually your customers, then your staff.")+'</p></div>';
     view.innerHTML=h+DATA_END;bindJTop();bindDataEnd();return;
   }
   var j=J[state.jcur],st=journeyStats(j);
@@ -706,7 +726,7 @@ function renderJourneys(){
     '<div class="tile'+(st.outside?" warn":"")+'"><span class="eyebrow">Outside UK, EU or EEA</span><span class="num">'+st.outside+'</span><span class="small muted">of those places</span></div>'+
     '<div class="tile'+(st.copies?" warn":"")+'"><span class="eyebrow">Loose copies</span><span class="num">'+st.copies+'</span><span class="small muted">files, emails, downloads, AI</span></div>'+
     '<div class="tile'+(st.risks.length?" alert":"")+'"><span class="eyebrow">Red points</span><span class="num">'+st.risks.length+'</span><span class="small muted">on this journey</span></div></div>';
-  mp+='<p class="small"><b>If this person asks you to delete their details,</b> you need to find them in '+st.places+' place'+(st.places===1?"":"s")+(st.copies?", plus up to "+st.copies+" loose cop"+(st.copies===1?"y":"ies")+" made along the way":"")+'.</p>';
+  if(st.places)mp+='<p class="small"><b>If this person asks you to delete their details,</b> you need to find them in '+st.places+' place'+(st.places===1?"":"s")+(st.copies?", plus up to "+st.copies+" loose cop"+(st.copies===1?"y":"ies")+" made along the way":"")+'.</p>';
   if(!j.stops.length)mp+='<div class="panel"><p class="muted">Add the first place where this person\'s details arrive, such as a website form, paper form or email inbox.</p></div>';
   mp+='<ol class="flow" aria-label="Where the data goes">';
   st.infos.forEach(function(info,i){
@@ -767,10 +787,20 @@ function board(){
   var fix=by("Fix now"),dec=by("Trustee decision"),year=by("Review this year"),ren=by("Review at renewal");
   var crit=d.filter(function(t){return t.depend==="Critical";}).length,pers=d.filter(personal).length,ai=state.tools.filter(function(t){return t.kind==="AI tool";}).length;
   var cost=state.tools.reduce(function(s,t){return s+(Number(t.cost)||0);},0);
-  var L=[SOLE()?"Technology check: summary":"Technology check: summary for our "+TR(),""];
+  var today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  var L=[(SOLE()?"Technology check: summary":"Technology check: summary for our "+TR())+", "+today,""];
+  var open=state.tools.length-d.length;
   L.push("1. What we depend on");
-  L.push("We use "+state.tools.length+" tools"+(ai?", including "+ai+" AI tool"+(ai===1?"":"s"):"")+". "+crit+" are critical and "+pers+" hold personal or sensitive data. Listed licence costs: "+money(cost)+" a year.");L.push("");
-  L.push("2. What we are fixing now ("+fix.length+")");fix.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});if(!fix.length)L.push("- Nothing");L.push("");
+  L.push("We use "+state.tools.length+" tools"+(ai?", including "+ai+" AI tool"+(ai===1?"":"s"):"")+". "+crit+" are critical and "+pers+" hold personal or sensitive data."+(cost>0?" Listed licence costs: "+money(cost)+" a year.":""));
+  if(open)L.push(open+" tool"+(open===1?" is":"s are")+" not answered yet and not included below.");
+  L.push("");
+  // One line for the tools whose only fix is a second admin, not one line each.
+  var adminOnlyFix=fix.filter(function(t){return nextStep(t)==="Add a second admin.";}),otherFix=fix.filter(function(t){return adminOnlyFix.indexOf(t)<0;});
+  L.push("2. What we are fixing now ("+fix.length+")");
+  otherFix.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});
+  if(adminOnlyFix.length===1)L.push("- "+adminOnlyFix[0].name+": Add a second admin.");
+  else if(adminOnlyFix.length)L.push("- Add a second admin to "+adminOnlyFix.length+" tools: "+adminOnlyFix.map(function(t){return t.name;}).join(", ")+".");
+  if(!fix.length)L.push("- Nothing");L.push("");
   L.push("3. What we need you to decide");
   L.push(ACT("Trustee decision")+"s ("+dec.length+"):");dec.forEach(function(t){L.push("- "+t.name+": "+[].concat(why(t).mission).join(" "));});if(!dec.length)L.push("- None");
   L.push("Reviews this year ("+year.length+"):");year.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});if(!year.length)L.push("- None");
@@ -790,7 +820,7 @@ var STEP_NAMES=["List your tools","Answer the questions","Decide","Your data"];
 function stepTitle(){document.title="Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check";}
 // On a step change, move focus to the new step's first heading, so keyboard and
 // screen-reader users start at the top of the new content (WCAG 2.4.3).
-function focusHeading(sel){var h=document.querySelector(sel||"#view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
+function focusHeading(sel){var h=document.querySelector(sel||"#view > .banner, #view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
 function go(n){state.step=n;render();window.scrollTo({top:0});focusHeading();}
 // Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11).
 function padForSteps(){var nav=document.querySelector("nav.steps");if(nav)document.documentElement.style.scrollPaddingTop=(nav.offsetHeight+8)+"px";}
