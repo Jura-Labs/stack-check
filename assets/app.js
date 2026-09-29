@@ -545,9 +545,10 @@ function renderResults(){
   function adminOnly(t){return action(t)==="Fix now"&&safety(t)!=="Red"&&own(t)&&!(t.account==="Personal"&&personal(t))&&oneAdmin(t);}
   var pri=[];ORDER.forEach(function(o){by(o[0]).forEach(function(t){if(grouped&&adminOnly(t))return;pri.push({t:t,c:o[1],w:o[2]});});});
   var groupCard=grouped?'<li><span class="when '+(SOLE()?"year":"now")+'">'+(SOLE()?"Plan for it":"Fix now")+'</span><div class="s15 stack"><h3>'+(SOLE()?"You are the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s"):solo.length+" tools have only one admin")+'</h3><p class="small muted">'+esc(solo.map(function(t){return t.name;}).join(", "))+'.</p><p class="small"><b>'+(SOLE()?"For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where.":"Add a second admin to each. If that is not possible, write down the recovery codes and keep them with "+(BOARD()==="trustees"?"the chair":BOARD()==="team"?"someone else in your team":"the board")+".")+'</b></p></div></li>':"";
-  h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard)?"Everything not listed here can stay as it is. Look again next year.":"Nothing needs attention. Look again next year, or when someone starts using a new tool.")+'</p></div>';
-  if(pri.length||groupCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
-    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+'</ol>';
+  var jf=journeyFindings(),jCard=jf.length?'<li><span class="when year">Your data</span><div class="s15 stack"><h3>How data moves between your tools</h3><p class="small muted">From Follow one person on step 4. These are about the moves between tools, not the tools themselves.</p><ul class="flags">'+jf.slice(0,5).map(function(f){return '<li class="watch">'+SHAPE.Amber+'<span>'+esc(f.text)+' <span class="muted">('+esc(f.j)+')</span></span></li>';}).join("")+'</ul>'+(jf.length>5?'<p class="small muted">And '+(jf.length-5)+' more.</p>':"")+'<p class="small"><button type="button" class="btn" id="jumpData">See them on Your data</button></p></div></li>':"";
+  h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard||jCard)?"Everything not listed here can stay as it is. Look again next year.":"Nothing needs attention. Look again next year, or when someone starts using a new tool.")+'</p></div>';
+  if(pri.length||groupCard||jCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
+    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+jCard+'</ol>';
   h+='<p class="small muted">Don\'t move for the sake of it. Moving costs money and staff time, brings its own risks, and can disrupt people doing their jobs. Often the answer is to reduce dependency: keep the tool, but make sure it cannot trap you.</p></section>';
 
   // Who does what
@@ -624,6 +625,7 @@ function renderResults(){
   document.getElementById("to4").addEventListener("click",function(){go(4);});
   document.getElementById("toData").addEventListener("click",function(){go(4);});
   document.getElementById("printDecide").addEventListener("click",function(){window.print();});
+  var jd=document.getElementById("jumpData");if(jd)jd.addEventListener("click",function(){go(4);focusHeading("#jH");});
   view.querySelectorAll("details[data-fold]").forEach(function(d){d.addEventListener("toggle",function(){if(d.dataset.fold==="cards")state.foldCards=d.open;else state.foldCmp=d.open;save();});});
   document.getElementById("dlCsv").addEventListener("click",downloadCsv);
   document.getElementById("printIt").addEventListener("click",function(){window.print();});
@@ -696,6 +698,18 @@ function nodeFlags(info){
   return f;
 }
 function sev(flags){return flags.some(function(x){return x[0]==="risk";})?"risk":flags.length?"watch":"ok";}
+function journeyFindings(){
+  var out=[];
+  (state.journeys||[]).forEach(function(j){
+    var infos=j.stops.map(function(s){return stopInfo(s.ref);});
+    j.stops.forEach(function(s,n){if(n>0&&MBY[s.how]&&MBY[s.how].lvl==="risk")out.push({j:j.title,kind:"move",text:infos[n-1].name+" to "+infos[n].name+": "+s.how.toLowerCase()+". That makes a loose copy nobody tracks."});});
+    infos.forEach(function(i){
+      if(i.extra==="personal")out.push({j:j.title,kind:"personal",text:i.name+": outside your organisation's control. You cannot secure it or delete it."});
+      if(i.t&&!dev(i.t)&&(i.t.data==="None"||i.t.data==="Internal"))out.push({j:j.title,kind:"mismatch",text:i.t.name+": your register says it holds no personal data, but this journey puts personal data in it. Update the register."});
+    });
+  });
+  var seen={};return out.filter(function(f){var k=f.kind+f.text;if(seen[k])return false;seen[k]=1;return true;});
+}
 function journeyStats(j){
   var infos=j.stops.map(function(s){return stopInfo(s.ref);});
   var places={};j.stops.forEach(function(s){places[s.ref]=1;});

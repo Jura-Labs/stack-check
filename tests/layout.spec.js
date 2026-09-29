@@ -108,3 +108,36 @@ test("print: Decide leaves out the folded extras; Your data prints the map and t
   await expect(page.locator("#view svg.map").first()).toBeVisible();
   await expect(page.getByRole("region", { name: /The map as a table/ })).toBeVisible();
 });
+
+// Paul, 29 Sep ("2. Agree please execute this"): what only the journeys can
+// show goes into What to do, without repeating tool-level points.
+test("What to do includes how data moves between tools, from Your data", async ({ page }) => {
+  await fresh(page);
+  await page.click("#seeExample");
+  const card = page.locator(".prio li").filter({ hasText: "How data moves between your tools" });
+  await expect(card).toBeVisible();
+  await expect(card).toContainText("saved or exported as a file");
+  await expect(card).toContainText("A supporter signs up at an event");
+  await expect(card).not.toContainText("Nobody owns it");
+  await page.click("#jumpData");
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(4);
+  await expect(page.locator("#jH")).toBeFocused();
+});
+
+test("a journey that contradicts the register is flagged in What to do", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    state.mode = "own";
+    const canva = state.tools.find((t) => t.lib === "canva");
+    state.journeys = [{ title: "A volunteer sends a photo", who: "Volunteer", stops: [{ ref: canva.key, how: "" }] }];
+  });
+  await step(page, 3);
+  await expect(page.locator(".prio")).toContainText("Canva: your register says it holds no personal data");
+});
+
+test("no journeys, no card", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.journeys = []; });
+  await step(page, 3);
+  await expect(page.locator(".prio li").filter({ hasText: "How data moves" })).toHaveCount(0);
+});
