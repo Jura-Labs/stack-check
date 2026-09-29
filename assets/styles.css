@@ -295,3 +295,10 @@ details.fold{border:1px solid var(--line);border-radius:10px;background:var(--su
 details.fold>summary{cursor:pointer;font-weight:650;padding:.6rem 0;min-height:44px;display:list-item}
 details.fold[open]>summary{border-bottom:1px solid var(--line);margin-bottom:.8rem}
 details.fold>section{padding-bottom:.9rem}
+
+/* One-line privacy box after step 1 (Paul, 29 Sep). */
+header.top.compact .pmore{display:none}
+header.top.compact .privacy{padding:.4rem .8rem}
+/* The read-only example prompt stays in view wherever the person is. */
+.banner.exedit{position:fixed;left:16px;right:16px;bottom:16px;z-index:20;background:var(--surface);border-style:solid;box-shadow:0 4px 18px rgba(0,0,0,.18);max-width:960px;margin:0 auto}
+ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}

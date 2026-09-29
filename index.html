@@ -41,7 +41,7 @@
     <p class="muted">List every tool you use, see where your data goes, and get a recommendation on what to do to stay in command of your technology.</p>
     <div class="privacy" role="note">
       <svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>
-      <span><b>No account. Your answers stay in this browser and are never sent anywhere.</b> They are saved here so you can come back to them. On a shared or office computer, use "Clear everything" on the results step when you finish so the next person cannot see them.</span>
+      <span><b>No account. Your answers stay in this browser and are never sent anywhere.</b><span class="pmore"> They are saved here so you can come back to them. On a shared or office computer, use "Clear everything" on the results step when you finish so the next person cannot see them.</span></span>
     </div>
   </header>
 
@@ -57,6 +57,10 @@
   <div id="exampleBanner" class="banner" hidden>
     <span><b>You are looking at an example:</b> a fictional charity with 12 staff. It is the same example as the guide and the register.</span>
     <button type="button" class="btn primary" id="startOwn">Start your own</button>
+  </div>
+  <div id="exampleEdit" class="banner exedit" role="alertdialog" aria-labelledby="exEditMsg" hidden>
+    <span id="exEditMsg"><b>This is an example, so it cannot be changed.</b> Start your own to use your tools.</span>
+    <span class="row"><button type="button" class="btn" id="exKeep">Keep exploring</button><button type="button" class="btn primary" id="exStart">Start your own</button></span>
   </div>
   <div id="confirmClear" class="banner" hidden>
     <span>Clear everything and start again? This cannot be undone.</span>

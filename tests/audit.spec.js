@@ -50,7 +50,7 @@ test("S3 and M2: focus lands on a heading or the right control after actions tha
 
 test("S3: Start your own and Remove keep focus in the page", async ({ page }) => {
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   expect(await page.evaluate(() => document.activeElement.tagName)).toBe("H2");
   await page.fill("#newName", "JustGiving");
   await page.click("#addTool");
@@ -116,7 +116,7 @@ test("M3: a skip link goes to the questions", async ({ page }) => {
 
 test("M8: adding a tool with no name says why", async ({ page }) => {
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await page.click("#addTool");
   await expect(page.locator("#newNameErr")).toHaveText("Type the tool's name first.");
   await expect(page.locator("#newName")).toHaveAttribute("aria-invalid", "true");

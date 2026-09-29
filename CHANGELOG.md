@@ -38,5 +38,22 @@ guide 2.1, register v2.1, Stack Check 2.1.x.
 - Two accounting tools are now grouped under "Tools doing the same job"
   (the rule matched no real accounting tool before), and payroll and HR
   tools are grouped too.
+- A start screen: what the check is, the four steps and how long it takes;
+  Start your own, See the example, Open a saved file; and for returning
+  visitors, Welcome back with progress and Carry on.
+- The worked example is read-only. Changing it offers Start your own (or
+  Back to your list) instead of quietly turning the example into your own,
+  and looking at it never overwrites your own list.
+- Decide is summary first and about half as long: the board panel comes
+  before the folded Before you move and Compare two tools, and it has a
+  print button at the end. The Critical tile is gone; Personal data reads
+  "tools hold this data".
+- Step 4 is now Your data: the map of where everything is kept, then
+  Follow one person, with a way back and a print button.
+- Find a tool knows other names (SharePoint, Gmail, Vipps...), keeps your
+  search, and says when nothing matches. The step bar shows how many tools
+  are chosen and answered. Save to a file on every step.
+- After step 1 the privacy note is one line. Small businesses see "your
+  team" rather than "board".
 - Visits are counted with Umami (page views only, on check.juralabs.org
   only, never the page address's query or hash, Do Not Track respected).

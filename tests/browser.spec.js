@@ -24,7 +24,7 @@ for (const org of ORGS) {
 test("start your own: pick tools, answer, see results", async ({ page }) => {
   const errors = watchErrors(page);
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await step(page, 1);
   const chips = page.locator("button.chip[data-lib]");
   for (let i = 0; i < 3; i++) await chips.nth(i).click();
@@ -38,7 +38,7 @@ test("start your own: pick tools, answer, see results", async ({ page }) => {
 
 test("answers survive a reload (kept in this browser)", async ({ page }) => {
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await step(page, 1);
   await page.locator("button.chip[data-lib]").first().click();
   await page.reload();
@@ -64,7 +64,7 @@ test("tools doing the same job: two accounting tools are grouped (the rule match
 test("every tool in the library can be chosen, answered and shown on the results and map", async ({ page }) => {
   const errors = watchErrors(page);
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await step(page, 1);
   const n = await page.evaluate(() => {
     const all = [];

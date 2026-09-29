@@ -101,7 +101,7 @@ var ORGS=[["nonprofit","A charity or non-profit"],["business","A small or medium
 var LOCS=[["UK","UK"],["EU","Europe"],["CA","Canada"],["US","USA"],["OTHER","Other"]];
 function NP(){return state.org==="nonprofit"||state.org==="cci";}
 function ML(){return state.org==="nonprofit"?"Mission":"Values";}
-function BOARD(){if(SOLE())return "";return state.org==="nonprofit"&&state.loc==="UK"?"trustees":"board";}
+function BOARD(){if(SOLE())return "";if(state.org==="business")return "team";return state.org==="nonprofit"&&state.loc==="UK"?"trustees":"board";}
 function DATAHINT(){
   var o=state.org;
   if(o==="business"||o==="sole")return "None: nothing about people. Internal: documents about the business, no personal details. Personal: customers, staff, suppliers. Sensitive: payroll, ID documents, health information, anything about children.";
@@ -111,13 +111,13 @@ function DATAHINT(){
 function PUBHINT(){
   if(SOLE())return "Would you be comfortable explaining this relationship to your clients?";
   if(state.org==="nonprofit")return "Would your "+(state.loc==="UK"?"trustees or CEO":"board")+" be comfortable explaining this relationship publicly?";
-  return "Would your board be comfortable explaining this relationship to your customers and staff?";
+  return "Would your "+(BOARD()==="team"?"team":"board")+" be comfortable explaining this relationship to your customers and staff?";
 }
 function OUTSIDE_NOTE(){return (state.loc==="CA"||state.loc==="US"||state.loc==="OTHER")?'<p class="note">This check uses UK and EU data protection as its reference. Read "UK, EU or EEA" as "where our own data protection law applies".</p>':"";}
 function SYM(){return CCY[state.ccy]||"£";}
 function money(n){return SYM()+Number(n||0).toLocaleString("en-GB");}
 function TR(){return BOARD()||"records";}
-function ACT(a){if(a!=="Trustee decision")return a;return SOLE()?"Your decision":BOARD()==="trustees"?"Trustee decision":"Board decision";}
+function ACT(a){if(a!=="Trustee decision")return a;return SOLE()?"Your decision":BOARD()==="trustees"?"Trustee decision":BOARD()==="team"?"Team decision":"Board decision";}
 function nextStep(t,skipAdmin){
   var a=action(t),s=[];
   if(a==="Fix now"){
@@ -139,10 +139,14 @@ function nextStep(t,skipAdmin){
 
 // ---------- State ----------
 var KEY="stackcheck.v5";
-function save(){try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}}
+// The example is never saved, so looking at it cannot overwrite someone's own list.
+function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
+function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
 function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
 var state=null;state=load()||example();
+// Every visit starts on the start screen (step 0); Carry on returns to where they were.
+var RESUME=state.step>0?state.step:1;state.step=0;
 
 // Data journeys
 var PEOPLE=["Supporter","Donor","Person we support","Child or young person","Volunteer","Staff member","Customer","Client","Audience member","Artist or freelancer","Supplier","Other"];
@@ -334,15 +338,34 @@ function stepCounts(){var n=state.tools.length,a=state.tools.filter(essentialsDo
   var s1=document.querySelector("#nav1 .sub"),s2=document.querySelector("#nav2 .sub");
   if(s1)s1.textContent=n?n+" tool"+(n===1?"":"s")+" chosen":"Tick what you use";
   if(s2)s2.textContent=n?a+" of "+n+" answered":"For each tool";}
+function renderStart(){
+  var own=state.mode!=="example"&&state.tools.length?state:ownSaved(),n=own?own.tools.length:0,a=own?own.tools.filter(essentialsDone).length:0;
+  var h='<section class="panel stack" aria-labelledby="startH"><h2 id="startH">'+(own?"Welcome back":"Start here")+'</h2>'+
+    (own?'<p><b>'+a+' of '+n+' tool'+(n===1?"":"s")+' answered</b> in this browser.</p><div class="row"><button type="button" class="btn primary" id="carryOn">Carry on where you left off</button></div>':'')+
+    '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 2 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
+    '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives and where it goes.</li></ol>'+
+    '<div class="row">'+(own?'<button type="button" class="btn" id="startNew">Start a new list</button>':'<button type="button" class="btn primary" id="startNew">Start your own</button>')+
+    '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
+  view.innerHTML=h;
+  var co=document.getElementById("carryOn");if(co)co.addEventListener("click",function(){state=own;RESUME=own.step>0?own.step:RESUME;go(RESUME);});
+  document.getElementById("startNew").addEventListener("click",function(){if(own){document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();}else{state=blank();state.mode="own";go(1);}});
+  document.getElementById("seeExample").addEventListener("click",function(){state=example();go(3);});
+  bindOpenFile(document.getElementById("openFile0"),document.getElementById("fileStatus"));
+}
 function render(){
-  document.getElementById("exampleBanner").hidden=state.mode!=="example";
+  document.getElementById("exampleBanner").hidden=state.mode!=="example"||state.step===0;
+  var own=state.mode==="example"&&ownSaved(),sb=document.getElementById("startOwn");if(sb)sb.textContent=own?"Back to your list":"Start your own";
+  // 3. The privacy box is one line after step 1 (Paul, 29 Sep): the claims row 28 sentence only.
+  var top=document.querySelector("header.top");if(top)top.classList.toggle("compact",state.step>=2);
   stepCounts();
   [1,2,3,4].forEach(function(n){var b=document.getElementById("nav"+n);if(state.step===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
-  if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
+  if(state.step===0)renderStart();else if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
   stepTitle();
   save();
 }
-function leaveExample(){if(state.mode==="example")state.mode="own";document.getElementById("exampleBanner").hidden=true;}
+// The example is read-only (Paul, 29 Sep): changes are stopped before they happen (see exampleGuard),
+// so nothing here turns the example into someone's own list.
+function leaveExample(){}
 
 // ---------- Step 1 ----------
 var ASK="Quick question for everyone: what tools are you using for work?\n\nInclude free apps, AI tools such as ChatGPT or note-takers, WhatsApp groups, anything on your own phone or laptop, and anything you signed up for yourself.\n\nThere are no wrong answers. We just want to know what we have.";
@@ -514,15 +537,14 @@ function renderResults(){
   if(done.length<ts.length)h+='<div class="banner"><span>'+(ts.length-done.length)+' of '+ts.length+' tools are not answered yet, so they are not scored.</span><button type="button" class="btn" id="finish">Answer them</button></div>';
   h+='<div class="tiles">'+
    '<div class="tile"><span class="eyebrow">Tools</span><span class="num">'+ts.length+'</span><span class="small muted">'+money(cost)+' a year listed</span></div>'+
-   '<div class="tile"><span class="eyebrow">Critical</span><span class="num">'+crit+'</span><span class="small muted">hard to work a week without</span></div>'+
-   '<div class="tile"><span class="eyebrow">Personal data</span><span class="num">'+pers+'</span><span class="small muted">including sensitive</span></div>'+
-   '<div class="tile'+(fix.length?" alert":"")+'"><span class="eyebrow">Fix now</span><span class="num">'+fix.length+'</span><span class="small muted">usually free</span></div>'+
+   '<div class="tile"><span class="eyebrow">Personal data</span><span class="num">'+pers+'</span><span class="small muted">tools hold this data</span></div>'+
+   '<div class="tile'+(fix.length?" alert":"")+'"><span class="eyebrow">Fix now</span><span class="num">'+fix.length+'</span></div>'+
    '<div class="tile'+(dec.length?" warn":"")+'"><span class="eyebrow">'+esc(ACT("Trustee decision"))+'</span><span class="num">'+dec.length+'</span><span class="small muted">'+ML()+' concerns</span></div>'+
    '<div class="tile'+(year.length?" warn":"")+'"><span class="eyebrow">Review this year</span><span class="num">'+year.length+'</span><span class="small muted">personal or critical</span></div></div>';
   var solo=done.filter(function(t){return t.admins==="One person";}),grouped=solo.length>=(SOLE()?1:2);
   function adminOnly(t){return action(t)==="Fix now"&&safety(t)!=="Red"&&own(t)&&!(t.account==="Personal"&&personal(t))&&oneAdmin(t);}
   var pri=[];ORDER.forEach(function(o){by(o[0]).forEach(function(t){if(grouped&&adminOnly(t))return;pri.push({t:t,c:o[1],w:o[2]});});});
-  var groupCard=grouped?'<li><span class="when '+(SOLE()?"year":"now")+'">'+(SOLE()?"Plan for it":"Fix now")+'</span><div class="s15 stack"><h3>'+(SOLE()?"You are the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s"):solo.length+" tools have only one admin")+'</h3><p class="small muted">'+esc(solo.map(function(t){return t.name;}).join(", "))+'.</p><p class="small"><b>'+(SOLE()?"For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where.":"Add a second admin to each. If that is not possible, write down the recovery codes and keep them with the "+(BOARD()==="trustees"?"chair":"board")+".")+'</b></p></div></li>':"";
+  var groupCard=grouped?'<li><span class="when '+(SOLE()?"year":"now")+'">'+(SOLE()?"Plan for it":"Fix now")+'</span><div class="s15 stack"><h3>'+(SOLE()?"You are the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s"):solo.length+" tools have only one admin")+'</h3><p class="small muted">'+esc(solo.map(function(t){return t.name;}).join(", "))+'.</p><p class="small"><b>'+(SOLE()?"For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where.":"Add a second admin to each. If that is not possible, write down the recovery codes and keep them with "+(BOARD()==="trustees"?"the chair":BOARD()==="team"?"someone else in your team":"the board")+".")+'</b></p></div></li>':"";
   h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard)?"Everything not listed here can stay as it is. Look again next year.":"Nothing needs attention. Look again next year, or when someone starts using a new tool.")+'</p></div>';
   if(pri.length||groupCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
     return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+'</ol>';
@@ -594,13 +616,14 @@ function renderResults(){
     '</tbody></table></div></section></details>';
 
   h+='</section>';
-  h+='<div class="navrow"><button type="button" class="btn" id="back2">Change answers</button><span class="row"><button type="button" class="btn ghost" id="clearAll">Clear everything</button><button type="button" class="btn primary" id="to4">Next: your data</button></span></div>';
+  h+='<div class="navrow"><button type="button" class="btn" id="back2">Change answers</button><span class="row"><button type="button" class="btn ghost" id="clearAll">Clear everything</button><button type="button" class="btn" id="printDecide">Print or save as PDF</button><button type="button" class="btn primary" id="to4">Next: your data</button></span></div>';
   view.innerHTML=h;
 
   bindLaw();
   var co=document.getElementById("copyOwners");if(co)co.addEventListener("click",function(){copy(ownersText());});
   document.getElementById("to4").addEventListener("click",function(){go(4);});
   document.getElementById("toData").addEventListener("click",function(){go(4);});
+  document.getElementById("printDecide").addEventListener("click",function(){window.print();});
   view.querySelectorAll("details[data-fold]").forEach(function(d){d.addEventListener("toggle",function(){if(d.dataset.fold==="cards")state.foldCards=d.open;else state.foldCmp=d.open;save();});});
   document.getElementById("dlCsv").addEventListener("click",downloadCsv);
   document.getElementById("printIt").addEventListener("click",function(){window.print();});
@@ -817,7 +840,7 @@ function copy(text){
   else fallback();
 }
 var STEP_NAMES=["List your tools","Answer the questions","Decide","Your data"];
-function stepTitle(){document.title="Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check";}
+function stepTitle(){document.title=state.step?"Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check":"Stack Check: stay in command of your technology";}
 // On a step change, move focus to the new step's first heading, so keyboard and
 // screen-reader users start at the top of the new content (WCAG 2.4.3).
 function focusHeading(sel){var h=document.querySelector(sel||"#view > .banner, #view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
@@ -827,11 +850,26 @@ function padForSteps(){var nav=document.querySelector("nav.steps");if(nav)docume
 window.addEventListener("resize",padForSteps);
 
 document.querySelectorAll("nav.steps [data-step]").forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.step);});});
-document.getElementById("startOwn").addEventListener("click",function(){state=blank();go(1);});
+document.getElementById("startOwn").addEventListener("click",function(){var own=ownSaved();if(own){state=own;go(own.step>0?own.step:1);}else{state=blank();state.mode="own";go(1);}});
+document.getElementById("exStart").addEventListener("click",function(){document.getElementById("exampleEdit").hidden=true;document.getElementById("startOwn").click();});
+document.getElementById("exKeep").addEventListener("click",function(){document.getElementById("exampleEdit").hidden=true;if(exReturn&&document.getElementById(exReturn))document.getElementById(exReturn).focus();});
+document.getElementById("exampleEdit").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();document.getElementById("exKeep").click();}});
+// The example is read-only. Changes are stopped in the capture phase, before any handler
+// runs; looking around (steps, folds, compare, the map's law toggle, search) still works.
+var EX_EDIT='input,select,textarea,[data-lib],[data-remove],#addTool,#addJ,[data-rm],#addStopBtn,#rmJ';
+var EX_OK='#findTool,#newName,#newJob,#cmpA,#cmpB,#newJ,[data-law],[name="org"],[name="loc"],#ccy,#home,[type="file"]';
+var exReturn="";
+function exTarget(el){if(state.mode!=="example"||!el||!el.closest)return null;var c=el.closest(EX_EDIT);return c&&!c.matches(EX_OK)&&view.contains(c)?c:null;}
+function exampleEdit(c){exReturn=c&&c.id||"";var b=document.getElementById("startOwn");document.getElementById("exStart").textContent=b?b.textContent:"Start your own";document.getElementById("exampleEdit").hidden=false;document.getElementById("exStart").focus();}
+view.addEventListener("click",function(e){var c=exTarget(e.target);if(!c||c.matches("input[type=text],input[type=date],input[type=number],input[type=search],select,textarea"))return;e.preventDefault();e.stopImmediatePropagation();exampleEdit(c);},true);
+// Stop both events, then redraw once afterwards. Redrawing inside the first event would detach
+// the field, and its second event (a select fires input then change) would skip this guard.
+var exPending=false;
+["change","input"].forEach(function(ev){view.addEventListener(ev,function(e){var c=exTarget(e.target);if(!c)return;e.stopImmediatePropagation();if(exPending)return;exPending=true;setTimeout(function(){exPending=false;render();exampleEdit(c);},0);},true);});
 // M2: the clear-everything question starts on the safe answer; Escape keeps the answers.
 function closeClear(){document.getElementById("confirmClear").hidden=true;var c=document.getElementById("clearAll");if(c)c.focus();}
 document.getElementById("clearNo").addEventListener("click",closeClear);
 document.getElementById("confirmClear").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeClear();}});
-document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();go(1);});
+document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();state.mode="own";try{localStorage.removeItem(KEY);}catch(e){}go(1);});
 render();
 padForSteps();

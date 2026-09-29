@@ -66,7 +66,7 @@ test("focused fields are kept clear of the sticky step bar", async ({ page }) =>
 
 test("open-file buttons show keyboard focus", async ({ page }) => {
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await page.focus("#openFile1");
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");

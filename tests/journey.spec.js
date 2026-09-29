@@ -5,7 +5,7 @@ const { fresh, step } = require("./helpers");
 
 async function startOwn(page) {
   await fresh(page);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await expect.poll(() => page.evaluate(() => state.step)).toBe(1);
 }
 
@@ -37,7 +37,7 @@ test("the step bar shows how many tools are chosen and answered", async ({ page 
   await fresh(page);
   await expect(page.locator("#nav1 .sub")).toHaveText("9 tools chosen");
   await expect(page.locator("#nav2 .sub")).toHaveText("9 of 9 answered");
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await expect(page.locator("#nav1 .sub")).toHaveText("Tick what you use");
   await page.click('[data-lib="xero"]');
   await page.click('[data-lib="canva"]');

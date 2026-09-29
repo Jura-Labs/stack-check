@@ -30,6 +30,7 @@ test("Decide is much shorter: under 7 laptop screens for the example", async ({ 
 
 test("Decide: the folded extras start closed, stay open across redraws, and advice is announced", async ({ page }) => {
   await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; }); // the example is read-only
   await step(page, 3);
   const cmp = page.locator('details[data-fold="cmp"]');
   await expect(cmp).not.toHaveAttribute("open", "");

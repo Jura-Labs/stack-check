@@ -23,7 +23,7 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   });
   await fresh(page);
   await page.waitForFunction(() => !!window.umami);
-  await page.click("#startOwn");
+  await page.click("#startNew");
   await step(page, 1);
 
   // A custom tool named with the marker, plus library tools.
