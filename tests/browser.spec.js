@@ -44,3 +44,19 @@ test("answers survive a reload (kept in this browser)", async ({ page }) => {
   await page.reload();
   await page.waitForFunction(() => typeof state === "object" && state.tools.length === 1);
 });
+
+test("tools doing the same job: two accounting tools are grouped (the rule matched no real job before)", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    state.mode = "own";
+    const a = fromLib(BYID["xero"]), b = fromLib(BYID["quickbooks-online"]), c = fromLib(BYID["online-banking"]);
+    for (const t of [a, b, c]) Object.assign(t, { owner: "Finance lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes" });
+    state.tools = [a, b, c];
+    render();
+  });
+  await step(page, 3);
+  const dup = page.locator("#dupH").locator("xpath=ancestor::section[1]");
+  await expect(dup).toContainText("Accounts");
+  await expect(dup).toContainText("Xero");
+  await expect(dup).not.toContainText("Online banking");
+});
