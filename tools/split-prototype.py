@@ -24,7 +24,7 @@ parts = {
     "tools.js": ("Answer options and the tool library, with sources", L(266, 295) + "\n" + L(299, 300)),
     "map.js": ("Offline basemaps, Natural Earth via world-atlas (public domain)", L(296, 298)),
     "example.js": ("The worked example: the same fictional charity as the guide and the register", L(301, 332)),
-    "scoring.js": ("Five lights and the suggested action. The register spreadsheet v2.1 is the reference; each rule names its column", L(333, 376)),
+    "scoring.js": ("Five lights and the suggested action. The register spreadsheet v2.2 is the reference; each rule names its column", L(333, 376)),
     "app.js": ("Screens and interaction", L(377, 1134)),
 }
 

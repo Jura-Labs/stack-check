@@ -1,4 +1,4 @@
-// Scoring parity with the Stay in command register v2.1.
+// Scoring parity with the Stay in command register v2.2 (v2.1 plus two kinds, decision 2026-09-30).
 // The expected table is Drive doc 23 v0.3 section 2 ("Parity test"), verified in
 // the spreadsheet on 29 September 2026, with the CRM row renamed to
 // "Donor CRM (UK-hosted)" by doc 24a decision 7. The spreadsheet is the
@@ -80,6 +80,24 @@ const CASES = [
   // Two reds
   ["action: two reds elsewhere is Review at renewal", { exp: "No", copy: "No", value: "Red" }, { action: "Review at renewal" }],
   ["action: one red elsewhere is Keep", { value: "Red" }, { action: "Keep" }],
+  // v2.2: App on our computers (decision 2026-09-30). Account, location, terms and export are not asked.
+  ["app: location unknown and a personal account do not count", { kind: "App on our computers", where: "Don't know", account: "Personal", data: "Personal", terms: "", exp: "" }, { control: "Green", action: "Keep" }],
+  ["app: sensitive data with a supplier elsewhere is not capped", { kind: "App on our computers", data: "Sensitive", based: "Elsewhere", where: "Elsewhere", terms: "" }, { control: "Green" }],
+  ["app: one person who can open the files is red and Fix now", { kind: "App on our computers", admins: "One person" }, { control: "Red", action: "Fix now" }],
+  ["app: not sure who can open the files is amber", { kind: "App on our computers", admins: "Don't know" }, { control: "Amber" }],
+  ["app: exit follows devices, own copy is green without an export", { kind: "App on our computers", exp: "", copy: "Yes" }, { exit: "Green" }],
+  ["app: exit follows devices, personal data and no copy is red", { kind: "App on our computers", data: "Personal", exp: "Yes", copy: "No" }, { exit: "Red", action: "Review this year" }],
+  ["app: exit follows devices, minor with no copy is amber", { kind: "App on our computers", depend: "Minor", exp: "", copy: "No" }, { exit: "Amber" }],
+  // v2.2: Account on a platform. An unknown location is amber, not red; terms are not needed.
+  ["platform: location unknown is amber, not red", { kind: "Account on a platform", where: "Don't know", data: "Personal", terms: "" }, { control: "Amber", action: "Keep" }],
+  ["platform: terms not needed for green", { kind: "Account on a platform", data: "Personal", terms: "" }, { control: "Green" }],
+  ["platform: no location answer counts as not sure, so amber", { kind: "Account on a platform", where: "", terms: "" }, { control: "Amber", action: "Keep" }],
+  ["software: no location answer stays neutral (unchanged)", { where: "", data: "Personal" }, { control: "Green" }],
+  ["platform: personal data stored elsewhere is still capped at amber", { kind: "Account on a platform", data: "Personal", where: "Elsewhere", terms: "" }, { control: "Amber" }],
+  ["platform: a personal account with personal data is still Fix now", { kind: "Account on a platform", account: "Personal", data: "Personal" }, { control: "Red", action: "Fix now" }],
+  ["platform: one admin is still red and Fix now", { kind: "Account on a platform", admins: "One person" }, { control: "Red", action: "Fix now" }],
+  ["platform: exit rules are unchanged", { kind: "Account on a platform", exp: "Partial", copy: "No" }, { exit: "Amber" }],
+  ["software: unknown location is still red (unchanged)", { where: "Don't know", data: "Personal" }, { control: "Red", action: "Review this year" }],
 ];
 
 CASES.forEach(([name, change, want]) => {
