@@ -11,7 +11,7 @@ async function startOwn(page) {
 
 test("search finds tools by the names people use (SharePoint, Gmail, Vipps)", async ({ page }) => {
   await startOwn(page);
-  for (const [q, id] of [["SharePoint", "microsoft-365"], ["gmail", "google-workspace"], ["Vipps", "mobilepay"], ["gift aid", "hmrc-online"]]) {
+  for (const [q, id] of [["SharePoint", "microsoft-365"], ["gmail", "google-workspace"], ["Vipps", "mobilepay"], ["twitter", "x-twitter"], ["bsky", "bluesky"]]) {
     await page.fill("#findTool", q);
     await expect(page.locator(`[data-lib="${id}"]`)).toBeVisible();
   }
@@ -68,15 +68,6 @@ test("Save to a file is on every step", async ({ page }) => {
     const [d] = await Promise.all([page.waitForEvent("download"), page.click(id)]);
     expect(d.suggestedFilename()).toMatch(/^stack-check-.*\.json$/);
   }
-});
-
-test("Your data speaks to businesses as businesses, and never says '0 places'", async ({ page }) => {
-  await fresh(page);
-  await page.evaluate(() => { state.org = "business"; state.journeys = []; state.jcur = -1; });
-  await step(page, 4);
-  await expect(page.locator("#view")).toContainText("usually your customers, then your staff.");
-  await page.evaluate(() => { state.journeys = [{ title: "A customer orders", who: "Customer", stops: [] }]; state.jcur = 0; render(); });
-  await expect(page.locator("#view")).not.toContainText("find them in 0 places");
 });
 
 test("the board summary: one line for second admins, no £0 costs, a date, and unanswered tools named", async ({ page }) => {
@@ -155,4 +146,86 @@ test("plain question wording: what data or content, and backup (Paul, 29 Sep)", 
   await step(page, 2);
   await expect(page.getByRole("group", { name: "What data or content do you store in this tool?" })).toBeVisible();
   await expect(page.getByRole("group", { name: "Do you have a backup of this data?" })).toBeVisible();
+});
+
+// Paul, 30 Sep: fewer Money tools on show; the freelancer ones are found by searching.
+test("Money shows the charity tools; FreeAgent, Dinero and Billy appear when searched for", async ({ page }) => {
+  await startOwn(page);
+  await expect(page.locator('[data-lib="xero"]')).toBeVisible();
+  for (const id of ["freeagent", "dinero", "billy"]) await expect(page.locator(`[data-lib="${id}"]`)).toBeHidden();
+  await expect(page.locator(".groupmore")).toContainText("FreeAgent");
+  await page.fill("#findTool", "freeagent");
+  await expect(page.locator('[data-lib="freeagent"]')).toBeVisible();
+  await page.click('[data-lib="freeagent"]');
+  await page.fill("#findTool", "");
+  await expect(page.locator('[data-lib="freeagent"]')).toBeVisible();
+});
+
+// Review of questions that do not apply (30 Sep): no false reds from pre-fills, and the right help.
+test("a supplier's 'Don't know' is not pre-filled as the answer, so it does not turn Control red", async ({ page }) => {
+  await fresh(page);
+  const t = await page.evaluate(() => { const t = fromLib(BYID["facebook-page"]); return { where: t.where, exp: t.exp }; });
+  expect(t.where).toBe("");
+  const lights = await page.evaluate(() => {
+    const t = Object.assign(fromLib(BYID["justgiving"]), { owner: "Fundraising manager", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", copy: "No", terms: "Yes" });
+    return { control: control(t), action: action(t) };
+  });
+  expect(lights.control).not.toBe("Red");
+});
+
+test("desktop apps: on your devices, no supplier email, and no red from pre-filled answers", async ({ page }) => {
+  await fresh(page);
+  const r = await page.evaluate(() => {
+    const t = Object.assign(fromLib(BYID["gimp"]), { owner: "Comms officer", account: "Organisation", admins: "Two or more", depend: "Minor", data: "Internal", signin: "Not offered", copy: "No" });
+    state.mode = "own"; state.tools = [t]; state.cur = 0;
+    return { control: control(t), exit: exitL(t), place: placeOf(t), action: action(t) };
+  });
+  expect(r.control).not.toBe("Red");
+  expect(r.exit).not.toBe("Red");
+  expect(r.place).toBe("OFFICE");
+  expect(r.action).not.toBe("Review at renewal");
+  await step(page, 2);
+  await expect(page.locator("#askSupplier")).toHaveCount(0);
+  await expect(page.locator("#view")).toContainText("There is no supplier holding your data");
+  await step(page, 3);
+  await expect(page.locator("#whereSumH").locator("xpath=ancestor::section[1]")).toContainText("1 on your devices");
+});
+
+test("a Mission concern on a tool that needs a fix still reaches the trustees", async ({ page }) => {
+  await fresh(page);
+  const text = await page.evaluate(() => {
+    const t = Object.assign(fromLib(BYID["stripe"]), { owner: "Finance officer", account: "Organisation", admins: "One person", depend: "Important", data: "Personal", signin: "Yes", copy: "No", ai: "Yes" });
+    state.mode = "own"; state.tools = [t];
+    return { action: action(t), board: board() };
+  });
+  expect(text.action).toBe("Fix now");
+  expect(text.board).toContain("Also to decide, once the fix is done (1):");
+  expect(text.board).toContain("Stripe");
+});
+
+// Register v2.2 (decision 2026-09-30): the questions follow the kind.
+test("v2.2: an app on our computers is not asked about account, location, terms or export", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["keepassxc"])]; state.cur = 0; });
+  await step(page, 2);
+  const k = await page.evaluate(() => state.tools[0].key);
+  expect(await page.evaluate(() => state.tools[0].kind)).toBe("App on our computers");
+  for (const f of ["account", "where", "based", "terms", "exp"]) await expect(page.locator(`input[name="${f}-${k}"]`)).toHaveCount(0);
+  await expect(page.locator(`input[name="open-${k}"]`).first()).toBeAttached();
+  await expect(page.locator("#view")).toContainText("could someone else open the files");
+});
+
+test("v2.2: an account on a platform asks who owns the page, and an unknown location is amber", async ({ page }) => {
+  await fresh(page);
+  const r = await page.evaluate(() => {
+    const t = Object.assign(fromLib(BYID["facebook-page"]), { owner: "Comms officer", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", copy: "No", where: "Don't know" });
+    state.mode = "own"; state.tools = [t]; state.cur = 0;
+    return { kind: t.kind, control: control(t), why: why(t).control };
+  });
+  expect(r.kind).toBe("Account on a platform");
+  expect(r.control).toBe("Amber");
+  expect(r.why).toContain("The platform does not publish where it keeps data.");
+  await step(page, 2);
+  await expect(page.locator("#view")).toContainText("owned by the organisation (for example in a Business Portfolio)");
+  await expect(page.locator("#askSupplier")).toHaveCount(0);
 });

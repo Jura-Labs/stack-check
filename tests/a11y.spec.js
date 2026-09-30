@@ -49,12 +49,19 @@ test("step change: focus moves to the new step's heading, and the page title nam
   }
 });
 
-test("the register table can be scrolled from the keyboard", async ({ page }) => {
-  await fresh(page);
-  await step(page, 3);
-  const region = page.locator('.tablewrap[role="region"][aria-label^="Register table"]');
-  await expect(region).toHaveAttribute("tabindex", "0");
-});
+// Paul, 30 Sep: the register has four columns and fits the page, so it needs no sideways scroll.
+for (const width of [360, 960]) {
+  test(`the register table fits the page at ${width}px, with no sideways scroll`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await fresh(page);
+    await step(page, 3);
+    const wrap = page.locator('.tablewrap[role="region"][aria-label="Register table"]');
+    await expect(wrap).toBeVisible();
+    const over = await wrap.evaluate((e) => e.scrollWidth - e.clientWidth);
+    expect(over).toBeLessThanOrEqual(1);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(0);
+  });
+}
 
 test("focused fields are kept clear of the sticky step bar", async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 700 });

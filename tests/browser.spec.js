@@ -45,11 +45,11 @@ test("answers survive a reload (kept in this browser)", async ({ page }) => {
   await page.waitForFunction(() => typeof state === "object" && state.tools.length === 1);
 });
 
-test("tools doing the same job: two accounting tools are grouped (the rule matched no real job before)", async ({ page }) => {
+test("tools that may be doing a similar job: two accounting tools are grouped (the rule matched no real job before)", async ({ page }) => {
   await fresh(page);
   await page.evaluate(() => {
     state.mode = "own";
-    const a = fromLib(BYID["xero"]), b = fromLib(BYID["quickbooks-online"]), c = fromLib(BYID["online-banking"]);
+    const a = fromLib(BYID["xero"]), b = fromLib(BYID["quickbooks-online"]), c = fromLib({ name: "Online banking", job: "Bank account", k: "Software" }); // added by hand: no longer in the library
     for (const t of [a, b, c]) Object.assign(t, { owner: "Finance lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes" });
     state.tools = [a, b, c];
     render();
@@ -82,4 +82,18 @@ test("every tool in the library can be chosen, answered and shown on the results
   await expect(page.locator("#regH")).toBeVisible();
   expect(await page.locator("#view table tbody tr").count()).toBeGreaterThanOrEqual(n);
   expect(errors).toEqual([]);
+});
+
+// Script and stylesheet links carry the version, so after a deploy a browser cannot mix
+// old and new files (GitHub Pages lets browsers reuse files for 10 minutes).
+test("every script and stylesheet link carries the current version", async () => {
+  const fs = require("node:fs");
+  const version = JSON.parse(fs.readFileSync("package.json", "utf8")).version;
+  for (const page of ["index.html", "404.html"]) {
+    const html = fs.readFileSync(page, "utf8");
+    const links = [...html.matchAll(/(?:src|href)="\/?(assets\/[^"]+\.(?:js|css)[^"]*)"/g)].map((m) => m[1]);
+    expect(links.length, page).toBeGreaterThan(0);
+    for (const l of links) expect(l, `${page}: ${l}`).toMatch(new RegExp(`\\?v=${version.replace(/\./g, "\\.")}$`));
+  }
+  expect(fs.readFileSync("index.html", "utf8")).toContain(`<span id="version">${version}</span>`);
 });

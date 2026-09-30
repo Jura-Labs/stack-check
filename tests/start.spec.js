@@ -168,11 +168,28 @@ test("not-for-profits only: no business option in the picker; a saved business l
   expect(opened).toBe("business");
 });
 
-test("card links go to the guide's cards page anchors", async ({ page }) => {
+test("card links go to the guide's cards page (guide v1.1)", async ({ page }) => {
   await fresh(page);
   await page.evaluate(() => { state.mode = "own"; state.tools.find((t) => t.lib === "dropbox").decision = "Retire"; });
   await step(page, 3);
   await page.locator('details[data-fold="cards"] summary').click();
   const href = await page.locator('details[data-fold="cards"] a', { hasText: "Full card" }).first().getAttribute("href");
   expect(href).toBe("https://juralabs.org/updates/stay-in-command-of-your-technology/reference-cards#files");
+});
+
+// Paul, 30 Sep: the offline register templates are offered on the page, not only without JavaScript.
+test("the register templates can be downloaded from the start screen and the footer", async ({ page, request }) => {
+  await fresh(page);
+  for (const where of ["#view", "footer"]) {
+    for (const ext of ["xlsx", "ods"]) {
+      const link = page.locator(`${where} a[href="downloads/stay-in-command-register-v2.2.${ext}"]`);
+      await expect(link).toBeVisible();
+      await expect(link).toHaveAttribute("download", "");
+    }
+  }
+  for (const ext of ["xlsx", "ods"]) {
+    const res = await request.get(`/downloads/stay-in-command-register-v2.2.${ext}`);
+    expect(res.status()).toBe(200);
+    expect((await res.body()).length).toBeGreaterThan(50000);
+  }
 });
