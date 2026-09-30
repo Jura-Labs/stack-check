@@ -21,7 +21,7 @@ other than its own files and `analytics.juralabs.org`.
   page title, the referring site, screen size and browser language. It sets
   no cookies, counts only on check.juralabs.org, and respects Do Not Track.
   It never records what you enter, and the tool never puts your answers in
-  the page address. There are no custom analytics events. The no-egress test
+  the page address. It also counts clicks on a few buttons and links (Start your own, the register template downloads, links to the guide) as named events with fixed values; nothing a person types or chooses is ever part of an event. The no-egress test
   runs the real Umami script and checks what it sends.
 - **Saved files and CSV downloads** are made in your browser and saved where
   you choose. They are not uploaded. An opened file is read as data only:

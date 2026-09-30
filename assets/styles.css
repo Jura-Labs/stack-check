@@ -33,7 +33,7 @@ h3{font-size:1.02rem;font-weight:650}
 p{margin:0;max-width:65ch}
 .muted{color:var(--muted)}
 .small{font-size:.86rem}
-.eyebrow{font:600 .72rem/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.eyebrow{font:600 .78rem/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5rem .9rem;cursor:pointer;min-height:40px}
@@ -133,7 +133,7 @@ details.facts summary{cursor:pointer;font-weight:600}
 .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
 table{border-collapse:collapse;width:100%;min-width:1000px;font-size:.88rem}
 th,td{text-align:left;padding:.55rem .6rem;border-bottom:1px solid var(--line);vertical-align:top}
-th{font-size:.74rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
 tr:last-child td{border-bottom:0}
 td.num{font-variant-numeric:tabular-nums;font-family:var(--f-data);font-size:.82rem}
 .decision select{min-height:34px;padding:.25rem .4rem}
@@ -155,7 +155,7 @@ td.num{font-variant-numeric:tabular-nums;font-family:var(--f-data);font-size:.82
 .m-sidehead{font:600 13px var(--f-body);fill:var(--muted);letter-spacing:.06em;text-transform:uppercase}
 .m-box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}.m-boxheld{stroke:var(--warn);stroke-width:2.5}.m-boxunk.m-boxheld{stroke:var(--bad)}
 .m-label{font:600 13px var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--m-sea);stroke-width:4px;stroke-linejoin:round}
-.m-boxlabel{font:600 13px var(--f-body);fill:var(--ink)}.m-lawlabel{font:italic 11px var(--f-body);fill:var(--muted)}
+.m-boxlabel{font:600 13px var(--f-body);fill:var(--ink)}.m-lawlabel{font:italic 12px var(--f-body);fill:var(--muted);paint-order:stroke;stroke:var(--m-sea);stroke-width:4px;stroke-linejoin:round}
 .m-pin circle{fill:var(--accent);stroke:var(--surface);stroke-width:2}.m-pin text{font:700 12px var(--f-body);fill:var(--accent-ink)}
 .m-pin circle.m-pers{stroke:var(--ink);stroke-width:2}.m-pin circle.m-sens{stroke:var(--ink);stroke-width:4}
 .m-pin.m-out circle{fill:var(--warn)}.m-pin.m-unk circle{fill:var(--bad)}
@@ -283,8 +283,7 @@ ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
 .brandright{display:flex;align-items:center;gap:1rem}
 .logolink{display:block;border-radius:6px}
 .themebtn{font-size:.85rem;min-height:40px}
-.themebtn::before{content:"\263E";margin-right:.4rem}
-.themebtn[aria-pressed="true"]::before{content:"\2600"}
+.themebtn::before{content:"\263E" / "";margin-right:.4rem}
 .tagline{font-family:var(--f-display);font-weight:600;font-size:1.05rem;color:var(--accent)}
 
 /* Footer: three columns on wide screens, one on narrow (Paul, 30 Sep). */
@@ -303,7 +302,7 @@ table.reg th:nth-child(3){width:16%}
 table.reg td{overflow-wrap:anywhere}
 table.reg td>div+div{margin-top:.15rem}
 .minis{display:flex;flex-wrap:wrap;gap:.3rem}
-.minis .light{font-size:.76rem}
+.minis .light{font-size:.8rem}
 .decgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,9.5rem);gap:.4rem .5rem}
 .decgrid .decnext{grid-column:1/-1}
 .decgrid label{font-size:.74rem;font-weight:600;color:var(--muted)}
@@ -326,6 +325,12 @@ nav.steps .short{display:none}
   nav.steps{padding-block:.4rem}
   nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
   nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  nav.steps .short{display:block;font-size:.72rem;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+  nav.steps .short{display:block;font-size:.78rem;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
   nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
 }
+
+/* Live accessibility check, 30 Sep 2026. */
+/* M2: example text in fields at 4.5:1 or more in both themes (the browser grey was 2.6:1 on dark). */
+::placeholder{color:var(--muted);opacity:1}
+/* m4: checkboxes big enough to hit (2.5.8). */
+input[type=checkbox]{width:1.25rem;height:1.25rem;margin:0;accent-color:var(--accent)}

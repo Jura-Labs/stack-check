@@ -3,6 +3,19 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.2 (30 September 2026)
+
+- Accessibility fixes from the live check: map labels on coloured
+  countries have a halo, example text in fields is easier to read, a
+  screen reader hears when changing the kind changes the questions, the
+  "not answered yet" warning on Decide is announced, the theme button's
+  icon is decorative, small text is a little larger, and checkboxes are
+  bigger.
+- Analytics: Umami counts three clicks, with fixed names only: Start your
+  own, register template downloads, and links to the guide (decision
+  2026-09-30-stack-check-analytics-events). Nothing you type or choose is
+  sent, and which tools you use is not collected.
+
 ## 2.2.1 (30 September 2026)
 
 - Reference card links go to the cards on the live guide page ("Step 4.

@@ -80,3 +80,25 @@ test("open-file buttons show keyboard focus", async ({ page }) => {
   const outline = await page.locator('label[for="openFile1"]').evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).not.toBe("none");
 });
+
+// Live accessibility check, 30 Sep 2026 (moderate and minor findings).
+test("placeholders use the muted colour, and the theme button's name has no icon glyph", async ({ page }) => {
+  await fresh(page);
+  await step(page, 1);
+  const ph = await page.locator("#newName").evaluate((e) => getComputedStyle(e, "::placeholder").color);
+  const muted = await page.evaluate(() => getComputedStyle(document.body).getPropertyValue("--muted").trim());
+  expect(ph).not.toBe("rgb(117, 117, 117)");
+  expect(muted.length).toBeGreaterThan(0);
+  const snap = await page.locator("#themeBtn").ariaSnapshot();
+  expect(snap).toContain('button "Dark theme"');
+});
+
+test("changing the kind says that the questions changed", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["xero"])]; state.cur = 0; });
+  await step(page, 2);
+  const k = await page.evaluate(() => state.tools[0].key);
+  await page.locator(`input[name="kind-${k}"][value="Devices"]`).check({ force: true });
+  await expect(page.locator("#askStatus")).toHaveText(/^Questions changed for Devices: \d+ questions now\.$/);
+  await expect(page.locator("#askStatus")).toHaveAttribute("role", "status");
+});
