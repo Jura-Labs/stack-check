@@ -3,6 +3,12 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.1 (30 September 2026)
+
+- Reference card links go to the cards on the live guide page ("Step 4.
+  Move"; Windows 10 has its own anchor). The separate cards page they
+  pointed to does not exist.
+
 ## 2.2.0 (30 September 2026)
 
 - Launched at https://check.juralabs.org (decision 2026-09-30-stack-check-launch).

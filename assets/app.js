@@ -2,8 +2,9 @@
    Split from the prototype (artifact version 18, 29 September 2026) by tools/split-prototype.py. */
 "use strict";
 /*UI*/
-// Reference cards, condensed from the guide. The full cards are on the guide's cards page
-// (/reference-cards, guide v1.1; Paul, 30 Sep: link there now, ahead of publishing).
+// Reference cards, condensed from the guide. The full cards are on the guide page itself, under
+// "Step 4. Move" (#move); Windows 10 has its own anchor. Checked on the live guide, 30 Sep: there is
+// no separate /reference-cards page (Paul: the cards are live on the guide URL).
 // Other names people search for. Matched as well as the tool's name and job.
 var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
@@ -13,19 +14,19 @@ var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
 var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download>Excel (.xlsx, 90 KB)</a> or <a href="downloads/stay-in-command-register-v2.2.ods" download>LibreOffice (.ods, open format, 105 KB)</a>';
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
- documents:{title:"Documents",anchor:"#documents",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
+ documents:{title:"Documents",anchor:"#move",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
   options:["LibreOffice: a free desktop office suite, open source, from a German foundation.","For editing together online: the office editor that comes with a hosted Nextcloud. Collabora Online is the established option."],
   effort:"Medium. The software is easy. The friction comes from funders and partners who send complex Word files.",approach:"Do not ban Microsoft Office. Keep it on one or two machines for the documents that need it. Use LibreOffice for what you create yourself, and send documents out as PDF where you can.",stay:"You rely on Excel macros, Access databases, or complex tracked changes with partners every week."},
- files:{title:"Files and working together",anchor:"#files",replaces:"SharePoint, OneDrive, Google Drive or Dropbox.",reduce:"Keep a regular copy of important folders outside your main service, clear out duplicates, and make sure two people can manage sharing.",
+ files:{title:"Files and working together",anchor:"#move",replaces:"SharePoint, OneDrive, Google Drive or Dropbox.",reduce:"Keep a regular copy of important folders outside your main service, clear out duplicates, and make sure two people can manage sharing.",
   options:["IONOS Nextcloud Workspace: files, online office, email, chat and video in one. German data centres.","Hetzner Storage Share: files only, 1 TB, no user limit. Germany.","TAB.DIGITAL Business Cloud: Nextcloud with online office, up to 100 users. Germany."],
   effort:"Medium.",approach:"Do not copy everything across. Clear out duplicates and dead folders first. Move one team's shared folder, not the whole organisation.",stay:"Your files are tied into Teams channels and SharePoint workflows that people use every day, and nobody has time to own a change."},
- analytics:{title:"Website analytics",anchor:"#analytics",replaces:"Google Analytics.",reduce:"Collect only what you use. Ask: how did this data help us last month?",
+ analytics:{title:"Website analytics",anchor:"#move",replaces:"Google Analytics.",reduce:"Collect only what you use. Ask: how did this data help us last month?",
   options:["Plausible: hosted in the EU by an Estonian company. Open source. No cookies.","Umami: open source. You can host it yourself. Umami's own cloud service offers EU hosting from a US company."],
   effort:"Low.",approach:"Run it alongside Google Analytics for a month before you remove anything.",stay:"You use Google Ad Grants. Check its conversion-tracking requirements before you change anything."},
- passwords:{title:"Passwords",anchor:"#passwords",replaces:"Passwords in spreadsheets, notebooks or browsers.",reduce:"This is mainly a safety fix. Any shared password manager with two-step sign-in and two admins is better than a spreadsheet. Do not switch between good password managers just to change supplier.",
+ passwords:{title:"Passwords",anchor:"#move",replaces:"Passwords in spreadsheets, notebooks or browsers.",reduce:"This is mainly a safety fix. Any shared password manager with two-step sign-in and two admins is better than a spreadsheet. Do not switch between good password managers just to change supplier.",
   options:["Bitwarden Teams: open source. A US company, but you can choose EU hosting when you sign up.","Proton Pass: open-source apps from a Swiss company. Nonprofit discounts on request.","KeePassXC: free and open source, stored in a file on your own device. Best for one person, not a team."],
   effort:"Low.",approach:"Create the organisation account, switch on two-step sign-in for everyone, import passwords from browsers, then turn off password saving in the browser. Name a second admin.",stay:"You already use a password manager with two-step sign-in and a second admin."},
- meetings:{title:"Meetings",anchor:"#meetings",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
+ meetings:{title:"Meetings",anchor:"#move",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
   options:["The video tool in your file or email bundle: Nextcloud Talk with IONOS Nextcloud Workspace, or Proton Meet with Proton Workspace.","Jitsi: open source. The free public service now needs a Google, GitHub or Facebook login to start a room. Running your own server needs someone technical."],
   effort:"Low for internal meetings.",approach:"Move internal meetings first. Keep Zoom or Teams for large external calls and webinars.",stay:"You run webinars or large events, or your funders and partners only use Teams."},
  windows10:{title:"Laptops still on Windows 10",anchor:"#windows-10",replaces:"",reduce:"Windows 10 stopped getting free security updates on 14 October 2025. Paid extended updates cost US$61 per device for the first year, then double each year. Unsupported software also fails Cyber Essentials.",
@@ -47,7 +48,7 @@ function cardHtml(c,tools){
     '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
-    '<p class="small"><a href="'+GUIDE+'/reference-cards'+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card, with set-up steps and costs<span class="vh"> (opens in a new tab)</span></a></p></div>';
+    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
 function fmtDate(d){if(!d)return "";var x=new Date(d+"T00:00:00");if(isNaN(x))return d;return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function daysTo(d){if(!d)return null;var x=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((x-n)/86400000);}
