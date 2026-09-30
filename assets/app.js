@@ -2,8 +2,9 @@
    Split from the prototype (artifact version 18, 29 September 2026) by tools/split-prototype.py. */
 "use strict";
 /*UI*/
-// Reference cards, condensed from the guide. The full cards are on the guide's cards page
-// (/reference-cards, guide v1.1; Paul, 30 Sep: link there now, ahead of publishing).
+// Reference cards, condensed from the guide. The full cards are on the guide page itself, under
+// "Step 4. Move" (#move); Windows 10 has its own anchor. Checked on the live guide, 30 Sep: there is
+// no separate /reference-cards page (Paul: the cards are live on the guide URL).
 // Other names people search for. Matched as well as the tool's name and job.
 var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
@@ -13,19 +14,19 @@ var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
 var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download>Excel (.xlsx, 90 KB)</a> or <a href="downloads/stay-in-command-register-v2.2.ods" download>LibreOffice (.ods, open format, 105 KB)</a>';
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
- documents:{title:"Documents",anchor:"#documents",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
+ documents:{title:"Documents",anchor:"#move",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
   options:["LibreOffice: a free desktop office suite, open source, from a German foundation.","For editing together online: the office editor that comes with a hosted Nextcloud. Collabora Online is the established option."],
   effort:"Medium. The software is easy. The friction comes from funders and partners who send complex Word files.",approach:"Do not ban Microsoft Office. Keep it on one or two machines for the documents that need it. Use LibreOffice for what you create yourself, and send documents out as PDF where you can.",stay:"You rely on Excel macros, Access databases, or complex tracked changes with partners every week."},
- files:{title:"Files and working together",anchor:"#files",replaces:"SharePoint, OneDrive, Google Drive or Dropbox.",reduce:"Keep a regular copy of important folders outside your main service, clear out duplicates, and make sure two people can manage sharing.",
+ files:{title:"Files and working together",anchor:"#move",replaces:"SharePoint, OneDrive, Google Drive or Dropbox.",reduce:"Keep a regular copy of important folders outside your main service, clear out duplicates, and make sure two people can manage sharing.",
   options:["IONOS Nextcloud Workspace: files, online office, email, chat and video in one. German data centres.","Hetzner Storage Share: files only, 1 TB, no user limit. Germany.","TAB.DIGITAL Business Cloud: Nextcloud with online office, up to 100 users. Germany."],
   effort:"Medium.",approach:"Do not copy everything across. Clear out duplicates and dead folders first. Move one team's shared folder, not the whole organisation.",stay:"Your files are tied into Teams channels and SharePoint workflows that people use every day, and nobody has time to own a change."},
- analytics:{title:"Website analytics",anchor:"#analytics",replaces:"Google Analytics.",reduce:"Collect only what you use. Ask: how did this data help us last month?",
+ analytics:{title:"Website analytics",anchor:"#move",replaces:"Google Analytics.",reduce:"Collect only what you use. Ask: how did this data help us last month?",
   options:["Plausible: hosted in the EU by an Estonian company. Open source. No cookies.","Umami: open source. You can host it yourself. Umami's own cloud service offers EU hosting from a US company."],
   effort:"Low.",approach:"Run it alongside Google Analytics for a month before you remove anything.",stay:"You use Google Ad Grants. Check its conversion-tracking requirements before you change anything."},
- passwords:{title:"Passwords",anchor:"#passwords",replaces:"Passwords in spreadsheets, notebooks or browsers.",reduce:"This is mainly a safety fix. Any shared password manager with two-step sign-in and two admins is better than a spreadsheet. Do not switch between good password managers just to change supplier.",
+ passwords:{title:"Passwords",anchor:"#move",replaces:"Passwords in spreadsheets, notebooks or browsers.",reduce:"This is mainly a safety fix. Any shared password manager with two-step sign-in and two admins is better than a spreadsheet. Do not switch between good password managers just to change supplier.",
   options:["Bitwarden Teams: open source. A US company, but you can choose EU hosting when you sign up.","Proton Pass: open-source apps from a Swiss company. Nonprofit discounts on request.","KeePassXC: free and open source, stored in a file on your own device. Best for one person, not a team."],
   effort:"Low.",approach:"Create the organisation account, switch on two-step sign-in for everyone, import passwords from browsers, then turn off password saving in the browser. Name a second admin.",stay:"You already use a password manager with two-step sign-in and a second admin."},
- meetings:{title:"Meetings",anchor:"#meetings",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
+ meetings:{title:"Meetings",anchor:"#move",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
   options:["The video tool in your file or email bundle: Nextcloud Talk with IONOS Nextcloud Workspace, or Proton Meet with Proton Workspace.","Jitsi: open source. The free public service now needs a Google, GitHub or Facebook login to start a room. Running your own server needs someone technical."],
   effort:"Low for internal meetings.",approach:"Move internal meetings first. Keep Zoom or Teams for large external calls and webinars.",stay:"You run webinars or large events, or your funders and partners only use Teams."},
  windows10:{title:"Laptops still on Windows 10",anchor:"#windows-10",replaces:"",reduce:"Windows 10 stopped getting free security updates on 14 October 2025. Paid extended updates cost US$61 per device for the first year, then double each year. Unsupported software also fails Cyber Essentials.",
@@ -47,7 +48,7 @@ function cardHtml(c,tools){
     '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
-    '<p class="small"><a href="'+GUIDE+'/reference-cards'+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card, with set-up steps and costs<span class="vh"> (opens in a new tab)</span></a></p></div>';
+    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
 function fmtDate(d){if(!d)return "";var x=new Date(d+"T00:00:00");if(isNaN(x))return d;return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function daysTo(d){if(!d)return null;var x=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((x-n)/86400000);}
@@ -158,7 +159,7 @@ var KEY="stackcheck.v5";
 // The example is never saved, so looking at it cannot overwrite someone's own list.
 function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
-function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];migrateDevices(s.tools);return s;}catch(e){return null;}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];cleanKeys(s.tools);migrateDevices(s.tools);return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
 var state=null;state=load()||example();
 // Every visit starts on the start screen (step 0); Carry on returns to where they were.
@@ -274,7 +275,7 @@ function factsPanel(t){
     '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
 function placeSelect(field,t,label,hint){
-  return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><select id="'+field+'-'+t.key+'"><option value="">Not sure</option>'+
+  return '<div class="field"><label for="'+field+'-'+esc(t.key)+'">'+label+'</label><select id="'+field+'-'+esc(t.key)+'"><option value="">Not sure</option>'+
     PLACE_OPTS.map(function(c){return '<option value="'+c+'"'+(t[field]===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
 }
 
@@ -310,7 +311,7 @@ function q(field,t,legend,hint,labels){
   return '<fieldset class="q"'+(hint?' aria-describedby="'+hid+'"':"")+'><legend>'+legend+'</legend>'+radios(field+"-"+t.key,OPT[field],t[field],labels)+(hint?'<span class="hint" id="'+hid+'">'+hint+'</span>':"")+'</fieldset>';
 }
 function txt(field,t,label,hint,ph,type){
-  return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><input type="'+(type||"text")+'" id="'+field+'-'+t.key+'" value="'+esc(t[field])+'"'+(ph?' placeholder="'+esc(ph)+'"':"")+(type==="number"?' min="0" step="1" inputmode="numeric"':"")+'>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
+  return '<div class="field"><label for="'+field+'-'+esc(t.key)+'">'+label+'</label><input type="'+(type||"text")+'" id="'+field+'-'+esc(t.key)+'" value="'+esc(t[field])+'"'+(ph?' placeholder="'+esc(ph)+'"':"")+(type==="number"?' min="0" step="1" inputmode="numeric"':"")+'>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
 }
 var view=document.getElementById("view");
 
@@ -389,7 +390,7 @@ function renderPick(){
      '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"><span id="newNameErr" class="small err" role="status"></span></div>'+
      '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: online donations"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
-  if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+t.key+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
+  if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+esc(t.key)+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
   h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h+(state.tools.length?SAVE_ROW:"");
   bindSaveRow();
@@ -467,7 +468,7 @@ function renderAsk(){
     txt("cost",t,"Cost per year: licence, fees or charges ("+SYM()+", optional)","Currency is set in step 1.","0","number")+
     txt("hours",t,"Hours a month spent running it or working around it (optional)","","0","number")+
     txt("renewal",t,"Renewal or notice (optional)","A decision is cheapest just before renewal.","For example: Annual, April")+
-    '<div class="field"><label for="renewalDate-'+t.key+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+t.key+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
+    '<div class="field"><label for="renewalDate-'+esc(t.key)+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+esc(t.key)+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
     '</div>';
   if(loc)h+='<div class="sect"><h3>Control</h3><p class="small muted">An app on your computers has no supplier holding your data, so where it is kept, the supplier and data protection terms are not asked.</p><div class="qgrid">'+
       q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+'</div></div>';
@@ -579,9 +580,9 @@ function renderResults(){
       '<div class="small">Owner: '+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</div><div class="small muted">Data: '+esc(t.data||"not answered")+'</div></td>'+
       '<td data-label="Lights"><div class="minis">'+mini(safety(t),"Safety")+mini(control(t),"Control")+mini(exitL(t),"Exit")+mini(t.value,"Value")+mini(mission(t),ML())+'</div></td>'+
       '<td data-label="Suggested action">'+esc(ACT(action(t))||"–")+'</td>'+
-      '<td class="decision"><div class="decgrid"><div class="field"><label for="dec-'+t.key+'">Decision<span class="vh"> for '+esc(t.name)+'</span></label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></div>'+
-      '<div class="field"><label for="due-'+t.key+'">By<span class="vh"> (date) for '+esc(t.name)+'</span></label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></div>'+
-      '<div class="field decnext"><label for="next-'+t.key+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
+      '<td class="decision"><div class="decgrid"><div class="field"><label for="dec-'+esc(t.key)+'">Decision<span class="vh"> for '+esc(t.name)+'</span></label><select id="dec-'+esc(t.key)+'" data-dec="'+esc(t.key)+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></div>'+
+      '<div class="field"><label for="due-'+esc(t.key)+'">By<span class="vh"> (date) for '+esc(t.name)+'</span></label><input type="date" id="due-'+esc(t.key)+'" data-due="'+esc(t.key)+'" value="'+esc(t.due)+'"></div>'+
+      '<div class="field decnext"><label for="next-'+esc(t.key)+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+esc(t.key)+'" data-next="'+esc(t.key)+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
   });
   h+='</tbody></table></div><p class="small muted">Record your own decision: Keep, Reduce dependency, Replace or Retire. Then add one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+

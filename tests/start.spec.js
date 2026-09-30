@@ -168,13 +168,13 @@ test("not-for-profits only: no business option in the picker; a saved business l
   expect(opened).toBe("business");
 });
 
-test("card links go to the guide's cards page (guide v1.1)", async ({ page }) => {
+test("card links go to the cards on the live guide page (Step 4. Move)", async ({ page }) => {
   await fresh(page);
   await page.evaluate(() => { state.mode = "own"; state.tools.find((t) => t.lib === "dropbox").decision = "Retire"; });
   await step(page, 3);
   await page.locator('details[data-fold="cards"] summary').click();
   const href = await page.locator('details[data-fold="cards"] a', { hasText: "Full card" }).first().getAttribute("href");
-  expect(href).toBe("https://juralabs.org/updates/stay-in-command-of-your-technology/reference-cards#files");
+  expect(href).toBe("https://juralabs.org/updates/stay-in-command-of-your-technology#move");
 });
 
 // Paul, 30 Sep: the offline register templates are offered on the page, not only without JavaScript.

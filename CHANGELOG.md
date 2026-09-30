@@ -3,6 +3,17 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.1 (30 September 2026)
+
+- Reference card links go to the cards on the live guide page ("Step 4.
+  Move"; Windows 10 has its own anchor). The separate cards page they
+  pointed to does not exist.
+- Security: a crafted save file could put HTML into the page through a
+  tool's internal key and send the page to another site. Keys are now
+  checked when a file is opened and when answers load from the browser,
+  and escaped wherever they are written. Found by the live privacy check.
+- The 404 page sends no referrer, like the main page.
+
 ## 2.2.0 (30 September 2026)
 
 - Launched at https://check.juralabs.org (decision 2026-09-30-stack-check-launch).
