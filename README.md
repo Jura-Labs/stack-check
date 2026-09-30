@@ -33,7 +33,7 @@ Four steps:
 3. **Decide.** Five lights for each tool (Safety, Control, Exit, Value, and
    Mission or Values) and a suggested action: Fix now, Trustee or board
    decision, Review this year, Review at renewal, or Keep.
-4. **Follow the data.** Trace one person's details through every system.
+4. **Your data.** See on a map where each tool keeps your data.
 
 The scoring is the same as the register spreadsheet, rule for rule. The
 spreadsheet is the reference, and `tests/scoring.test.js` checks the tool
@@ -65,7 +65,7 @@ npm run serve     # http://localhost:8080
 | `assets/example.js` | The worked example: a fictional 12-person charity |
 | `assets/scoring.js` | The five lights and the suggested action |
 | `assets/app.js` | Screens and interaction |
-| `downloads/` | The register spreadsheet v2.1 (.ods and .xlsx) |
+| `downloads/` | The register spreadsheet v2.2 (.ods and .xlsx) |
 | `research/` | Every library fact and its source, as CSV (`node tools/export-research.js`) |
 | `tests/` | Scoring parity, browser, no-egress and accessibility tests |
 | `prototype/` | The original single-file prototype, kept as the reference |

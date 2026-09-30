@@ -1,6 +1,6 @@
 /* Print: a clean board paper from the results step (Print or save as PDF). */
 @page{margin:15mm}
-nav.steps,.banner,.btn,label.btn,.privacy,.navrow,input[type=file],#copyArea,.toast,footer a{display:none!important}
+nav.steps,.banner,.btn,.themebtn,label.btn,.privacy,.navrow,input[type=file],#copyArea,.toast,footer a{display:none!important}
 body{background:#fff;color:#000;font-size:11pt}
 .wrap{max-width:none;padding:0}
 header.top .muted{display:none}
@@ -13,9 +13,7 @@ select,input[type=text],input[type=date]{border:0;background:transparent;appeara
 .map{max-height:120mm;width:auto}
 
 /* Decide prints as the board paper: folded extras are not printed.
-   "Your data" prints the map, its table and the journeys (Paul, 29 Sep). */
+   "Your data" prints the map and its table. */
 details.fold{display:none}
 details.maptable{display:block}
 details.maptable>summary{display:none}
-.jgrid{display:block}
-#edH,#edH ~ *{display:none!important}

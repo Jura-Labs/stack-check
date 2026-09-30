@@ -2,9 +2,15 @@
    Split from the prototype (artifact version 18, 29 September 2026) by tools/split-prototype.py. */
 "use strict";
 /*UI*/
-// Reference cards, condensed from the guide. Full cards live on the guide page.
+// Reference cards, condensed from the guide. The full cards are on the guide's cards page
+// (/reference-cards, guide v1.1; Paul, 30 Sep: link there now, ahead of publishing).
 // Other names people search for. Matched as well as the tool's name and job.
-var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","hmrc-online":"gift aid paye","e-conomic":"visma","billy":"shine","digital-post":"mitid virk","online-banking":"bank"};
+var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
+// Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
+// charity leader would see it). These are aimed at freelancers and micro-businesses.
+var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
+// The offline register templates (register v2.2), the same rules as this tool.
+var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download>Excel (.xlsx, 90 KB)</a> or <a href="downloads/stay-in-command-register-v2.2.ods" download>LibreOffice (.ods, open format, 105 KB)</a>';
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
  documents:{title:"Documents",anchor:"#documents",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
@@ -41,7 +47,7 @@ function cardHtml(c,tools){
     '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
-    '<p class="small"><a href="'+GUIDE+'/reference-cards'+c.anchor+'" target="_blank" rel="noopener noreferrer">Full card on the guide\'s cards page, with set-up steps and costs<span class="vh"> (opens in a new tab)</span></a></p></div>';
+    '<p class="small"><a href="'+GUIDE+'/reference-cards'+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card, with set-up steps and costs<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
 function fmtDate(d){if(!d)return "";var x=new Date(d+"T00:00:00");if(isNaN(x))return d;return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function daysTo(d){if(!d)return null;var x=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((x-n)/86400000);}
@@ -70,26 +76,27 @@ function supplierEmail(t){
 function why(t){
   var w={safety:[],control:[],exit:[],mission:[]};
   if(!answered(t))return w;
-  if(safety(t)==="Red")w.safety.push(dev(t)?"The devices are not encrypted, or no longer get security updates.":"It holds "+t.data.toLowerCase()+" data, and sign-in is not "+(t.signin===DK?"known to be ":"")+"protected.");
+  if(safety(t)==="Red")w.safety.push(dev(t)?(devUnsure(t)?"You are not sure the devices are encrypted and still get security updates.":"The devices are not encrypted, or no longer get security updates."):"It holds "+t.data.toLowerCase()+" data, and sign-in is not "+(t.signin===DK?"known to be ":"")+"protected.");
   if(safety(t)==="Amber")w.safety.push("Sign-in is not protected, but it holds no personal data.");
   if(!own(t))w.control.push("Nobody owns it.");
-  if(t.account==="Personal")w.control.push("It is on someone's personal account.");
-  if(oneAdmin(t))w.control.push("Only one person can manage it.");
+  if(t.account==="Personal"&&!app(t))w.control.push(dev(t)?"They are staff's own devices.":SOLE()?"It is on a personal account.":"It is on someone's personal account.");
+  if(oneAdmin(t))w.control.push(app(t)?"Only one person can open the files.":"Only one person can manage it.");
   if(t.admins===DK)w.control.push("You are not sure who can manage it.");
-  if(t.where===DK)w.control.push("You are not sure where the data is stored.");
+  if(t.where===DK&&!app(t)&&!platform(t))w.control.push("You are not sure where the data is stored.");
   if(control(t)==="Amber"){
-    if(personal(t)&&t.terms!=="Yes"&&!dev(t))w.control.push("No data protection terms recorded.");
-    if(t.data==="Sensitive"&&(t.where===ELSE||t.based===ELSE))w.control.push("Sensitive data with a supplier or storage outside the UK, EU or EEA. Understand and document it.");
+    if(platform(t)&&(t.where===DK||!t.where))w.control.push("The platform does not publish where it keeps data.");
+    if(personal(t)&&t.terms!=="Yes"&&!dev(t)&&!app(t)&&!platform(t))w.control.push("No data protection terms recorded.");
+    if(t.data==="Sensitive"&&(t.where===ELSE||t.based===ELSE))w.control.push("Sensitive data "+(t.where===ELSE?"stored":"with a supplier based")+" outside the UK, EU or EEA. Understand and document it.");
     else if(t.data==="Personal"&&t.where===ELSE)w.control.push("Personal data stored outside the UK, EU or EEA. Understand and document it.");
   }
   var e=exitL(t);
   if(e&&e!=="Green"){
-    if(!dev(t)&&t.exp!=="Yes")w.exit.push(t.exp==="Partial"?"You can only export some of the data.":"You may not be able to get the data out.");
+    if(!dev(t)&&!app(t)&&t.exp!=="Yes")w.exit.push(t.exp==="Partial"?"You can only export some of the data.":"You may not be able to get the data out.");
     if(t.copy!=="Yes")w.exit.push("No tested copy of your own"+(t.depend==="Critical"?", and you depend on it.":"."));
   }
   var m=mission(t);
   if(m==="Red"){
-    if(t.fits==="No")w.mission.push("It does not fit your mission.");
+    if(t.fits==="No")w.mission.push("It does not fit your "+(ML()==="Mission"?"mission":"values")+".");
     if(t.rights==="Serious concern")w.mission.push("A serious human rights concern.");
     if(t.env==="Serious concern")w.mission.push("A serious environmental concern.");
     if(t.ai==="Yes"&&personal(t))w.mission.push("The supplier trains AI on personal data you hold.");
@@ -98,7 +105,7 @@ function why(t){
 }
 var CCY={GBP:"£",EUR:"€",USD:"US$",CAD:"CA$",DKK:"DKK ",SEK:"SEK ",NOK:"NOK ",CHF:"CHF "};
 // Not-for-profits only (Paul, 30 Sep): "small or medium business" is no longer offered. Its wording
-// (BOARD "team", journey templates) stays in the code, dormant, so a saved list that uses it still opens.
+// (BOARD "team") stays in the code, dormant, so a saved list that uses it still opens.
 var ORGS=[["nonprofit","A charity or non-profit"],["cci","A cultural or creative organisation"],["sole","A sole trader or freelancer"]];
 var ORGS_ALL=ORGS.concat([["business","A small or medium business"]]);
 var LOCS=[["UK","UK"],["EU","Europe"],["CA","Canada"],["US","USA"],["OTHER","Other"]];
@@ -107,9 +114,9 @@ function ML(){return state.org==="nonprofit"?"Mission":"Values";}
 function BOARD(){if(SOLE())return "";if(state.org==="business")return "team";return state.org==="nonprofit"&&state.loc==="UK"?"trustees":"board";}
 function DATAHINT(){
   var o=state.org;
-  if(o==="business"||o==="sole")return "None: nothing about people. Internal: documents about the business, no personal details. Personal: customers, staff, suppliers. Sensitive: payroll, ID documents, health information, anything about children.";
-  if(o==="cci")return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: audiences, artists, freelancers, staff. Sensitive: payroll, ID documents, health information, anything about children or young people.";
-  return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: supporters, staff, volunteers. Sensitive: safeguarding records, files about the people you support, health, children.";
+  if(o==="business"||o==="sole")return "None: nothing about people. Internal: documents about the business, no personal details. Personal: customers, staff, suppliers. Sensitive: payroll, ID documents, health information, anything about children. Public posts only count as Internal.";
+  if(o==="cci")return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: audiences, artists, freelancers, staff. Sensitive: payroll, ID documents, health information, anything about children or young people. Public posts only count as Internal.";
+  return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: supporters, staff, volunteers. Sensitive: safeguarding records, files about the people you support, health, children. Public posts only count as Internal.";
 }
 function PUBHINT(){
   if(SOLE())return "Would you be comfortable explaining this relationship to your clients?";
@@ -121,18 +128,24 @@ function SYM(){return CCY[state.ccy]||"£";}
 function money(n){return SYM()+Number(n||0).toLocaleString("en-GB");}
 function TR(){return BOARD()||"records";}
 function ACT(a){if(a!=="Trustee decision")return a;return SOLE()?"Your decision":BOARD()==="trustees"?"Trustee decision":BOARD()==="team"?"Team decision":"Board decision";}
+// Devices answered "Not sure" (and nothing answered No) are unknown, not failed.
+function devUnsure(t){return dev(t)&&t.enc!=="No"&&t.enc!=="Some of them"&&t.upd!=="No"&&(t.enc===DK||t.upd===DK);}
+// A red Mission light nobody has approved (register column AD blank) is still a decision to make.
+function pendingMission(t){return mission(t)==="Red"&&!(t.approved&&String(t.approved).trim());}
+// Tools grouped in the "only one admin" card. Apps on our computers are not: they have no admins.
+function soloTools(){return state.tools.filter(function(t){return answered(t)&&t.admins==="One person"&&!app(t);});}
 function nextStep(t,skipAdmin){
   var a=action(t),s=[];
   if(a==="Fix now"){
-    if(safety(t)==="Red")s.push(dev(t)?"Upgrade, encrypt or replace these devices.":"Switch on two-step sign-in (MFA) for everyone.");
+    if(safety(t)==="Red")s.push(dev(t)?(devUnsure(t)?"Check encryption (BitLocker or FileVault) and updates on each device.":"Upgrade, encrypt or replace these devices."):SOLE()?"Switch on two-step sign-in (MFA).":"Switch on two-step sign-in (MFA) for everyone.");
     if(!own(t))s.push("Name an owner.");
-    if(oneAdmin(t)&&!skipAdmin)s.push("Add a second admin.");
-    if(t.account==="Personal"&&personal(t))s.push("Move the work to an organisation account.");
+    if(oneAdmin(t)&&!(skipAdmin&&!app(t)))s.push(app(t)?"Make sure someone else can open the files"+(t.lib==="keepassxc"?", and knows where the master password is kept.":"."):"Add a second admin.");
+    if(t.account==="Personal"&&personal(t)&&!app(t))s.push(dev(t)?"Agree rules for using personal devices for work, or provide work devices.":SOLE()?"Move it to a business account.":"Move the work to an organisation account.");
     return s.join(" ");
   }
   if(a==="Trustee decision")return SOLE()?"Decide whether you accept this "+ML()+" concern, and write down your decision.":"Take the "+ML()+" concern to your "+TR()+". Record who approved the trade-off, or plan a change.";
   if(a==="Review this year"){
-    if(exitL(t)==="Red")s.push(dev(t)?"Back up what is on them, and test a restore.":"Keep your own copy of the data, and test that you can restore it.");
+    if(exitL(t)==="Red")s.push(dev(t)?"Back up what is on them, and test a restore.":app(t)?"Copy the files somewhere else, and check you can open the copy.":"Keep your own copy of the data, and test that you can restore it.");
     if(control(t)==="Red")s.push(t.where===DK?"Find out where the data is kept. Send the supplier the data questions.":"Sort out who controls the account.");
     return s.join(" ");
   }
@@ -151,39 +164,18 @@ var state=null;state=load()||example();
 // Every visit starts on the start screen (step 0); Carry on returns to where they were.
 var RESUME=state.step>0?state.step:1;state.step=0;
 
-// Data journeys
-var PEOPLE=["Supporter","Donor","Person we support","Child or young person","Volunteer","Staff member","Customer","Client","Audience member","Artist or freelancer","Supplier","Other"];
-var SENSITIVE_PEOPLE={"Person we support":1,"Child or young person":1};
-var TEMPL_BY={
- nonprofit:[{title:"A supporter donates online",who:"Donor"},{title:"Someone signs up for the newsletter",who:"Supporter"},{title:"A staff member replies to a supporter",who:"Supporter"},{title:"Someone is referred to our service",who:"Person we support"},{title:"A young person joins a session",who:"Child or young person"},{title:"A new volunteer joins",who:"Volunteer"},{title:"A new member of staff starts",who:"Staff member"}],
- business:[{title:"A customer places an order",who:"Customer"},{title:"A customer emails a complaint",who:"Customer"},{title:"Someone signs up for the newsletter",who:"Customer"},{title:"A new member of staff starts",who:"Staff member"},{title:"We pay a supplier",who:"Supplier"},{title:"A job applicant sends a CV",who:"Staff member"}],
- cci:[{title:"Someone buys a ticket",who:"Audience member"},{title:"Someone signs up for the newsletter",who:"Audience member"},{title:"We book an artist or freelancer",who:"Artist or freelancer"},{title:"A young person joins a workshop",who:"Child or young person"},{title:"A funder asks for participant data",who:"Audience member"},{title:"A new member of staff starts",who:"Staff member"}],
- sole:[{title:"A new client gets in touch",who:"Client"},{title:"I send an invoice",who:"Client"},{title:"A client sends me files to work on",who:"Client"},{title:"Someone signs up for the newsletter",who:"Customer"}]
-};
-function TEMPL(){return TEMPL_BY[state.org]||TEMPL_BY.nonprofit;}
-
-var METHODS=[
- {v:"Typed in by hand",lvl:"ok",note:"Decide what happens to the original: file it safely or destroy it."},
- {v:"Automatic connection",lvl:"watch",note:"Check which details it sends. Connections often copy more than you need, and keep running after you stop using a tool."},
- {v:"Copied and pasted",lvl:"watch",note:"Easy to paste into the wrong place, and leaves no record."},
- {v:"Saved or exported as a file",lvl:"risk",note:"Makes a copy that nobody tracks. Decide where these files live and when they are deleted."},
- {v:"Sent by email",lvl:"risk",note:"Copies stay in inboxes and sent folders, often for years."},
- {v:"Downloaded to a device",lvl:"risk",note:"A copy now lives on a laptop or phone."},
- {v:"Pasted into an AI tool",lvl:"risk",note:"The text now sits with the AI supplier. Check whether it is used for training. Never paste information about the people you support into a personal account."}
-];
-var MBY={};METHODS.forEach(function(m){MBY[m.v]=m;});
-var EXTRAS={"x:paper":{name:"Paper forms",job:"Filled in by hand",extra:"paper"},"x:personal":{name:"Someone's personal email or phone",job:"Outside your systems",extra:"personal"}};
-
 
 // ---------- Places and the data map ----------
 var EU27="AT BE BG HR CY CZ DK EE FI FR DE GR HU IE IT LV LT LU MT NL PL PT RO SK SI ES SE".split(" ");
 var UKEU={GB:1,EU:1,NO:1,IS:1,LI:1};EU27.forEach(function(c){UKEU[c]=1;});
 var PLACE={GB:"United Kingdom",IE:"Ireland",AT:"Austria",BE:"Belgium",BG:"Bulgaria",HR:"Croatia",CY:"Cyprus",CZ:"Czechia",DK:"Denmark",EE:"Estonia",FI:"Finland",FR:"France",DE:"Germany",GR:"Greece",HU:"Hungary",IT:"Italy",LV:"Latvia",LT:"Lithuania",LU:"Luxembourg",MT:"Malta",NL:"Netherlands",PL:"Poland",PT:"Portugal",RO:"Romania",SK:"Slovakia",SI:"Slovenia",ES:"Spain",SE:"Sweden",
-  EU:"EU, country not stated",CH:"Switzerland",NO:"Norway",IS:"Iceland",US:"United States",OTHER:"Elsewhere",UNKNOWN:"Not sure where",OFFICE:"Your office and devices"};
-var PLACE_OPTS=["GB","IE"].concat(EU27.filter(function(c){return c!=="IE";}).sort(function(a,b){return PLACE[a].localeCompare(PLACE[b]);}),["EU","CH","NO","IS","US","OTHER"]);
+  EU:"UK, EU or EEA, country not stated",CH:"Switzerland",NO:"Norway",IS:"Iceland",LI:"Liechtenstein",US:"United States",OTHER:"Elsewhere",UNKNOWN:"Not sure where",OFFICE:"Your office and devices"};
+var PLACE_OPTS=["GB","IE"].concat(EU27.filter(function(c){return c!=="IE";}).sort(function(a,b){return PLACE[a].localeCompare(PLACE[b]);}),["EU","CH","NO","IS","LI","US","OTHER"]);
 var SITE={"microsoft-365":"LON","microsoft-teams":"LON","microsoft-365-copilot":"LON","hetzner-storage-share":"FAL","plausible-analytics":"FAL","mailbox-org":"BER","typeform":"VA","mattermost-cloud":"VA","matomo-cloud":"FRA","donorfy":"DUB","sage-accounting":"DUB","ticket-tailor":"DUB"};
 var SITE_NAME={LON:"London and Cardiff",FAL:"Falkenstein",BER:"Berlin",VA:"Virginia",FRA:"Frankfurt",DUB:"Dublin"};
-var SHORT={GB:"UK",US:"US",EU:"EU"};
+var SHORT={GB:"UK",US:"US",EU:"UK, EU or EEA"};
+// A place's name in lists and tables. "Elsewhere" alone says nothing, so say what is known.
+function placeName(c){return c==="OTHER"?"Outside Europe, country not stated":PLACE[c]||c;}
 var USX=-153,USY=78;
 var MAPS={E:{m:BASEMAP,vb:"-160 0 920 640",w:920,h:640,side:["OTHER","UNKNOWN"],box:{OTHER:[-85,270],UNKNOWN:[-85,390],OFFICE:[-85,510]}}};
 function homeCode(){var h=state.home||"GB";return h;}
@@ -196,6 +188,7 @@ function ptIn(M,c,site){
   if(site&&M.m.cities[site])return M.m.cities[site];
   if(M.m.cities[c+"_C"])return M.m.cities[c+"_C"];
   if(M.box[c])return M.box[c];
+  if(c==="LI")return M.m.points.AT; // Liechtenstein is inside the EEA but too small for its own point
   return M.m.points[c]||M.box.OTHER;
 }
 function placeLabel(M,c,site){
@@ -204,14 +197,15 @@ function placeLabel(M,c,site){
   if(M.box[c])return "";
   return c==="US"?"Place not stated":(SHORT[c]||PLACE[c])+(c==="EU"?", country not stated":", place not stated");
 }
+function onDevice(t){return dev(t)||app(t);}
 function outside(c){return !!c&&!UKEU[c]&&c!=="UNKNOWN"&&c!=="OFFICE";}
 function placeOf(t){
   if(!t)return "UNKNOWN";
-  if(dev(t))return "OFFICE";
+  if(onDevice(t))return "OFFICE";
   if(t.loc)return t.loc;
   return t.where===EU?"EU":t.where===ELSE?"OTHER":"UNKNOWN";
 }
-function hqOf(t){if(!t||dev(t))return "";return t.hq||(t.based===ELSE?"OTHER":"");}
+function hqOf(t){if(!t||onDevice(t))return "";return t.hq||(t.based===ELSE?"OTHER":"");}
 function lawAway(t){var h=hqOf(t);return h&&!UKEU[h]&&h!==placeOf(t)?h:"";}
 function mapBase(M,held,lawTo){
   var s='<rect class="m-sea" x="-160" y="0" width="'+M.w+'" height="'+M.h+'"/><path class="m-land" d="'+M.m.land+'"/>';
@@ -222,7 +216,7 @@ function mapBase(M,held,lawTo){
     (lawTo&&lawTo.US?'<text class="m-lawlabel" x="-85" y="'+(USY+US_INSET.h+18)+'" text-anchor="middle">supplier\'s home</text>':"");
   M.side.concat(officeOnSide(M)?["OFFICE"]:[]).forEach(function(k){var p=M.box[k];
     s+='<rect class="m-box'+(held[k]?" m-boxheld":"")+(k==="UNKNOWN"?" m-boxunk":"")+'" x="'+(p[0]-66)+'" y="'+(p[1]-44)+'" width="132" height="90" rx="9"/>'+
-      '<text class="m-boxlabel" x="'+p[0]+'" y="'+(p[1]-26)+'" text-anchor="middle">'+esc(k==="OTHER"?"Somewhere else":k==="OFFICE"?"Your office":PLACE[k])+'</text>'+
+      '<text class="m-boxlabel" x="'+p[0]+'" y="'+(p[1]-26)+'" text-anchor="middle">'+esc(k==="OTHER"?"Country not stated":k==="OFFICE"?"Your office":PLACE[k])+'</text>'+
       (lawTo&&lawTo[k]?'<text class="m-lawlabel" x="'+p[0]+'" y="'+(p[1]+38)+'" text-anchor="middle">supplier\'s home</text>':"");});
   return s;
 }
@@ -257,34 +251,13 @@ function overviewMap(tools){
 // country where it differs (whose law applies). Everything the map shows.
 function mapTable(by){
   var rows=Object.keys(by).map(function(k){var g=by[k];
-    var law=g.ts.filter(function(t){return lawAway(t);}).map(function(t){return t.name+": "+(PLACE[lawAway(t)]||lawAway(t));});
-    return '<tr><th scope="row">'+esc(g.site?SITE_NAME[g.site]+", "+(PLACE[g.c]||g.c):(PLACE[g.c]||g.c))+'</th><td>'+esc(g.ts.map(function(t){return t.name+(t.data==="Sensitive"?" (sensitive data)":personal(t)?" (personal data)":"");}).join(", "))+'</td><td>'+(law.length?esc(law.join("; ")):'<span class="muted">Same country, or not stated</span>')+'</td></tr>';}).join("");
+    var law=g.ts.filter(function(t){return lawAway(t);}).map(function(t){return t.name+": "+placeName(lawAway(t));});
+    return '<tr><th scope="row">'+esc(g.site?SITE_NAME[g.site]+", "+placeName(g.c):placeName(g.c))+'</th><td>'+esc(g.ts.map(function(t){return t.name+(t.data==="Sensitive"?" (sensitive data)":personal(t)?" (personal data)":"");}).join(", "))+'</td><td>'+(law.length?esc(law.join("; ")):'<span class="muted">Same country, or not stated</span>')+'</td></tr>';}).join("");
   return '<details class="maptable" open><summary>The map as a table</summary><div class="tablewrap" role="region" aria-label="The map as a table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col">Where the data is kept</th><th scope="col">Tools</th><th scope="col">Supplier based elsewhere (whose law applies)</th></tr></thead><tbody>'+rows+'</tbody></table></div></details>';
 }
-function journeyMap(j,infos){
-  var codes=infos.map(function(i){return i.extra==="paper"?"OFFICE":i.extra==="personal"?"UNKNOWN":placeOf(i.t);});
-  var sites=infos.map(function(i){return i.t?siteOf(i.t):"";});
-  var law={};if(state.showLaw)infos.forEach(function(i){var h=i.t?lawAway(i.t):"";if(h)law[h]=1;});
-  var M=pickMap(codes.concat(Object.keys(law)));
-  var held={};codes.forEach(function(c){held[c]=1;});
-  var s=mapBase(M,held,law),lawLines="",lines="",places=[];
-  var seen={},tot={},base=codes.map(function(c,n){return ptIn(M,c,sites[n]);});
-  var kf=function(n){return Math.round(base[n][0]/6)+","+Math.round(base[n][1]/6);};
-  codes.forEach(function(c,n){var k=kf(n);tot[k]=(tot[k]||0)+1;});
-  var pos=codes.map(function(c,n){var k=kf(n),i=seen[k]=(seen[k]||0);seen[k]++;var p=base[n];var st=M.box[c]?22:16;var q=[p[0]+(i-(tot[k]-1)/2)*st,p[1]+(M.box[c]?4:0)];places.push({c:c,site:sites[n],p:[p[0]+((tot[k]-1)/2)*st,q[1]]});return q;});
-  if(state.showLaw)infos.forEach(function(i,n){var h=i.t?lawAway(i.t):"";if(h)lawLines+='<path class="m-law" d="'+curve(pos[n],ptIn(M,h,""))+'"/>';});
-  for(var n=1;n<pos.length;n++){var m=MBY[j.stops[n].how],cross=outside(codes[n])&&!outside(codes[n-1]);
-    lines+='<path class="m-line m-'+(m?m.lvl:"watch")+(cross?" m-cross":"")+'" d="'+curve(pos[n-1],pos[n])+'" marker-end="url(#m-arrow)"/>';}
-  s='<defs><marker id="m-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" class="m-arrowhead"/></marker></defs>'+s+lawLines+lines;
-  pos.forEach(function(p,n){var fl=nodeFlags(infos[n]),sv=sev(fl);
-    s+='<g class="m-step m-'+sv+'"><title>'+esc((n+1)+". "+infos[n].name+" ("+(sites[n]?SITE_NAME[sites[n]]:PLACE[codes[n]])+")")+'</title><circle cx="'+p[0]+'" cy="'+p[1]+'" r="11"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" text-anchor="middle">'+(n+1)+'</text></g>';});
-  s+=labelsFor(M,places);
-  return svgWrap(M,s,"Map of the journey: "+infos.map(function(i,n){return (n+1)+" "+i.name+" in "+(sites[n]?SITE_NAME[sites[n]]:PLACE[codes[n]]);}).join("; "));
-}
-function mapLegend(journey){
-  return '<div class="legend small">'+(journey?'<span><b>1 2 3</b> the steps, in order</span><span><span class="lg lg-cross"></span>leaves the UK or EU</span>':'<span>Numbers: how many tools keep data there. A dark ring means sensitive data.</span>')+
-    '<span><label class="s2 row"><input type="checkbox" id="lawToggle'+(journey?"J":"")+'" data-law'+(state.showLaw?" checked":"")+'> Show whose law applies <span class="lg lg-law"></span></label></span></div>'+
-    '<p class="small muted">Places are shown at country level, because most suppliers do not say more than that. A supplier\'s home country matters because its own law still applies to it, wherever the data sits.</p>';
+function mapLegend(){
+  return '<div class="legend small"><span>Numbers: how many tools keep data there. A dark ring means sensitive data.</span>'+
+    '<span><label class="s2 row"><input type="checkbox" id="lawToggle" data-law'+(state.showLaw?" checked":"")+'> Show whose law applies <span class="lg lg-law"></span></label></span></div>';
 }
 function bindLaw(){view.querySelectorAll("[data-law]").forEach(function(l){l.addEventListener("change",function(){state.showLaw=l.checked;render();var e=document.getElementById(l.id);if(e)e.focus();});});}
 function factsPanel(t){
@@ -322,6 +295,12 @@ function bare(v,label){ // light without label, for tables
   var c=v==="Green"?"g":v==="Amber"?"a":"r";
   return '<span class="light '+c+'" title="'+esc(label+": "+v)+'">'+SHAPE[v]+esc(v)+'</span>';
 }
+// A light in the register's Lights column: the shape and colour, the light's name, and the value for screen readers.
+function mini(v,label){
+  var c=!v||v==="Not checked"?"n":v==="Green"?"g":v==="Amber"?"a":"r";
+  var val=!v?"not answered":v==="Not checked"?"not checked":v;
+  return '<span class="light '+c+'" title="'+esc(label+": "+val)+'">'+(SHAPE[v]||"")+esc(label)+'<span class="vh">: '+esc(val)+'</span></span>';
+}
 function radios(name,options,val,labels){
   return '<div class="opts">'+options.map(function(o,i){var id=name+"-"+i;
     return '<label class="opt" for="'+id+'"><input type="radio" id="'+id+'" name="'+name+'" value="'+esc(o)+'"'+(val===o?" checked":"")+'><span>'+esc(labels&&labels[i]?labels[i]:o)+'</span></label>';}).join("")+'</div>';
@@ -346,7 +325,8 @@ function deviceSignin(t){var e=t.enc,u=t.upd;
   if(e==="Yes"&&u==="Yes")return "Yes";
   if(e&&u)return "Don't know";
   return "";}
-function essentialsDone(t){return answered(t)&&!!t.signin&&!!t.copy&&(dev(t)||(!!t.account&&!!t.admins))&&!!t.depend;}
+// An app on our computers has no account to ask about (register v2.2).
+function essentialsDone(t){return answered(t)&&!!t.signin&&!!t.copy&&(dev(t)||((app(t)||!!t.account)&&!!t.admins))&&!!t.depend;}
 function stepCounts(){var n=state.tools.length,a=state.tools.filter(essentialsDone).length;
   var s1=document.querySelector("#nav1 .sub"),s2=document.querySelector("#nav2 .sub");
   if(s1)s1.textContent=n?n+" tool"+(n===1?"":"s")+" chosen":"Tick what you use";
@@ -356,9 +336,10 @@ function renderStart(){
   var h='<section class="panel stack" aria-labelledby="startH"><h2 id="startH">'+(own?"Welcome back":"Start here")+'</h2>'+
     (own?'<p><b>'+a+' of '+n+' tool'+(n===1?"":"s")+' answered</b> in this browser.</p><div class="row"><button type="button" class="btn primary" id="carryOn">Carry on where you left off</button></div>':'')+
     '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 2 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
-    '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives and where it goes.</li></ol>'+
+    '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives.</li></ol>'+
     '<div class="row">'+(own?'<button type="button" class="btn" id="startNew">Start a new list</button>':'<button type="button" class="btn primary" id="startNew">Start your own</button>')+
-    '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
+    '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
+    '<p class="small muted">Prefer to work offline, or in a spreadsheet? The same check as a register template: '+DOWNLOADS+'.</p></section>';
   view.innerHTML=h;
   var co=document.getElementById("carryOn");if(co)co.addEventListener("click",function(){state=own;RESUME=own.step>0?own.step:RESUME;go(RESUME);});
   document.getElementById("startNew").addEventListener("click",function(){if(own){document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();}else{state=blank();state.mode="own";go(1);}});
@@ -388,20 +369,21 @@ function renderPick(){
   var euOpts=PLACE_OPTS.filter(function(c){return c!=="GB"&&c!=="US"&&c!=="OTHER";});
   var h='<section class="panel stack" aria-labelledby="orgH"><h2 id="orgH">Who is this for?</h2>'+
     '<fieldset class="q"><legend class="vh">Who is this for?</legend>'+radios("org",ORGS.map(function(o){return o[0];}),state.org,ORGS.map(function(o){return o[1];}))+'</fieldset>'+
-    '<p class="small muted">This changes the words, such as "trustees" or "board", and the example journeys. The scoring is the same'+(SOLE()?', except that being the only admin is treated as normal and handled as one item':'')+'.</p>'+
+    '<p class="small muted">This changes the words, such as "trustees" or "board". The scoring is the same'+(SOLE()?', except that being the only admin is treated as normal and handled as one item':'')+'.</p>'+
     '<fieldset class="q"><legend>Where are you based?</legend>'+radios("loc",LOCS.map(function(o){return o[0];}),state.loc||"UK",LOCS.map(function(o){return o[1];}))+'</fieldset>'+
     (state.loc==="EU"?'<div class="s3 field"><label for="home">Which country? (for the map)</label><select id="home">'+euOpts.map(function(c){return '<option value="'+c+'"'+((state.home||"EU")===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select></div>':"")+
     OUTSIDE_NOTE()+
     '<div class="s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+[["GBP","Pound sterling (£)"],["EUR","Euro (€)"],["USD","US dollar (US$)"],["CAD","Canadian dollar (CA$)"],["DKK","Danish krone (DKK)"],["SEK","Swedish krona (SEK)"],["NOK","Norwegian krone (NOK)"],["CHF","Swiss franc (CHF)"]].map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">Use one currency for the whole register. The check does not convert between currencies.</span></div></section>'+
-    '<section class="panel stack" aria-labelledby="fileH"><h2 id="fileH">Carrying on from a saved file?</h2><p class="small muted">If you or a colleague saved your answers to a file, open it here. It replaces what is in this browser now.</p><div class="row"><input type="file" id="openFile1" class="vh" accept=".json,application/json"><label class="btn" for="openFile1">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
+    '<section class="panel stack" aria-labelledby="fileH"><h2 id="fileH">Are you returning?</h2><p class="small muted">If you or a colleague previously saved your answers to a file, open it here.</p><div class="row"><input type="file" id="openFile1" class="vh" accept=".json,application/json"><label class="btn" for="openFile1">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
   h+='<section class="panel stack" aria-labelledby="askTeamH"><div class="s4 stack"><h2 id="askTeamH">Before you start, ask your team</h2><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p></div>'+
     '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
-  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, the ones one person signed up for, AI tools, online banking, and the laptops. Do not debate whether each tool is good or bad. Just find out what you have. The essentials take about 2 minutes per tool. You can add more detail later.</p></div>'+
+  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, AI tools, online banking, and your laptops. It takes about 2 minutes per tool to complete. You can always return and add more detail later.</p></div>'+
     '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
+    var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
     h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
-    g.items.forEach(function(t){h+='<button type="button" class="chip" data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
-    h+='</div></div>';
+    g.items.forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
+    h+='</div>'+(extra.length?'<p class="small muted groupmore">Also in the list: '+esc(extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", "))+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
      '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"><span id="newNameErr" class="small err" role="status"></span></div>'+
@@ -420,7 +402,7 @@ function renderPick(){
     state.ccy={UK:"GBP",EU:"EUR",CA:"CAD",US:"USD"}[r.value]||state.ccy;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
   var ft=document.getElementById("findTool");
   function filterTools(){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
-    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=!qv||c.dataset.find.indexOf(qv)>=0;c.hidden=!show;if(show){any=true;hits++;}});g.hidden=!any;});
+    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=qv?c.dataset.find.indexOf(qv)>=0:(!c.dataset.more||c.getAttribute("aria-pressed")==="true");c.hidden=!show;if(show){any=true;hits++;}});g.hidden=!any;var gm=g.querySelector(".groupmore");if(gm)gm.hidden=!!qv;});
     var none=document.getElementById("findNone");none.textContent=qv&&!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':"";
     if(qv&&!hits){var nn=document.getElementById("newName");if(nn&&!nn.value)nn.value=ft.value.trim();}}
   ft.addEventListener("input",filterTools);if(ft.value)filterTools();
@@ -461,19 +443,19 @@ function renderAsk(){
   h+='<section class="panel stack" aria-labelledby="askH"><div class="cardhead"><h2 id="askH">'+esc(t.name)+'</h2><span class="muted small">Tool '+(i+1)+' of '+n+'. '+state.tools.filter(essentialsDone).length+' answered, '+(n-state.tools.filter(essentialsDone).length)+' to go.</span></div>';
   h+=factsPanel(t);
   // The essentials
-  var sole=SOLE();
+  var sole=SOLE(),loc=app(t),plat=platform(t),records=!!(t.lib&&BYID[t.lib]&&BYID[t.lib].group==="Money");
   h+='<div class="sect"><h3>The essentials</h3><div class="qgrid">'+
     txt("job",t,"The job it does","Writing down the job makes duplicates obvious.","For example: shared files")+
-    q("kind",t,"Kind")+
+    q("kind",t,"Kind","App on our computers: software with no online account, such as GIMP or KeePassXC. Account on a platform: a page or account on a service such as Facebook, LinkedIn, X or Bluesky.")+
     txt("owner",t,"The owner",sole?"Usually you. Write \"Me\" if so.":"A named role, not a team. If nobody owns it, leave it blank.",sole?"Me":"For example: Office manager")+
-    q("account",t,"Account",sole?"Is it a business account, or a personal one you also use for work?":"Is it an organisation account, or someone's personal account?",sole?["Business","Personal"]:null)+
-    q("admins",t,sole?"Can anyone else get in?":"Admins",sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:null)+
+    (loc?"":q("account",t,"Account",plat?"Is the page or account owned by the "+(sole?"business":"organisation")+" (for example in a Business Portfolio), not tied to one person's own profile?":sole?"Is it a business account, or a personal one you also use for work?":"Is it an organisation account, or someone's personal account?",sole?["Business","Personal"]:null))+
+    q("admins",t,sole?"Can anyone else get in?":"Admins",loc?"If the person who uses it left, could someone else open the files"+(t.lib==="keepassxc"?" and the password file (they need the master password)":"")+"? If so, answer "+(sole?"Yes, someone else can":"Two or more")+".":plat?(sole?"If you were ill for a month, could someone you trust get full control of it?":"Can two or more people get full control of the page or account?"):sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:["Two or more","One person","Not sure"])+
     q("depend",t,"How much do you depend on it?","Critical: you would struggle to work for a week without it.")+
     q("data",t,"What data or content do you store in this tool?",DATAHINT())+
     (d?q("enc",t,"If one is lost or stolen, is the information on it locked?","This is called encryption. On Windows look for BitLocker or Device encryption in Settings; on a Mac, FileVault. Not sure? Ask whoever set them up.",["Yes, all of them","Only some","No","Not sure"])+
        q("upd",t,"Do they still get security updates?","Windows 10 stopped getting free security updates in October 2025. Windows 11, and recent Mac, iPhone and Android versions, still get them.",["Yes","No","Not sure"])
       :q("signin",t,"Two-step sign-in on for everyone?","Two-step sign-in (also called MFA or 2FA) asks for a code from a phone app, a text message or a security key as well as the password. \"Not offered\" means the tool has no two-step sign-in at all.",["Yes","No","Not offered","Not sure"]))+
-    q("copy",t,"Do you have a backup of this data?",'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
+    q("copy",t,"Do you have a backup of this data?",records?"Do you download and keep your own records (such as statements, Gift Aid schedules or payslips) somewhere else, and have you checked you can open them? If so, answer Yes.":loc?"Are the files copied somewhere else, such as a backup drive or shared folder, and have you checked you can open the copy?":'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
     '</div>';
   if(personal(t))h+='<div class="pause" role="note"><b>If it holds personal data, pause.</b><span>Some information can cause real damage or harm if it is lost or leaked. Are we comfortable putting personal information here? You need a written contract with the supplier, and you may need a data protection impact assessment (DPIA).</span></div>';
   h+='</div>';
@@ -482,16 +464,18 @@ function renderAsk(){
   h+='<details class="facts"'+((!t.lib||hasDetail)?" open":"")+'><summary>More detail (optional: cost, renewal, where the data is, export)</summary><div class="s11 stack">'+
     '<div class="qgrid">'+
     txt("users",t,"How many people use it (optional)","","0","number")+
-    txt("cost",t,"Licence cost per year ("+SYM()+", optional)","Currency is set in step 1.","0","number")+
+    txt("cost",t,"Cost per year: licence, fees or charges ("+SYM()+", optional)","Currency is set in step 1.","0","number")+
     txt("hours",t,"Hours a month spent running it or working around it (optional)","","0","number")+
     txt("renewal",t,"Renewal or notice (optional)","A decision is cheapest just before renewal.","For example: Annual, April")+
     '<div class="field"><label for="renewalDate-'+t.key+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+t.key+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
     '</div>';
-  if(!d){
+  if(loc)h+='<div class="sect"><h3>Control</h3><p class="small muted">An app on your computers has no supplier holding your data, so where it is kept, the supplier and data protection terms are not asked.</p><div class="qgrid">'+
+      q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+'</div></div>';
+  else if(!d){
     h+='<div class="sect"><h3>Control'+(t.lib?' <span class="s12 muted">(some answers pre-filled, check them)</span>':"")+'</h3>'+OUTSIDE_NOTE()+'<div class="qgrid">'+
-      q("where",t,"Where is the data kept?","Check the supplier's privacy page or trust centre. If you cannot find it, ask them. The EEA is the EU plus Norway, Iceland and Liechtenstein, where GDPR applies. Switzerland counts as Elsewhere: transfers there are lawful under adequacy decisions, but it is outside the EEA.",["UK, EU or EEA","Elsewhere","Not sure"])+
+      q("where",t,"Where is the data kept?",(plat?"Most platforms do not say. If you cannot find it, answer Not sure: for an account on a platform that gives amber, not red. ":"")+"Check the supplier's privacy page or trust centre. If you cannot find it, ask them. The EEA is the EU plus Norway, Iceland and Liechtenstein, where GDPR applies. Switzerland counts as Elsewhere: transfers there are lawful under adequacy decisions, but it is outside the EEA.",["UK, EU or EEA","Elsewhere","Not sure"])+
       q("based",t,"Where is the supplier based?","Control is not about where a company is based. It is about whether you understand and manage the relationship.",["UK or Europe","Elsewhere"])+
-      q("terms",t,"Data protection terms in place?","A contract or data processing agreement that says what the supplier may do with your data.",["Yes","No","Not sure"])+
+      q("terms",t,"Data protection terms in place?",plat?"Not needed for an account on a platform. Record it if you have them.":"A contract or data processing agreement that says what the supplier may do with your data.",["Yes","No","Not sure"])+
       q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+
       placeSelect("loc",t,"Which country is the data in? (for the map)","Only used for the map. The lights use the answer above.")+
       placeSelect("hq",t,"Supplier's home country (for the map)","Its own law still applies, wherever the data sits.")+
@@ -501,7 +485,8 @@ function renderAsk(){
       '</div></div>';
   }
   h+='</div></details>';
-  if(!d)h+='<div class="s13 row small"><button type="button" class="btn" id="askSupplier">Copy an email to ask the supplier</button><span class="muted">Only the questions you are not sure about, plus notice period and sub-processors.</span><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea>';
+  if(!d&&(loc||plat||(t.lib&&NO_EMAIL[t.lib])))h+='<p class="small muted">'+(loc?"There is no supplier holding your data, so there is nothing to ask. The note above says what to check.":"This organisation does not usually answer individual data questions. The note above says what you can check yourself.")+'</p>';
+  else if(!d)h+='<div class="s13 row small"><button type="button" class="btn" id="askSupplier">Copy an email to ask the supplier</button><span class="muted">Only the questions you are not sure about, plus notice period and sub-processors.</span><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea>';
   // Value
   h+='<div class="sect"><h3>Value (you judge)</h3>'+q("value",t,"Is it worth the money and staff time?","",["Used, and worth it","Overlaps, or the cost keeps rising","Unused, or unaffordable"])+'</div>';
   // Mission
@@ -520,7 +505,7 @@ function renderAsk(){
   Object.keys(OPT).forEach(function(f){view.querySelectorAll('input[name="'+f+'-'+k+'"]').forEach(function(r){r.addEventListener("change",function(){
     t[f]=r.value;leaveExample();
     if(f==="enc"||f==="upd")t.signin=deviceSignin(t);
-    if(f==="where"&&t.loc&&((r.value===EU)!==!!UKEU[t.loc])){t.loc="";var ls=document.getElementById("loc-"+k);if(ls)ls.value="";}
+    if(f==="where"&&t.loc&&(r.value===DK||(r.value===EU)!==!!UKEU[t.loc])){t.loc="";var ls=document.getElementById("loc-"+k);if(ls)ls.value="";}
     if(rerender[f]){render();var e=document.getElementById(r.id);if(e)e.focus();}else partial();});});});
   ["job","owner","renewal","approved"].forEach(function(f){var e=document.getElementById(f+"-"+k);e.addEventListener("input",function(){t[f]=e.value;leaveExample();partial();});});
   ["loc","hq","renewalDate"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("change",function(){t[f]=e.value;leaveExample();save();});});
@@ -545,30 +530,32 @@ var ORDER=[["Fix now","now","Fix now"],["Trustee decision","dec","Decide"],["Rev
 function renderResults(){
   var ts=state.tools,done=ts.filter(answered);
   function by(a){return done.filter(function(t){return action(t)===a;});}
-  var fix=by("Fix now"),dec=by("Trustee decision"),year=by("Review this year");
+  var fix=by("Fix now"),dec=by("Trustee decision"),year=by("Review this year"),later=fix.filter(pendingMission);
   var pers=done.filter(personal).length,crit=done.filter(function(t){return t.depend==="Critical";}).length;
   var cost=ts.reduce(function(s,t){return s+(Number(t.cost)||0);},0);
   var h='';
   if(done.length<ts.length)h+='<div class="banner"><span>'+(ts.length-done.length)+' of '+ts.length+' tools are not answered yet, so they are not scored.</span><button type="button" class="btn" id="finish">Answer them</button></div>';
   h+='<div class="tiles">'+
-   '<div class="tile"><span class="eyebrow">Tools</span><span class="num">'+ts.length+'</span><span class="small muted">'+money(cost)+' a year listed</span></div>'+
+   '<div class="tile"><span class="eyebrow">Tools</span><span class="num">'+ts.length+'</span><span class="small muted">'+(cost>0?money(cost)+' a year listed':'No costs entered')+'</span></div>'+
    '<div class="tile"><span class="eyebrow">Personal data</span><span class="num">'+pers+'</span><span class="small muted">tools hold this data</span></div>'+
    '<div class="tile'+(fix.length?" alert":"")+'"><span class="eyebrow">Fix now</span><span class="num">'+fix.length+'</span></div>'+
-   '<div class="tile'+(dec.length?" warn":"")+'"><span class="eyebrow">'+esc(ACT("Trustee decision"))+'</span><span class="num">'+dec.length+'</span><span class="small muted">'+ML()+' concerns</span></div>'+
-   '<div class="tile'+(year.length?" warn":"")+'"><span class="eyebrow">Review this year</span><span class="num">'+year.length+'</span><span class="small muted">personal or critical</span></div></div>';
-  var solo=done.filter(function(t){return t.admins==="One person";}),grouped=solo.length>=(SOLE()?1:2);
-  function adminOnly(t){return action(t)==="Fix now"&&safety(t)!=="Red"&&own(t)&&!(t.account==="Personal"&&personal(t))&&oneAdmin(t);}
+   '<div class="tile'+(dec.length||later.length?" warn":"")+'"><span class="eyebrow">'+esc(ACT("Trustee decision"))+'</span><span class="num">'+dec.length+'</span><span class="small muted">'+ML()+' concerns'+(later.length?', and '+later.length+' more after a fix':'')+'</span></div>'+
+   '<div class="tile'+(year.length?" warn":"")+'"><span class="eyebrow">Review this year</span><span class="num">'+year.length+'</span><span class="small muted">personal or critical actions</span></div></div>';
+  var solo=soloTools(),grouped=solo.length>=(SOLE()?1:2);
+  function adminOnly(t){return action(t)==="Fix now"&&safety(t)!=="Red"&&own(t)&&!(t.account==="Personal"&&personal(t))&&oneAdmin(t)&&!app(t);}
+  // A tool shown only in the group card keeps its Mission concern visible there.
+  var cardMission=grouped?solo.filter(function(t){return adminOnly(t)&&pendingMission(t);}):[];
   var pri=[];ORDER.forEach(function(o){by(o[0]).forEach(function(t){if(grouped&&adminOnly(t))return;pri.push({t:t,c:o[1],w:o[2]});});});
-  var groupCard=grouped?'<li><span class="when '+(SOLE()?"year":"now")+'">'+(SOLE()?"Plan for it":"Fix now")+'</span><div class="s15 stack"><h3>'+(SOLE()?"You are the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s"):solo.length+" tools have only one admin")+'</h3><p class="small muted">'+esc(solo.map(function(t){return t.name;}).join(", "))+'.</p><p class="small"><b>'+(SOLE()?"For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where.":"Add a second admin to each. If that is not possible, write down the recovery codes and keep them with "+(BOARD()==="trustees"?"the chair":BOARD()==="team"?"someone else in your team":"the board")+".")+'</b></p></div></li>':"";
-  var jf=journeyFindings(),jCard=jf.length?'<li><span class="when year">Your data</span><div class="s15 stack"><h3>How data moves between your tools</h3><p class="small muted">From Follow one person on step 4. These are about the moves between tools, not the tools themselves.</p><ul class="flags">'+jf.slice(0,5).map(function(f){return '<li class="watch">'+SHAPE.Amber+'<span>'+esc(f.text)+' <span class="muted">('+esc(f.j)+')</span></span></li>';}).join("")+'</ul>'+(jf.length>5?'<p class="small muted">And '+(jf.length-5)+' more.</p>':"")+'<p class="small"><button type="button" class="btn" id="jumpData">See them on Your data</button></p></div></li>':"";
-  h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard||jCard)?"Everything not listed here can stay as it is. Look again next year.":"Nothing needs attention. Look again next year, or when someone starts using a new tool.")+'</p></div>';
-  if(pri.length||groupCard||jCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
-    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+jCard+'</ol>';
-  h+='<p class="small muted">Don\'t move for the sake of it. Moving costs money and staff time, brings its own risks, and can disrupt people doing their jobs. Often the answer is to reduce dependency: keep the tool, but make sure it cannot trap you.</p></section>';
+  var groupCard=grouped?'<li><span class="when '+(SOLE()?"year":"now")+'">'+(SOLE()?"Plan for it":"Fix now")+'</span><div class="s15 stack"><h3>'+(SOLE()?"You are the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s"):solo.length+" tools have only one admin")+'</h3><p class="small muted">'+esc(solo.map(function(t){return t.name;}).join(", "))+'.</p><p class="small"><b>'+(SOLE()?"For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where.":"Add a second admin to each. If that is not possible, write down the recovery codes and keep them with "+(BOARD()==="trustees"?"the chair":BOARD()==="team"?"someone else in your team":"the chair of the board")+".")+'</b></p>'+
+    cardMission.map(function(t){return '<p class="small"><b>'+esc(t.name)+' also has a '+esc(ML())+' concern.</b> '+esc([].concat(why(t).mission).join(" "))+' '+(SOLE()?"After the fix, decide whether you accept it.":"After the fix, take it to your "+TR()+".")+'</p>';}).join("")+'</div></li>':"";
+  h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard)?"Everything not listed here can stay as it is. Please review again in 12 months.":"Nothing needs attention. Please review again in 12 months, or when someone starts using a new tool.")+'</p></div>';
+  if(pri.length||groupCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&!app(p.t)&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
+    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+(p.c!=="dec"&&pendingMission(p.t)?" "+(SOLE()?"Then decide whether you accept the "+ML()+" concern.":"Then take the "+ML()+" concern to your "+TR()+"."):"")+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+'</ol>';
+  h+='<p class="small muted"><b>Note:</b> If you are considering moving to a new service, weigh the short-term cost in money and staff time against the benefits in the future. Alternatively, consider how you can reduce your dependency on that service.</p></section>';
 
   // Who does what
   var byO=ownerTasks(),owners=Object.keys(byO);
-  h+='<section class="stack" aria-labelledby="ownH"><div class="s4 stack"><h2 id="ownH">Who does what</h2><p class="muted">Each owner\'s list, ready to send. Tools with nobody in charge come first, because naming an owner is the first fix.</p></div>';
+  h+='<section class="stack" aria-labelledby="ownH"><div class="s4 stack"><h2 id="ownH">Who are the owners of your technology</h2><p class="muted">Ensure that every service in your organisation has a named owner. Tools with nobody in charge come first, because naming an owner is the first fix.</p></div>';
   if(owners.length)h+='<div class="owners">'+owners.map(function(o){return '<div class="s16 panel stack"><h3>'+esc(o)+'</h3><ul class="flags">'+byO[o].map(function(x){return '<li class="'+x.lvl+'">'+(x.lvl==="ok"?'<span aria-hidden="true">·</span>':(x.lvl==="risk"?SHAPE.Red:SHAPE.Amber))+'<span><b>'+esc(x.tool)+':</b> '+esc(x.task)+'</span></li>';}).join("")+'</ul></div>';}).join("")+'</div><div class="row"><button type="button" class="btn" id="copyOwners">Copy each owner\'s list</button></div>';
   else h+='<p class="small muted">No actions for anyone yet.</p>';
   h+='</section>';
@@ -578,29 +565,33 @@ function renderResults(){
   if(cu.length){h+='<section class="stack" aria-labelledby="cuH"><div class="s4 stack"><h2 id="cuH">Coming up</h2><p class="muted">Next steps with a date, and renewals, in the next 90 days.</p></div><ul class="dup">'+cu.map(function(i){return '<li class="s17 row"><span><b>'+esc(i.tool)+':</b> '+esc(i.what)+(i.who?' <span class="muted">('+esc(i.who)+')</span>':"")+'</span>'+dueChip(i.d)+'</li>';}).join("")+'</ul></section>';}
   // Tools doing the same job
   var dupGroups=[];DUPS.forEach(function(f){var g=ts.filter(f[1]);if(g.length>=2)dupGroups.push({name:f[0],tools:g});});
-  if(dupGroups.length){h+='<section class="stack" aria-labelledby="dupH"><div class="s4 stack"><h2 id="dupH">Tools doing the same job</h2><p class="muted">Two tools doing the same job is not always wrong. It is worth one question: do we need both?</p></div><ul class="dup">'+dupGroups.map(function(g){var c=g.tools.reduce(function(a,t){return a+(Number(t.cost)||0);},0);return '<li><b>'+esc(g.name.charAt(0).toUpperCase()+g.name.slice(1))+':</b> '+esc(g.tools.map(function(t){return t.name;}).join(", "))+(c?'. <span class="muted">Together: '+money(c)+' a year.</span>':"")+'</li>';}).join("")+'</ul></section>';}
+  if(dupGroups.length){h+='<section class="stack" aria-labelledby="dupH"><div class="s4 stack"><h2 id="dupH">Tools that may be doing a similar job</h2><p class="muted">Can any of these tools be retired?</p></div><ul class="dup">'+dupGroups.map(function(g){var c=g.tools.reduce(function(a,t){return a+(Number(t.cost)||0);},0);return '<li><b>'+esc(g.name.charAt(0).toUpperCase()+g.name.slice(1))+':</b> '+esc(g.tools.map(function(t){return t.name;}).join(", "))+(c?'. <span class="muted">Together: '+money(c)+' a year.</span>':"")+(g.name==="donations, payments and tickets"?' <span class="muted">(Offering donors a choice of how to pay is fine.)</span>':"")+'</li>';}).join("")+'</ul></section>';}
   // Where your data lives: a one-line summary here; the map is on step 4 (Paul, 29 Sep)
   var zc=function(f){return ts.filter(f).length;};
-  h+='<section class="stack" aria-labelledby="whereSumH"><div class="s17 row"><h2 id="whereSumH">Where your data lives</h2><button type="button" class="btn" id="toData">See it on the map</button></div><p class="muted">'+zc(function(t){return !dev(t)&&t.where===EU;})+' in the UK, EU or EEA, '+zc(function(t){return !dev(t)&&t.where===ELSE;})+' outside, '+zc(function(t){return !dev(t)&&(t.where===DK||!t.where);})+' not sure, and '+zc(dev)+' on your devices. The map and "Follow one person" are on step 4, Your data.</p></section>';
+  h+='<section class="stack" aria-labelledby="whereSumH"><div class="s17 row"><h2 id="whereSumH">Where your data lives</h2><button type="button" class="btn" id="toData">See it on the map</button></div><p class="muted">'+zc(function(t){return !onDevice(t)&&t.where===EU;})+' in the UK, EU or EEA, '+zc(function(t){return !onDevice(t)&&t.where===ELSE;})+' outside, '+zc(function(t){return !onDevice(t)&&(t.where===DK||!t.where);})+' not sure, and '+zc(onDevice)+' on your devices.</p></section>';
 
-  // Register table
+  // Register table: four columns so it fits the page (Paul, 30 Sep: twelve were too many).
+  // The five lights share one column; decision, next step and date stack in the last.
   h+='<section class="stack" aria-labelledby="regH"><div class="s17 row"><h2 id="regH">Your register</h2><div class="legend" aria-hidden="true"><span>'+bare("Green","")+'</span><span>'+bare("Amber","")+'</span><span>'+bare("Red","")+'</span></div></div>'+
-   '<div class="tablewrap" role="region" aria-label="Register table (scrolls sideways)" tabindex="0"><table><thead><tr><th scope="col">Tool</th><th scope="col">Owner</th><th scope="col">Data</th><th scope="col">Safety</th><th scope="col">Control</th><th scope="col">Exit</th><th scope="col">Value</th><th scope="col">'+ML()+'</th><th scope="col">Suggested action</th><th scope="col">Your decision</th><th scope="col">Next step</th><th scope="col">By</th></tr></thead><tbody>';
+   '<div class="tablewrap" role="region" aria-label="Register table"><table class="reg"><thead><tr><th scope="col">Tool</th><th scope="col">Lights</th><th scope="col">Suggested action</th><th scope="col">Your decision</th></tr></thead><tbody>';
   ts.forEach(function(t){
-    h+='<tr><td><b>'+esc(t.name)+'</b><div class="small muted">'+esc(t.job)+'</div></td><td>'+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</td><td>'+esc(t.data||"–")+'</td><td>'+bare(safety(t),"Safety")+'</td><td>'+bare(control(t),"Control")+'</td><td>'+bare(exitL(t),"Exit")+'</td><td>'+bare(t.value,"Value")+'</td><td>'+bare(mission(t),ML())+'</td><td>'+esc(ACT(action(t))||"–")+'</td>'+
-      '<td class="decision"><label class="small vh" for="dec-'+t.key+'">Decision for '+esc(t.name)+'</label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></td>'+
-      '<td><label for="next-'+t.key+'" class="vh">Next step for '+esc(t.name)+'</label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></td>'+
-      '<td><label for="due-'+t.key+'" class="vh">Date for '+esc(t.name)+'</label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></td></tr>';
+    h+='<tr><td><b>'+esc(t.name)+'</b>'+(t.job?'<div class="small muted">'+esc(t.job)+'</div>':"")+
+      '<div class="small">Owner: '+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</div><div class="small muted">Data: '+esc(t.data||"not answered")+'</div></td>'+
+      '<td data-label="Lights"><div class="minis">'+mini(safety(t),"Safety")+mini(control(t),"Control")+mini(exitL(t),"Exit")+mini(t.value,"Value")+mini(mission(t),ML())+'</div></td>'+
+      '<td data-label="Suggested action">'+esc(ACT(action(t))||"–")+'</td>'+
+      '<td class="decision"><div class="decgrid"><div class="field"><label for="dec-'+t.key+'">Decision<span class="vh"> for '+esc(t.name)+'</span></label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></div>'+
+      '<div class="field"><label for="due-'+t.key+'">By<span class="vh"> (date) for '+esc(t.name)+'</span></label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></div>'+
+      '<div class="field decnext"><label for="next-'+t.key+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
   });
-  h+='</tbody></table></div><p class="small muted">Record your own decision in one of four words: Keep, Reduce dependency, Replace or Retire. Then one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
+  h+='</tbody></table></div><p class="small muted">Record your own decision: Keep, Reduce dependency, Replace or Retire. Then add one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
    '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
    '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
-   '<div class="s4 stack"><h3>Keep your answers, or pass them to a colleague</h3><p class="small muted">Save a file to your computer. Open it later, on any computer, to carry on. The file is not sent anywhere: you choose where it goes.</p></div>'+
+   '<div class="s4 stack"><h3>Save a record of your audit</h3><p>Stack Check does not keep your data on any server. You can save a record of your audit to a file on your computer, and open it here at a later date.</p></div>'+
    '<div class="row"><button type="button" class="btn" id="saveFile">Save to a file</button><input type="file" id="openFile" class="vh" accept=".json,application/json"><label class="btn" for="openFile">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
    '<textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   // Thinking of changing a tool? Reference cards and Compare, folded (Paul, 29 Sep)
-  h+='<section class="stack" aria-labelledby="chgH"><div class="s4 stack"><h2 id="chgH">Thinking of changing a tool?</h2><p class="muted">Most decisions will be to keep a tool or reduce dependency on it. When you do plan a change, these help.</p></div>';
+  h+='<section class="stack" aria-labelledby="chgH"><div class="s4 stack"><h2 id="chgH">Thinking of changing a tool?</h2></div>';
   // Reference cards for tools you plan to change
   var byFam={},reduceLines=[];
   ts.forEach(function(t){var f=familyOf(t);if(!f)return;if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
@@ -640,7 +631,6 @@ function renderResults(){
   document.getElementById("to4").addEventListener("click",function(){go(4);});
   document.getElementById("toData").addEventListener("click",function(){go(4);});
   document.getElementById("printDecide").addEventListener("click",function(){window.print();});
-  var jd=document.getElementById("jumpData");if(jd)jd.addEventListener("click",function(){go(4);focusHeading("#jH");});
   view.querySelectorAll("details[data-fold]").forEach(function(d){d.addEventListener("toggle",function(){if(d.dataset.fold==="cards")state.foldCards=d.open;else state.foldCmp=d.open;save();});});
   document.getElementById("dlCsv").addEventListener("click",downloadCsv);
   document.getElementById("printIt").addEventListener("click",function(){window.print();});
@@ -666,7 +656,7 @@ function ownerTasks(){
     if(!answered(t))return;
     var a=action(t),o=own(t)?ownerName(t):NOBODY;
     var mine=t.next&&String(t.next).trim()?String(t.next).trim():"";
-    if(a==="Fix now")add(o,{tool:t.name,task:nextStep(t),lvl:"risk"});
+    if(a==="Fix now"){add(o,{tool:t.name,task:nextStep(t),lvl:"risk"});if(pendingMission(t))add(BOARDK,{tool:t.name,task:(SOLE()?"After the fix, decide whether you accept the ":"After the fix, decide on the ")+ML()+" concern. "+[].concat(why(t).mission).join(" "),lvl:"watch"});}
     else if(a==="Trustee decision")add(BOARDK,{tool:t.name,task:nextStep(t),lvl:"watch"});
     else if(a==="Review this year"||a==="Review at renewal")add(o,{tool:t.name,task:mine||nextStep(t),lvl:"watch"});
     else if(mine)add(o,{tool:t.name,task:mine,lvl:"ok"});
@@ -681,64 +671,11 @@ function ownersText(){
   return L.join("\n");
 }
 
-// ---------- Step 4: follow the data ----------
-function stopInfo(ref){
-  if(EXTRAS[ref])return EXTRAS[ref];
-  var t=state.tools.find(function(x){return x.key===ref;});
-  return t?{name:t.name,job:t.job,t:t}:{name:"A tool you removed",job:"Choose another step",missing:true};
-}
-function where(info){
-  if(info.extra==="paper")return {txt:"On paper",out:false};
-  if(info.extra==="personal")return {txt:"Personal accounts",out:true};
-  if(!info.t)return {txt:"Not sure",out:false};
-  if(dev(info.t))return {txt:"On your devices",out:false};
-  var c=placeOf(info.t);return {txt:PLACE[c],out:outside(c)};
-}
-function nodeFlags(info){
-  var f=[];
-  if(info.extra==="paper")f.push(["watch","Where are the forms kept, and when are they shredded?"]);
-  if(info.extra==="personal")f.push(["risk","Outside your organisation's control. You cannot secure it or delete it."]);
-  var t=info.t;if(!t)return f;
-  if(!own(t))f.push(["risk","Nobody owns it"]);
-  if(t.account==="Personal")f.push(["risk","On someone's personal account"]);
-  if(safety(t)==="Red"||(t.signin&&t.signin!=="Yes"&&t.signin!=="Not offered"))f.push(["risk",dev(t)?"Not encrypted, or no longer getting security updates":"Sign-in not protected with MFA for everyone"]);
-  if(t.admins==="One person")f.push(["watch","Only one person can manage it"]);
-  if(!dev(t)){
-    if(t.where===ELSE)f.push(["watch","Stored outside the UK, EU or EEA. Check the transfer terms."]);
-    else if(t.where===DK||!t.where)f.push(["watch","You are not sure where it is stored"]);
-    if(t.ai==="Yes")f.push(["risk","The supplier trains AI on this data"]);
-    if(t.data==="None"||t.data==="Internal")f.push(["watch","Your register says it holds no personal data. This journey says it does."]);
-  }
-  if(t.copy!=="Yes")f.push(["watch","No tested copy of your own"]);
-  return f;
-}
-function sev(flags){return flags.some(function(x){return x[0]==="risk";})?"risk":flags.length?"watch":"ok";}
-function journeyFindings(){
-  var out=[];
-  (state.journeys||[]).forEach(function(j){
-    var infos=j.stops.map(function(s){return stopInfo(s.ref);});
-    j.stops.forEach(function(s,n){if(n>0&&MBY[s.how]&&MBY[s.how].lvl==="risk")out.push({j:j.title,kind:"move",text:infos[n-1].name+" to "+infos[n].name+": "+s.how.toLowerCase()+". That makes a loose copy nobody tracks."});});
-    infos.forEach(function(i){
-      if(i.extra==="personal")out.push({j:j.title,kind:"personal",text:i.name+": outside your organisation's control. You cannot secure it or delete it."});
-      if(i.t&&!dev(i.t)&&(i.t.data==="None"||i.t.data==="Internal"))out.push({j:j.title,kind:"mismatch",text:i.t.name+": your register says it holds no personal data, but this journey puts personal data in it. Update the register."});
-    });
-  });
-  var seen={};return out.filter(function(f){var k=f.kind+f.text;if(seen[k])return false;seen[k]=1;return true;});
-}
-function journeyStats(j){
-  var infos=j.stops.map(function(s){return stopInfo(s.ref);});
-  var places={};j.stops.forEach(function(s){places[s.ref]=1;});
-  var outside=infos.filter(function(i){return where(i).out;}).length;
-  var copies=j.stops.filter(function(s,i){return i>0&&MBY[s.how]&&MBY[s.how].lvl==="risk";}).length;
-  var risks=[];
-  infos.forEach(function(i){nodeFlags(i).forEach(function(f){if(f[0]==="risk")risks.push(i.name+": "+f[1].charAt(0).toLowerCase()+f[1].slice(1));});});
-  j.stops.forEach(function(s,n){if(n>0&&MBY[s.how]&&MBY[s.how].lvl==="risk")risks.push(infos[n-1].name+" to "+infos[n].name+": "+s.how.toLowerCase());});
-  return {infos:infos,places:Object.keys(places).length,outside:outside,copies:copies,risks:risks};
-}
+// ---------- Step 4: your data ----------
 function whereSection(){
   var ts=state.tools,done=ts.filter(answered),h='';
-  var zones=[["UK, EU or EEA","",function(t){return !dev(t)&&t.where===EU;}],["Outside the UK, EU or EEA","out",function(t){return !dev(t)&&t.where===ELSE;}],["Not sure","unk",function(t){return !dev(t)&&(t.where===DK||!t.where);}],["On your devices","dev",dev]];
-  h+='<section class="stack" aria-labelledby="whereH"><div class="s4 stack"><h2 id="whereH">Where your data lives</h2><p class="muted">Control is not about where a company is based. It is about whether you understand and manage the relationship. Use this to see what to document, not as a list of things to move.</p></div>'+overviewMap(done)+mapLegend(false)+'<p class="small muted">The same, as a list. Tools with a heavy border hold sensitive data.</p><div class="strip">';
+  var zones=[["UK, EU or EEA","",function(t){return !onDevice(t)&&t.where===EU;}],["Outside the UK, EU or EEA","out",function(t){return !onDevice(t)&&t.where===ELSE;}],["Not sure","unk",function(t){return !onDevice(t)&&(t.where===DK||!t.where);}],["On your devices","dev",onDevice]];
+  h+='<section class="stack" aria-labelledby="whereH"><div class="s4 stack"><h2 id="whereH">Where your data lives</h2><p class="muted">Control is not about where a company is based. It is about whether you understand and manage the relationship.</p></div>'+overviewMap(done)+mapLegend()+'<p class="small muted">Tools with a heavy border hold sensitive data.</p><div class="strip">';
   zones.forEach(function(z){var here=ts.filter(z[2]);
     h+='<div class="zone '+z[1]+'"><h3>'+esc(z[0])+' <span class="muted small">('+here.length+')</span></h3><div class="tchips">'+(here.length?here.map(function(t){return '<span class="tchip'+(t.data==="Sensitive"?" sens":t.data==="Personal"?" pers":"")+'">'+esc(t.name)+(t.based===ELSE&&z[1]===""?' <span class="muted">(supplier elsewhere)</span>':"")+'</span>';}).join(""):'<span class="small muted">None</span>')+'</div></div>';});
   h+='</div></section>';
@@ -749,81 +686,11 @@ var SAVE_ROW='<div class="row small savebar"><button type="button" class="btn gh
 function bindSaveRow(){var b=document.getElementById("saveAny");if(b)b.addEventListener("click",function(){saveToFile();document.getElementById("saveAnyStatus").textContent="Saved. Look in your downloads folder.";});}
 var DATA_END='<div class="navrow"><button type="button" class="btn" id="back3">Back to Decide</button><button type="button" class="btn" id="printData">Print or save as PDF</button></div>'+SAVE_ROW;
 function bindDataEnd(){bindSaveRow();document.getElementById("back3").addEventListener("click",function(){go(3);});document.getElementById("printData").addEventListener("click",function(){window.print();});bindLaw();}
+// Step 4 is the map only. "Follow one person" was removed (Paul, 30 Sep: it did not add much).
+// Journeys in saved files and in the example are kept as data, so nothing is lost on a round trip.
 function renderJourneys(){
-  state.journeys=state.journeys||[];
-  var J=state.journeys;
-  if(state.jcur==null||state.jcur>=J.length)state.jcur=J.length?0:-1;
-  var h=whereSection()+'<section class="stack" aria-labelledby="jH"><div class="s4 stack"><h2 id="jH">Follow one person</h2><p class="muted">Pick one kind of person whose details you hold. List every place their information goes, in order, and how it gets there. The map shows where copies build up and where the risks sit.</p></div>';
-  h+='<div class="jtabs">'+J.map(function(j,i){return '<button type="button" class="chip" data-j="'+i+'" aria-pressed="'+(i===state.jcur)+'">'+esc(j.title)+'</button>';}).join("")+'</div>';
-  h+='<div class="s18 addrow"><div class="field"><label for="newJ">Add a journey</label><select id="newJ">'+TEMPL().map(function(t,i){return '<option value="'+i+'">'+esc(t.title)+'</option>';}).join("")+'</select></div><div class="s8 field"><button type="button" class="btn" id="addJ">Add journey</button></div></div></section>';
-  if(state.jcur<0){
-    h+='<div class="panel"><p>No journeys yet. Start with the people whose data would do most harm if it leaked: '+(NP()?"usually the people you support, then donors.":"usually your customers, then your staff.")+'</p></div>';
-    view.innerHTML=h+DATA_END;bindJTop();bindDataEnd();return;
-  }
-  var j=J[state.jcur],st=journeyStats(j);
-  var opts=state.tools.map(function(t){return [t.key,t.name];}).concat([["x:paper","Paper forms"],["x:personal","Someone's personal email or phone"]]);
-  function stopSelect(id,val,label){return '<div class="field"><label for="'+id+'">'+label+'</label><select id="'+id+'">'+(val?"":'<option value="">Choose</option>')+opts.map(function(o){return '<option value="'+esc(o[0])+'"'+(o[0]===val?" selected":"")+'>'+esc(o[1])+'</option>';}).join("")+'</select></div>';}
-  var ed='<section class="panel stack" aria-labelledby="edH"><h3 id="edH">The steps</h3>'+
-    '<div class="field"><label for="jt">Journey name</label><input type="text" id="jt" value="'+esc(j.title)+'"></div>'+
-    '<div class="field"><label for="jw">Whose details</label><select id="jw">'+PEOPLE.map(function(p){return '<option'+(p===j.who?" selected":"")+'>'+esc(p)+'</option>';}).join("")+'</select></div>'+
-    '<ol class="edlist">'+j.stops.map(function(s,i){
-      return '<li>'+(i>0?'<div class="field"><label for="how-'+i+'">How it gets there</label><select id="how-'+i+'">'+(s.how?"":'<option value="">Choose</option>')+METHODS.map(function(m){return '<option'+(m.v===s.how?" selected":"")+'>'+esc(m.v)+'</option>';}).join("")+'</select></div>':"")+
-        '<div class="edtop"><span class="idx">'+(i+1)+'</span>'+stopSelect("stop-"+i,s.ref,i===0?"Where it starts":"Where it goes next")+'<button type="button" class="btn ghost small" data-rm="'+i+'" aria-label="Remove step '+(i+1)+'">Remove</button></div></li>';}).join("")+'</ol>'+
-    '<div class="s18 addrow">'+stopSelect("addStop","",j.stops.length?"Add the next place":"Add the first place")+'<div class="s8 field"><button type="button" class="btn" id="addStopBtn">Add step</button></div></div>'+
-    '<div class="row"><button type="button" class="btn ghost small" id="rmJ">'+(state.rmArm?"Click again to delete this journey":"Delete this journey")+'</button></div></section>';
-  var mp='<section class="stack" aria-labelledby="mapH"><h3 id="mapH">The map: '+esc(j.title)+'</h3>';
-  if(SENSITIVE_PEOPLE[j.who])mp+='<p class="sensnote">This journey carries sensitive information about '+esc(j.who==="Child or young person"?"a child or young person":"someone you support")+'. Every red point here matters more than anywhere else in your register.</p>';
-  mp+='<div class="tiles">'+
-    '<div class="tile"><span class="eyebrow">Stored in</span><span class="num">'+st.places+'</span><span class="small muted">places</span></div>'+
-    '<div class="tile'+(st.outside?" warn":"")+'"><span class="eyebrow">Outside UK, EU or EEA</span><span class="num">'+st.outside+'</span><span class="small muted">of those places</span></div>'+
-    '<div class="tile'+(st.copies?" warn":"")+'"><span class="eyebrow">Loose copies</span><span class="num">'+st.copies+'</span><span class="small muted">files, emails, downloads, AI</span></div>'+
-    '<div class="tile'+(st.risks.length?" alert":"")+'"><span class="eyebrow">Red points</span><span class="num">'+st.risks.length+'</span><span class="small muted">on this journey</span></div></div>';
-  if(st.places)mp+='<p class="small"><b>If this person asks you to delete their details,</b> you need to find them in '+st.places+' place'+(st.places===1?"":"s")+(st.copies?", plus up to "+st.copies+" loose cop"+(st.copies===1?"y":"ies")+" made along the way":"")+'.</p>';
-  if(!j.stops.length)mp+='<div class="panel"><p class="muted">Add the first place where this person\'s details arrive, such as a website form, paper form or email inbox.</p></div>';
-  mp+='<ol class="flow" aria-label="Where the data goes">';
-  st.infos.forEach(function(info,i){
-    var s=j.stops[i];
-    if(i>0){var m=MBY[s.how],prevOut=where(st.infos[i-1]).out,curOut=where(info).out;
-      mp+='<li class="link lvl-'+(m?m.lvl:"watch")+'"><span class="how">↓ '+esc(s.how||"How does it get here?")+'</span>'+(m?'<span class="muted">'+esc(m.note)+'</span>':"")+(curOut&&!prevOut?'<span class="cross">Leaves the UK, EU or EEA here</span>':"")+'</li>';}
-    var fl=nodeFlags(info),w=where(info),t=info.t;
-    mp+='<li class="node sev-'+sev(fl)+'"><div class="nhead"><span class="idx">'+(i+1)+'</span><div><h3>'+esc(info.name)+'</h3><div class="small muted">'+esc(info.job||"")+(t?' · Owner: '+(own(t)?esc(ownerName(t)):'<b>nobody</b>'):"")+'</div></div><span class="loc'+(w.out?" out":"")+'">'+esc(w.txt)+'</span></div>'+
-      (fl.length?'<ul class="flags">'+fl.map(function(f){return '<li class="'+f[0]+'">'+(f[0]==="risk"?SHAPE.Red:SHAPE.Amber)+'<span>'+esc(f[1])+'</span></li>';}).join("")+'</ul>':'<p class="s19 small">No problems found at this step.</p>')+'</li>';
-  });
-  mp+='</ol>';
-  if(st.risks.length)mp+='<div class="s5 panel stack"><h3>Red points to fix first</h3><ul class="flags">'+st.risks.map(function(r){return '<li class="risk">'+SHAPE.Red+'<span>'+esc(r)+'</span></li>';}).join("")+'</ul></div>';
-  mp+='<div class="row"><button type="button" class="btn" id="copyJ">Copy this journey as text</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
-  if(j.stops.length)h+='<section class="s13 panel stack" aria-label="Journey map"><h3>'+esc(j.title)+': on the map</h3>'+journeyMap(j,st.infos)+mapLegend(true)+'</section>';
-  h+='<div class="jgrid">'+ed+mp+'</div>';
-  view.innerHTML=h+DATA_END;
-  bindJTop();bindDataEnd();
-  function re(focusId){render();if(focusId){var e=document.getElementById(focusId);if(e)e.focus();}}
-  var jt=document.getElementById("jt");jt.addEventListener("change",function(){j.title=jt.value.trim()||"Untitled journey";leaveExample();re("jt");});
-  var jw=document.getElementById("jw");jw.addEventListener("change",function(){j.who=jw.value;leaveExample();re("jw");});
-  j.stops.forEach(function(s,i){
-    var sel=document.getElementById("stop-"+i);sel.addEventListener("change",function(){s.ref=sel.value;leaveExample();re("stop-"+i);});
-    var hw=document.getElementById("how-"+i);if(hw)hw.addEventListener("change",function(){s.how=hw.value;leaveExample();re("how-"+i);});
-  });
-  view.querySelectorAll("[data-rm]").forEach(function(b){b.addEventListener("click",function(){j.stops.splice(+b.dataset.rm,1);if(j.stops[0])j.stops[0].how="";leaveExample();re("addStop");});});
-  document.getElementById("addStopBtn").addEventListener("click",function(){var v=document.getElementById("addStop").value;if(!v){document.getElementById("addStop").focus();return;}
-    j.stops.push({ref:v,how:""});leaveExample();re(j.stops.length>1?"how-"+(j.stops.length-1):"addStop");});
-  document.getElementById("rmJ").addEventListener("click",function(){if(!state.rmArm){state.rmArm=true;re("rmJ");return;}state.rmArm=false;J.splice(state.jcur,1);state.jcur=0;leaveExample();re();});
-  document.getElementById("copyJ").addEventListener("click",function(){copy(journeyText(j,st));});
-}
-function bindJTop(){
-  view.querySelectorAll("[data-j]").forEach(function(b){b.addEventListener("click",function(){state.jcur=+b.dataset.j;state.rmArm=false;render();});});
-  document.getElementById("addJ").addEventListener("click",function(){var t=TEMPL()[+document.getElementById("newJ").value];
-    state.journeys.push({title:t.title,who:t.who,stops:[]});state.jcur=state.journeys.length-1;leaveExample();render();var e=document.getElementById("addStop");if(e)e.focus();});
-}
-function journeyText(j,st){
-  var L=["Data journey: "+j.title,"Whose details: "+j.who,""];
-  st.infos.forEach(function(info,i){
-    if(i>0)L.push("   then, "+(j.stops[i].how||"(how?)").toLowerCase()+", to");
-    var w=where(info),t=info.t;
-    L.push((i+1)+". "+info.name+" ("+w.txt+(t?", owner: "+(own(t)?ownerName(t):"nobody"):"")+")");
-  });
-  L.push("");L.push("Stored in "+st.places+" places, "+st.outside+" outside the UK, EU or EEA, with "+st.copies+" loose copies made along the way.");
-  if(st.risks.length){L.push("");L.push("Red points:");st.risks.forEach(function(r){L.push("- "+r);});}
-  return L.join("\n");
+  view.innerHTML=whereSection()+DATA_END;
+  bindDataEnd();
 }
 // Columns in the same order as the register spreadsheet (A to AF)
 function registerRows(){
@@ -847,14 +714,18 @@ function board(){
   if(open)L.push(open+" tool"+(open===1?" is":"s are")+" not answered yet and not included below.");
   L.push("");
   // One line for the tools whose only fix is a second admin, not one line each.
-  var adminOnlyFix=fix.filter(function(t){return nextStep(t)==="Add a second admin.";}),otherFix=fix.filter(function(t){return adminOnlyFix.indexOf(t)<0;});
+  // The same tools as the "only one admin" card on Decide, so the two counts agree.
+  var solo=soloTools(),adminFix=SOLE()?[]:solo.filter(function(t){return action(t)==="Fix now";});
   L.push("2. What we are fixing now ("+fix.length+")");
-  otherFix.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});
-  if(adminOnlyFix.length===1)L.push("- "+adminOnlyFix[0].name+": Add a second admin.");
-  else if(adminOnlyFix.length)L.push("- Add a second admin to "+adminOnlyFix.length+" tools: "+adminOnlyFix.map(function(t){return t.name;}).join(", ")+".");
+  fix.forEach(function(t){var n=nextStep(t,adminFix.length>1);if(n)L.push("- "+t.name+": "+n);});
+  if(adminFix.length>1)L.push("- Add a second admin to "+adminFix.length+" tools: "+adminFix.map(function(t){return t.name;}).join(", ")+".");
+  if(SOLE()&&solo.length)L.push("- Recovery codes: I am the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s")+" ("+solo.map(function(t){return t.name;}).join(", ")+"). Write down the recovery codes and tell someone I trust where they are.");
   if(!fix.length)L.push("- Nothing");L.push("");
-  L.push("3. What we need you to decide");
+  L.push(SOLE()?"3. What I need to decide":"3. What we need you to decide");
   L.push(ACT("Trustee decision")+"s ("+dec.length+"):");dec.forEach(function(t){L.push("- "+t.name+": "+[].concat(why(t).mission).join(" "));});if(!dec.length)L.push("- None");
+  // A Mission concern on a tool that also needs a fix is still a decision for the board (review, 30 Sep).
+  var alsoDec=fix.filter(pendingMission);
+  if(alsoDec.length){L.push("Also to decide, once the fix is done ("+alsoDec.length+"):");alsoDec.forEach(function(t){L.push("- "+t.name+": "+[].concat(why(t).mission).join(" "));});}
   L.push("Reviews this year ("+year.length+"):");year.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});if(!year.length)L.push("- None");
   if(ren.length){L.push("Reviews at renewal ("+ren.length+"):");ren.forEach(function(t){L.push("- "+t.name);});}
   var cu=comingUp();if(cu.length){L.push("");L.push("Coming up in the next 90 days:");cu.forEach(function(i){L.push("- "+fmtDate(i.d)+": "+i.tool+", "+i.what+(i.who?" ("+i.who+")":""));});}
@@ -885,8 +756,8 @@ document.getElementById("exKeep").addEventListener("click",function(){document.g
 document.getElementById("exampleEdit").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();document.getElementById("exKeep").click();}});
 // The example is read-only. Changes are stopped in the capture phase, before any handler
 // runs; looking around (steps, folds, compare, the map's law toggle, search) still works.
-var EX_EDIT='input,select,textarea,[data-lib],[data-remove],#addTool,#addJ,[data-rm],#addStopBtn,#rmJ';
-var EX_OK='#findTool,#newName,#newJob,#cmpA,#cmpB,#newJ,[data-law],[name="org"],[name="loc"],#ccy,#home,[type="file"]';
+var EX_EDIT='input,select,textarea,[data-lib],[data-remove],#addTool';
+var EX_OK='#findTool,#newName,#newJob,#cmpA,#cmpB,[data-law],[name="org"],[name="loc"],#ccy,#home,[type="file"]';
 var exReturn="";
 function exTarget(el){if(state.mode!=="example"||!el||!el.closest)return null;var c=el.closest(EX_EDIT);return c&&!c.matches(EX_OK)&&view.contains(c)?c:null;}
 function exampleEdit(c){exReturn=c&&c.id||"";var b=document.getElementById("startOwn");document.getElementById("exStart").textContent=b?b.textContent:"Start your own";document.getElementById("exampleEdit").hidden=false;document.getElementById("exStart").focus();}
