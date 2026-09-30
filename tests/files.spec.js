@@ -113,3 +113,29 @@ test("print: the button opens the print dialog, and the print layout hides the c
   await expect(page.locator("#dlCsv")).toBeHidden();
   await expect(page.locator("#regH")).toBeVisible();
 });
+
+// Live privacy check, 30 Sep 2026: a crafted file must not be able to put HTML into the page
+// (a key like this made the page redirect to another site, and the redirect stuck in storage).
+test("a crafted file cannot inject HTML through a tool's key, from the file or from storage", async ({ page }) => {
+  await fresh(page);
+  const evil = 'a"><meta http-equiv="refresh" content="0;url=https://evil.example/x"><x y="';
+  const file = JSON.stringify({ app: "stack-check", state: { v: 6, org: "nonprofit", loc: "UK", tools: [
+    { key: evil, name: "Crafted", job: "Test", kind: "Software", owner: "Me", account: "Organisation", admins: "Two or more", depend: "Minor", data: "Internal", signin: "Yes", copy: "Yes" },
+  ] } });
+  const navs = [];
+  page.on("framenavigated", (f) => { if (f === page.mainFrame()) navs.push(f.url()); });
+  await page.route("https://evil.example/**", (r) => r.abort());
+  await step(page, 1);
+  await page.setInputFiles("#openFile1", { name: "crafted.json", mimeType: "application/json", buffer: Buffer.from(file) });
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
+  expect(await page.evaluate(() => state.tools[0].key)).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
+  for (const s of [2, 3, 4]) await step(page, s);
+  expect(await page.locator("meta[http-equiv=refresh]").count()).toBe(0);
+  // The same key arriving from this browser's storage is cleaned too.
+  await page.evaluate((k) => {
+    const s = { v: 6, org: "nonprofit", loc: "UK", mode: "own", step: 3, tools: [{ key: k, name: "Stored", job: "", data: "Internal", kind: "Software" }], journeys: [] };
+    localStorage.setItem("stackcheck.v5", JSON.stringify(s));
+  }, evil);
+  expect(await page.evaluate(() => load().tools[0].key)).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
+  expect(navs.some((u) => u.includes("evil.example"))).toBe(false);
+});

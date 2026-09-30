@@ -69,6 +69,19 @@ function oneOf(v, list, fallback) {
   return list.indexOf(v) >= 0 ? v : fallback;
 }
 
+// A tool's key is written into the page as an id and attribute, so only letters, digits and
+// hyphens are kept. Anything else (a crafted file could hold HTML) gets a fresh key. Used for
+// opened files and for answers loaded from this browser (live privacy check, 30 Sep 2026).
+var KEY_OK = /^[a-z0-9][a-z0-9-]{0,63}$/;
+function cleanKeys(tools) {
+  var seen = {};
+  (tools || []).forEach(function (t, i) {
+    if (typeof t.key !== "string" || !KEY_OK.test(t.key) || seen[t.key]) t.key = "tool-" + i + "-" + Math.random().toString(36).slice(2, 7);
+    seen[t.key] = 1;
+  });
+  return tools;
+}
+
 // Returns a clean state, or throws an Error with a message for the user.
 function stateFromFile(text) {
   var data;
@@ -81,12 +94,8 @@ function stateFromFile(text) {
   if (!Array.isArray(s.tools)) throw new Error("This file has no tools in it.");
   if (s.tools.length > FILE_MAX_TOOLS) throw new Error("This file has more tools than Stack Check can open.");
   var tools = s.tools.map(plainObject).filter(function (t) { return typeof t.name === "string" && t.name; });
-  var keys = {};
-  tools.forEach(function (t, i) {
-    if (typeof t.key !== "string" || !t.key || keys[t.key]) t.key = "file-" + i + "-" + Math.random().toString(36).slice(2, 7);
-    keys[t.key] = 1;
-    if (s.v === 5 && t.where === "UK or EU") t.where = EU;
-  });
+  cleanKeys(tools);
+  tools.forEach(function (t) { if (s.v === 5 && t.where === "UK or EU") t.where = EU; });
   var journeys = (Array.isArray(s.journeys) ? s.journeys : []).slice(0, 50).map(function (j) {
     var o = plainObject(j);
     o.stops = (j && Array.isArray(j.stops) ? j.stops : []).slice(0, 50).map(plainObject);

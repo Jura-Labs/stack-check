@@ -159,7 +159,7 @@ var KEY="stackcheck.v5";
 // The example is never saved, so looking at it cannot overwrite someone's own list.
 function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
-function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];migrateDevices(s.tools);return s;}catch(e){return null;}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];cleanKeys(s.tools);migrateDevices(s.tools);return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
 var state=null;state=load()||example();
 // Every visit starts on the start screen (step 0); Carry on returns to where they were.
@@ -275,7 +275,7 @@ function factsPanel(t){
     '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
 function placeSelect(field,t,label,hint){
-  return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><select id="'+field+'-'+t.key+'"><option value="">Not sure</option>'+
+  return '<div class="field"><label for="'+field+'-'+esc(t.key)+'">'+label+'</label><select id="'+field+'-'+esc(t.key)+'"><option value="">Not sure</option>'+
     PLACE_OPTS.map(function(c){return '<option value="'+c+'"'+(t[field]===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
 }
 
@@ -311,7 +311,7 @@ function q(field,t,legend,hint,labels){
   return '<fieldset class="q"'+(hint?' aria-describedby="'+hid+'"':"")+'><legend>'+legend+'</legend>'+radios(field+"-"+t.key,OPT[field],t[field],labels)+(hint?'<span class="hint" id="'+hid+'">'+hint+'</span>':"")+'</fieldset>';
 }
 function txt(field,t,label,hint,ph,type){
-  return '<div class="field"><label for="'+field+'-'+t.key+'">'+label+'</label><input type="'+(type||"text")+'" id="'+field+'-'+t.key+'" value="'+esc(t[field])+'"'+(ph?' placeholder="'+esc(ph)+'"':"")+(type==="number"?' min="0" step="1" inputmode="numeric"':"")+'>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
+  return '<div class="field"><label for="'+field+'-'+esc(t.key)+'">'+label+'</label><input type="'+(type||"text")+'" id="'+field+'-'+esc(t.key)+'" value="'+esc(t[field])+'"'+(ph?' placeholder="'+esc(ph)+'"':"")+(type==="number"?' min="0" step="1" inputmode="numeric"':"")+'>'+(hint?'<span class="small muted">'+hint+'</span>':"")+'</div>';
 }
 var view=document.getElementById("view");
 
@@ -390,7 +390,7 @@ function renderPick(){
      '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"><span id="newNameErr" class="small err" role="status"></span></div>'+
      '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: online donations"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
-  if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+t.key+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
+  if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+esc(t.key)+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
   h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h+(state.tools.length?SAVE_ROW:"");
   bindSaveRow();
@@ -468,7 +468,7 @@ function renderAsk(){
     txt("cost",t,"Cost per year: licence, fees or charges ("+SYM()+", optional)","Currency is set in step 1.","0","number")+
     txt("hours",t,"Hours a month spent running it or working around it (optional)","","0","number")+
     txt("renewal",t,"Renewal or notice (optional)","A decision is cheapest just before renewal.","For example: Annual, April")+
-    '<div class="field"><label for="renewalDate-'+t.key+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+t.key+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
+    '<div class="field"><label for="renewalDate-'+esc(t.key)+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+esc(t.key)+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
     '</div>';
   if(loc)h+='<div class="sect"><h3>Control</h3><p class="small muted">An app on your computers has no supplier holding your data, so where it is kept, the supplier and data protection terms are not asked.</p><div class="qgrid">'+
       q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+'</div></div>';
@@ -580,9 +580,9 @@ function renderResults(){
       '<div class="small">Owner: '+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</div><div class="small muted">Data: '+esc(t.data||"not answered")+'</div></td>'+
       '<td data-label="Lights"><div class="minis">'+mini(safety(t),"Safety")+mini(control(t),"Control")+mini(exitL(t),"Exit")+mini(t.value,"Value")+mini(mission(t),ML())+'</div></td>'+
       '<td data-label="Suggested action">'+esc(ACT(action(t))||"–")+'</td>'+
-      '<td class="decision"><div class="decgrid"><div class="field"><label for="dec-'+t.key+'">Decision<span class="vh"> for '+esc(t.name)+'</span></label><select id="dec-'+t.key+'" data-dec="'+t.key+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></div>'+
-      '<div class="field"><label for="due-'+t.key+'">By<span class="vh"> (date) for '+esc(t.name)+'</span></label><input type="date" id="due-'+t.key+'" data-due="'+t.key+'" value="'+esc(t.due)+'"></div>'+
-      '<div class="field decnext"><label for="next-'+t.key+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+t.key+'" data-next="'+t.key+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
+      '<td class="decision"><div class="decgrid"><div class="field"><label for="dec-'+esc(t.key)+'">Decision<span class="vh"> for '+esc(t.name)+'</span></label><select id="dec-'+esc(t.key)+'" data-dec="'+esc(t.key)+'"><option value="">Choose</option>'+OPT.decision.map(function(d){return '<option'+(t.decision===d?" selected":"")+'>'+d+'</option>';}).join("")+'</select></div>'+
+      '<div class="field"><label for="due-'+esc(t.key)+'">By<span class="vh"> (date) for '+esc(t.name)+'</span></label><input type="date" id="due-'+esc(t.key)+'" data-due="'+esc(t.key)+'" value="'+esc(t.due)+'"></div>'+
+      '<div class="field decnext"><label for="next-'+esc(t.key)+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+esc(t.key)+'" data-next="'+esc(t.key)+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
   });
   h+='</tbody></table></div><p class="small muted">Record your own decision: Keep, Reduce dependency, Replace or Retire. Then add one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
