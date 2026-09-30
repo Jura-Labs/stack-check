@@ -1,6 +1,6 @@
 {
   "name": "stack-check",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "private": true,
   "description": "Stack Check: stay in command of your technology. Development and test tooling only; nothing here ships to the page.",
   "license": "MIT",

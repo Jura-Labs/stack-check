@@ -11,7 +11,9 @@ var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel po
 // charity leader would see it). These are aimed at freelancers and micro-businesses.
 var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
 // The offline register templates (register v2.2), the same rules as this tool.
-var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download>Excel (.xlsx, 90 KB)</a> or <a href="downloads/stay-in-command-register-v2.2.ods" download>LibreOffice (.ods, open format, 105 KB)</a>';
+// Analytics (Paul, 30 Sep 2026, decision 2026-09-30-stack-check-analytics-events): Umami counts clicks on
+// a few buttons and links, with fixed names and values only. Nothing a person types or chooses is sent.
+var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download data-umami-event="register-download" data-umami-event-format="xlsx" data-umami-event-place="start">Excel (.xlsx, 90 KB)</a> or <a href="downloads/stay-in-command-register-v2.2.ods" download data-umami-event="register-download" data-umami-event-format="ods" data-umami-event-place="start">LibreOffice (.ods, open format, 105 KB)</a>';
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
  documents:{title:"Documents",anchor:"#move",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
@@ -48,7 +50,7 @@ function cardHtml(c,tools){
     '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
-    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
+    '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer" data-umami-event="guide-visit" data-umami-event-place="card">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
 function fmtDate(d){if(!d)return "";var x=new Date(d+"T00:00:00");if(isNaN(x))return d;return x.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});}
 function daysTo(d){if(!d)return null;var x=new Date(d+"T00:00:00"),n=new Date();n.setHours(0,0,0,0);return Math.round((x-n)/86400000);}
@@ -338,7 +340,7 @@ function renderStart(){
     (own?'<p><b>'+a+' of '+n+' tool'+(n===1?"":"s")+' answered</b> in this browser.</p><div class="row"><button type="button" class="btn primary" id="carryOn">Carry on where you left off</button></div>':'')+
     '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 2 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
     '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives.</li></ol>'+
-    '<div class="row">'+(own?'<button type="button" class="btn" id="startNew">Start a new list</button>':'<button type="button" class="btn primary" id="startNew">Start your own</button>')+
+    '<div class="row">'+(own?'<button type="button" class="btn" id="startNew" data-umami-event="start-own" data-umami-event-place="start-new-list">Start a new list</button>':'<button type="button" class="btn primary" id="startNew" data-umami-event="start-own" data-umami-event-place="start">Start your own</button>')+
     '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
     '<p class="small muted">Prefer to work offline, or in a spreadsheet? The same check as a register template: '+DOWNLOADS+'.</p></section>';
   view.innerHTML=h;
@@ -442,7 +444,7 @@ function renderAsk(){
   var h='<ul class="progress" aria-label="Your tools">'+state.tools.map(function(x,j){
     return '<li><button type="button" class="pdot'+(essentialsDone(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+pdotLabel(x)+'</button></li>';}).join("")+'</ul>';
   h+='<section class="panel stack" aria-labelledby="askH"><div class="cardhead"><h2 id="askH">'+esc(t.name)+'</h2><span class="muted small">Tool '+(i+1)+' of '+n+'. '+state.tools.filter(essentialsDone).length+' answered, '+(n-state.tools.filter(essentialsDone).length)+' to go.</span></div>';
-  h+=factsPanel(t);
+  h+=factsPanel(t)+'<p id="askStatus" class="vh" role="status" aria-live="polite"></p>';
   // The essentials
   var sole=SOLE(),loc=app(t),plat=platform(t),records=!!(t.lib&&BYID[t.lib]&&BYID[t.lib].group==="Money");
   h+='<div class="sect"><h3>The essentials</h3><div class="qgrid">'+
@@ -507,7 +509,8 @@ function renderAsk(){
     t[f]=r.value;leaveExample();
     if(f==="enc"||f==="upd")t.signin=deviceSignin(t);
     if(f==="where"&&t.loc&&(r.value===DK||(r.value===EU)!==!!UKEU[t.loc])){t.loc="";var ls=document.getElementById("loc-"+k);if(ls)ls.value="";}
-    if(rerender[f]){render();var e=document.getElementById(r.id);if(e)e.focus();}else partial();});});});
+    if(rerender[f]){render();var e=document.getElementById(r.id);if(e)e.focus();
+      if(f==="kind"){var st=document.getElementById("askStatus");if(st)st.textContent="Questions changed for "+r.value+": "+view.querySelectorAll("fieldset.q").length+" questions now.";}}else partial();});});});
   ["job","owner","renewal","approved"].forEach(function(f){var e=document.getElementById(f+"-"+k);e.addEventListener("input",function(){t[f]=e.value;leaveExample();partial();});});
   ["loc","hq","renewalDate"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("change",function(){t[f]=e.value;leaveExample();save();});});
   var asks=document.getElementById("askSupplier");if(asks)asks.addEventListener("click",function(){copy(supplierEmail(t));});
@@ -535,7 +538,7 @@ function renderResults(){
   var pers=done.filter(personal).length,crit=done.filter(function(t){return t.depend==="Critical";}).length;
   var cost=ts.reduce(function(s,t){return s+(Number(t.cost)||0);},0);
   var h='';
-  if(done.length<ts.length)h+='<div class="banner"><span>'+(ts.length-done.length)+' of '+ts.length+' tools are not answered yet, so they are not scored.</span><button type="button" class="btn" id="finish">Answer them</button></div>';
+  if(done.length<ts.length)h+='<div class="banner" role="status"><span>'+(ts.length-done.length)+' of '+ts.length+' tools are not answered yet, so they are not scored.</span><button type="button" class="btn" id="finish">Answer them</button></div>';
   h+='<div class="tiles">'+
    '<div class="tile"><span class="eyebrow">Tools</span><span class="num">'+ts.length+'</span><span class="small muted">'+(cost>0?money(cost)+' a year listed':'No costs entered')+'</span></div>'+
    '<div class="tile"><span class="eyebrow">Personal data</span><span class="num">'+pers+'</span><span class="small muted">tools hold this data</span></div>'+
