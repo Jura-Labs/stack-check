@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Copy review</title>
+<!-- Local-only review tool. Not in the deploy allowlist (deploy.yml), so it never ships. -->
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 14px/1.4 system-ui, sans-serif; display: grid; grid-template-columns: 1fr 360px; height: 100vh; }
+  iframe { width: 100%; height: 100%; border: 0; }
+  aside { border-left: 1px solid #ccc; display: flex; flex-direction: column; background: #f7f7f5; }
+  header { padding: 12px; border-bottom: 1px solid #ddd; display: grid; gap: 8px; }
+  header label { display: flex; gap: 6px; align-items: center; font-weight: 600; }
+  .mode { padding: 8px; border-radius: 6px; text-align: center; font-weight: 600; background: #e4e4e0; }
+  .mode.on { background: #fde68a; }
+  #list { flex: 1; overflow: auto; padding: 12px; display: grid; gap: 10px; align-content: start; }
+  .item { background: #fff; border: 1px solid #ddd; border-radius: 6px; padding: 8px; }
+  .item small { color: #666; display: block; margin-bottom: 4px; }
+  .old { text-decoration: line-through; color: #a33; }
+  .new { color: #176b2c; }
+  .item textarea, #general { width: 100%; font: inherit; margin-top: 6px; }
+  .item button { float: right; }
+  footer { padding: 12px; border-top: 1px solid #ddd; display: grid; gap: 8px; }
+  button { font: inherit; padding: 6px 10px; cursor: pointer; }
+  .hint { color: #555; font-size: 13px; margin: 0; }
+</style>
+</head>
+<body>
+<iframe id="frame" src="/index.html" title="Page under review"></iframe>
+<aside>
+  <header>
+    <label>Page <select id="page">
+      <option value="/index.html">Stack Check (index.html)</option>
+      <option value="/404.html">404 page</option>
+    </select></label>
+    <div id="mode" class="mode">Browse mode: click through the tool as normal</div>
+    <button id="toggle">Switch to edit mode (Ctrl/⌘ + E)</button>
+    <p class="hint">In edit mode, click any text and retype it. Every change appears below, with a box for a note. Switch back to browse mode to move to the next step.</p>
+  </header>
+  <div id="list"></div>
+  <footer>
+    <textarea id="general" rows="3" placeholder="General notes on this page (optional)"></textarea>
+    <button id="copy">Copy all feedback</button>
+    <button id="clear">Clear all</button>
+  </footer>
+</aside>
+<script>
+const frame = document.getElementById('frame');
+const list = document.getElementById('list');
+const general = document.getElementById('general');
+const KEY = 'copy-review-v1';
+let editing = false;
+let changes = load();            // [{id, where, old, now, note}]
+const originals = new WeakMap(); // element -> change id
+
+function load() { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(changes)); localStorage.setItem(KEY + '-general', general.value); } catch {} }
+try { general.value = localStorage.getItem(KEY + '-general') || ''; } catch {}
+
+const BLOCK = 'p,li,h1,h2,h3,h4,h5,h6,label,legend,button,a,td,th,dt,dd,summary,figcaption,caption,blockquote,span,div';
+function blockOf(node) {
+  const el = node.nodeType === 1 ? node : node.parentElement;
+  return el && el.closest(BLOCK);
+}
+function where(el) {
+  // Nearest heading above the element, to say which screen/section the text is on.
+  const doc = el.ownerDocument;
+  const heads = [...doc.querySelectorAll('h1,h2,h3')].filter(h => h.offsetParent !== null);
+  let best = null;
+  for (const h of heads) if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING || h.contains(el)) best = h;
+  const page = frame.contentWindow.location.pathname;
+  return page + (best ? ' › ' + best.innerText.trim().slice(0, 60) : '');
+}
+const clean = s => s.replace(/\s+/g, ' ').trim();
+
+function hook() {
+  const doc = frame.contentDocument;
+  if (!doc) return;
+  doc.designMode = editing ? 'on' : 'off';
+  doc.addEventListener('beforeinput', e => {
+    const sel = doc.getSelection();
+    const el = sel && sel.anchorNode && blockOf(sel.anchorNode);
+    if (!el || originals.has(el)) return;
+    const c = { id: Date.now() + Math.random(), where: where(el), old: clean(el.innerText), now: clean(el.innerText), note: '' };
+    changes.push(c); originals.set(el, c.id);
+  }, true);
+  doc.addEventListener('input', () => {
+    const sel = doc.getSelection();
+    const el = sel && sel.anchorNode && blockOf(sel.anchorNode);
+    const id = el && originals.get(el);
+    const c = changes.find(x => x.id === id);
+    if (c) { c.now = clean(el.innerText); save(); render(); }
+  }, true);
+  doc.addEventListener('keydown', shortcut);
+}
+frame.addEventListener('load', hook);
+
+function setEditing(on) {
+  editing = on;
+  if (frame.contentDocument) frame.contentDocument.designMode = on ? 'on' : 'off';
+  const m = document.getElementById('mode');
+  m.textContent = on ? 'Edit mode: click text and retype it' : 'Browse mode: click through the tool as normal';
+  m.classList.toggle('on', on);
+  document.getElementById('toggle').textContent = on ? 'Back to browse mode (Ctrl/⌘ + E)' : 'Switch to edit mode (Ctrl/⌘ + E)';
+}
+function shortcut(e) { if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'e') { e.preventDefault(); setEditing(!editing); } }
+document.addEventListener('keydown', shortcut);
+document.getElementById('toggle').onclick = () => setEditing(!editing);
+document.getElementById('page').onchange = e => { frame.src = e.target.value; };
+
+function render() {
+  list.replaceChildren(...changes.filter(c => c.old !== c.now || c.note).map(c => {
+    const d = document.createElement('div'); d.className = 'item';
+    const del = Object.assign(document.createElement('button'), { textContent: '✕', title: 'Remove' });
+    del.onclick = () => { changes = changes.filter(x => x !== c); save(); render(); };
+    const w = Object.assign(document.createElement('small'), { textContent: c.where });
+    const o = Object.assign(document.createElement('div'), { className: 'old', textContent: c.old });
+    const n = Object.assign(document.createElement('div'), { className: 'new', textContent: c.now });
+    const t = Object.assign(document.createElement('textarea'), { rows: 2, placeholder: 'Why / note (optional)', value: c.note });
+    t.oninput = () => { c.note = t.value; save(); };
+    d.append(del, w, o, n, t); return d;
+  }));
+  if (!list.children.length) list.innerHTML = '<p class="hint">No changes yet.</p>';
+}
+render();
+general.oninput = save;
+
+document.getElementById('copy').onclick = async () => {
+  const items = changes.filter(c => c.old !== c.now || c.note);
+  let out = '# Copy feedback\n\n' + items.map((c, i) =>
+    `${i + 1}. **${c.where}**\n   - Was: "${c.old}"\n   - Now: "${c.now}"` + (c.note ? `\n   - Note: ${c.note}` : '')).join('\n\n');
+  if (general.value.trim()) out += '\n\n## General notes\n\n' + general.value.trim();
+  await navigator.clipboard.writeText(out);
+  document.getElementById('copy').textContent = `Copied ${items.length} change(s) ✓`;
+  setTimeout(() => document.getElementById('copy').textContent = 'Copy all feedback', 2000);
+};
+document.getElementById('clear').onclick = () => {
+  if (!changes.length && !general.value) return;
+  changes = []; general.value = ''; save(); render();
+};
+</script>
+</body>
+</html>

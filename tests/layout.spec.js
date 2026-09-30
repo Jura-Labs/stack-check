@@ -1,6 +1,6 @@
 // The Decide and Your data layout Paul chose on 29 September 2026: Decide
 // summary first with the board panel before the folded extras; step 4 is
-// "Your data" with the map first and "Follow one person" below it.
+// "Your data" with the map.
 const { test, expect } = require("@playwright/test");
 const { watchErrors, fresh, step } = require("./helpers");
 
@@ -52,14 +52,13 @@ test("See it on the map goes to Your data", async ({ page }) => {
   await expect(page).toHaveTitle("Step 4 of 4, Your data: Stack Check");
 });
 
-test("Your data: the map first, then Follow one person, then a way back and print", async ({ page }) => {
+test("Your data: the map only, then a way back and print (Follow one person removed, Paul 30 Sep)", async ({ page }) => {
   const errors = watchErrors(page);
   await fresh(page);
   await step(page, 4);
   const ids = await order(page);
   expect(ids[0]).toBe("whereH");
-  expect(ids).toContain("jH");
-  await expect(page.locator("#jH")).toHaveText("Follow one person");
+  expect(ids).not.toContain("jH");
   await expect(page.locator("#view svg.map").first()).toBeVisible();
   await page.evaluate(() => { window.__printed = 0; window.print = () => { window.__printed++; }; });
   await page.click("#printData");
@@ -77,7 +76,7 @@ test("Your data with no journeys still shows the map and the way back", async ({
   await expect(page.locator("#back3")).toBeVisible();
 });
 
-test("both law toggles on Your data work, and no id is used twice on any step", async ({ page }) => {
+test("the law toggle on Your data works, and no id is used twice on any step", async ({ page }) => {
   await fresh(page);
   for (const s of [1, 2, 3, 4]) {
     await step(page, s);
@@ -90,9 +89,9 @@ test("both law toggles on Your data work, and no id is used twice on any step", 
   }
   await step(page, 4);
   const toggles = page.locator("[data-law]");
-  expect(await toggles.count()).toBe(2);
+  expect(await toggles.count()).toBe(1);
   const before = await page.evaluate(() => state.showLaw);
-  await toggles.nth(1).click();
+  await toggles.first().click();
   expect(await page.evaluate(() => state.showLaw)).toBe(!before);
 });
 
@@ -109,35 +108,23 @@ test("print: Decide leaves out the folded extras; Your data prints the map and t
   await expect(page.getByRole("region", { name: /The map as a table/ })).toBeVisible();
 });
 
-// Paul, 29 Sep ("2. Agree please execute this"): what only the journeys can
-// show goes into What to do, without repeating tool-level points.
-test("What to do includes how data moves between tools, from Your data", async ({ page }) => {
-  await fresh(page);
-  await page.click("#seeExample");
-  const card = page.locator(".prio li").filter({ hasText: "How data moves between your tools" });
-  await expect(card).toBeVisible();
-  await expect(card).toContainText("saved or exported as a file");
-  await expect(card).toContainText("A supporter signs up at an event");
-  await expect(card).not.toContainText("Nobody owns it");
-  await page.click("#jumpData");
-  await expect.poll(() => page.evaluate(() => state.step)).toBe(4);
-  await expect(page.locator("#jH")).toBeFocused();
-});
 
-test("a journey that contradicts the register is flagged in What to do", async ({ page }) => {
+// Paul, 30 Sep: dark by default, with a switch to light that is remembered in this browser.
+test("the page starts dark, the switch goes to light and back, and the choice is remembered", async ({ page }) => {
+  await page.emulateMedia({ colorScheme: "light" });
   await fresh(page);
-  await page.evaluate(() => {
-    state.mode = "own";
-    const canva = state.tools.find((t) => t.lib === "canva");
-    state.journeys = [{ title: "A volunteer sends a photo", who: "Volunteer", stops: [{ ref: canva.key, how: "" }] }];
-  });
-  await step(page, 3);
-  await expect(page.locator(".prio")).toContainText("Canva: your register says it holds no personal data");
-});
-
-test("no journeys, no card", async ({ page }) => {
-  await fresh(page);
-  await page.evaluate(() => { state.mode = "own"; state.journeys = []; });
-  await step(page, 3);
-  await expect(page.locator(".prio li").filter({ hasText: "How data moves" })).toHaveCount(0);
+  const btn = page.locator("#themeBtn");
+  const theme = () => page.evaluate(() => document.documentElement.dataset.theme);
+  const bg = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(await theme()).toBe("dark");
+  await expect(btn).toHaveAttribute("aria-pressed", "true");
+  const dark = await bg();
+  await btn.click();
+  await expect(btn).toHaveAttribute("aria-pressed", "false");
+  expect(await theme()).toBe("light");
+  expect(await bg()).not.toBe(dark);
+  await page.reload();
+  expect(await theme()).toBe("light");
+  await page.locator("#themeBtn").click();
+  expect(await bg()).toBe(dark);
 });

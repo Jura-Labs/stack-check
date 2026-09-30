@@ -9,8 +9,8 @@ from Jura Labs. It is written for small charities, non-profits, cultural
 organisations, small businesses and sole traders in the UK, Europe and
 beyond, most of whom have no IT department.
 
-> **Status: in development.** Not yet launched. It will be served at
-> https://check.juralabs.org after testing with small organisations.
+> **Status: live** at https://check.juralabs.org since 30 September 2026.
+> User testing with small organisations follows the launch.
 
 ## Your answers stay in your browser
 
@@ -33,7 +33,7 @@ Four steps:
 3. **Decide.** Five lights for each tool (Safety, Control, Exit, Value, and
    Mission or Values) and a suggested action: Fix now, Trustee or board
    decision, Review this year, Review at renewal, or Keep.
-4. **Follow the data.** Trace one person's details through every system.
+4. **Your data.** See on a map where each tool keeps your data.
 
 The scoring is the same as the register spreadsheet, rule for rule. The
 spreadsheet is the reference, and `tests/scoring.test.js` checks the tool
@@ -44,7 +44,7 @@ against its worked example.
 It is plain HTML, CSS and JavaScript, with no build step and nothing to
 install to use it.
 
-- **Online:** https://check.juralabs.org (after launch).
+- **Online:** https://check.juralabs.org
 - **On your own computer:** download a release zip and open `index.html`.
 - **On your own server:** copy the files. Any static web host works.
 
@@ -65,7 +65,7 @@ npm run serve     # http://localhost:8080
 | `assets/example.js` | The worked example: a fictional 12-person charity |
 | `assets/scoring.js` | The five lights and the suggested action |
 | `assets/app.js` | Screens and interaction |
-| `downloads/` | The register spreadsheet v2.1 (.ods and .xlsx) |
+| `downloads/` | The register spreadsheet v2.2 (.ods and .xlsx) |
 | `research/` | Every library fact and its source, as CSV (`node tools/export-research.js`) |
 | `tests/` | Scoring parity, browser, no-egress and accessibility tests |
 | `prototype/` | The original single-file prototype, kept as the reference |

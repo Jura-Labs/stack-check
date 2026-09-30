@@ -75,14 +75,6 @@ test("S4: in forced colours, a chosen answer and the current step look different
   expect(styles.cur).not.toBe(styles.not);
 });
 
-test("S5: journey map step numbers use the accent ink, readable in dark mode", async ({ page }) => {
-  await page.emulateMedia({ colorScheme: "dark" });
-  await fresh(page);
-  await step(page, 4);
-  const fill = await page.locator(".m-step text").first().evaluate((e) => getComputedStyle(e).fill);
-  expect(fill).toBe("rgb(14, 22, 19)");
-});
-
 test("S6: the map has a table with every place, its tools, and whose law applies", async ({ page }) => {
   await fresh(page);
   await step(page, 4);

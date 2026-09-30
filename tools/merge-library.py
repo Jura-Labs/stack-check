@@ -19,7 +19,7 @@ APP = Path("assets/app.js")
 KEYS = ["id", "name", "job", "k", "w", "b", "x", "o", "loc", "locs", "hq", "co", "par", "parc",
         "store", "res", "plans", "mfa", "ai", "aid", "np", "note", "conf", "src"]
 ALLOWED = {
-    "k": {"Software", "AI tool", "Devices", "Other"},
+    "k": {"Software", "AI tool", "Devices", "App on our computers", "Account on a platform", "Other"},
     "w": {"UK, EU or EEA", "Elsewhere", "Don't know"},
     "b": {"UK or Europe", "Elsewhere"},
     "x": {"Yes", "Partial", "No", "Don't know"},

@@ -11,9 +11,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
 
 ## Low confidence: check these first
 
-- [ ] **HMRC online services.** gov.uk says nothing on data location,
-  export or AI, so they are "Don't know". Is "Other" the right kind for a
-  government service?
+- [x] **HMRC online services.** Removed from the library (Paul, 30 Sep).
 - [ ] **Zettle by PayPal.** The privacy policy names transfers to the US and
   Australia but not where data is stored; two-step sign-in page did not
   load. Now branded PayPal Point of Sale.
@@ -95,3 +93,25 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
   supplier says there is none.
 - "All plans" for two-step sign-in is used when the supplier offers it with
   no plan limit stated.
+
+## Added 30 September 2026
+
+Researched by agents from suppliers' own pages; several Adobe and X help
+pages blocked them, so some facts rest on search summaries of first-party
+pages. **Approved to ship by Paul, 30 September 2026** (in the terminal),
+on the facts as recorded; the individual facts are still to be checked in a
+browser before launch, like the rows above.
+
+- [ ] Adobe Creative Cloud (medium): EU storage for EU customers; the UK is
+  not named. No nonprofit discount for Creative Cloud for teams found.
+- [ ] Figma (medium): US storage unless Enterprise; AI content training on
+  by default on Starter and Professional. Contracting entity not confirmed.
+- [ ] Affinity (medium): files on your devices; needs a Canva account.
+  Export formats not confirmed.
+- [ ] GIMP and Inkscape (medium): apps on your computers; export formats
+  not confirmed from the projects' own pages; no supplier home recorded.
+- [ ] X (medium): X Internet Unlimited Company (Ireland); trains Grok unless
+  switched off. **Re-check after the new terms start on 9 October 2026.**
+- [ ] Bluesky (medium): AI training "No" from Bluesky's public statement,
+  not its terms (Paul's decision). Export is public records only.
+- Held, not shipped: Adobe Express (low), in `held/`.

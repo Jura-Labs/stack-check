@@ -45,7 +45,9 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
       if (await input.isVisible() && await input.isEditable()) await input.fill("7");
     }
     const groups = await page.$$eval('#view input[type="radio"]', (els) => [...new Set(els.map((e) => e.name))]);
-    for (const g of groups) await page.locator(`#view input[type="radio"][name="${g}"]`).first().check({ force: true }).catch(() => {});
+    // Choose in the page, not by a forced click at the radio's position: a hidden radio has no
+    // position, and a forced click there can land on a header link and leave the page.
+    for (const g of groups) await page.locator(`#view input[type="radio"][name="${g}"]`).first().evaluate((e) => e.click());
     await page.click("#nextT");
   }
 

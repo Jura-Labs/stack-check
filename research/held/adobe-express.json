@@ -1,0 +1,55 @@
+{
+ "Design": [
+  {
+   "id": "adobe-express",
+   "name": "Adobe Express",
+   "job": "Quick graphics and social posts",
+   "k": "Software",
+   "w": "Don't know",
+   "b": "Elsewhere",
+   "x": "Don't know",
+   "o": false,
+   "loc": "",
+   "locs": [],
+   "hq": "US",
+   "co": "Adobe Systems Software Ireland Limited",
+   "par": "Adobe Inc.",
+   "parc": "US",
+   "store": "Don't know. Adobe's storage region page covers Creative Cloud and Document Cloud storage (Dublin for the EU region) and we found no Adobe page that says where Adobe Express files are kept. Adobe's privacy policy says its main processing locations for personal information are the US and India. Plan assumed: Adobe Express Premium from the nonprofit offer.",
+   "res": "unclear",
+   "plans": "Don't know. No region choice found for Adobe Express.",
+   "mfa": "unclear",
+   "ai": "unclear",
+   "aid": "Adobe says it does not train Firefly on subscribers' personal content: 'No, Adobe does not train Adobe Firefly models or partner models on any Creative Cloud subscribers' personal content.' we did not find a page that applies this wording to Adobe Express by name, and Adobe's generative AI user guidelines say prompts and results may be reviewed by automated and manual methods for abuse prevention. Plan assumed: Adobe Express Premium (nonprofit offer).",
+   "np": "Adobe Express Premium is free for a year for up to 50 people at eligible charities and non-profits (250 generative credits a month, 100 GB storage). The UK page says beneficiaries, members and donors are not eligible; validation takes 1 to 3 business days. After the year, check what Adobe charges.",
+   "note": "The nonprofit offer is free for one year, so put the renewal date in your diary and check the price then. Ask Adobe where Adobe Express files are stored, as we could not find that. Download finished graphics (PNG, PDF) as a copy outside Adobe. We could not check the Adobe Express export options, two-step verification or DPA terms from Adobe's own pages. The offer is for staff only, so it does not cover volunteers unless they are part of your organisation.",
+   "conf": "low",
+   "src": [
+    [
+     "Adobe Express for Nonprofits",
+     "https://www.adobe.com/express/nonprofits"
+    ],
+    [
+     "Adobe for Non-profits (UK)",
+     "https://www.adobe.com/uk/nonprofits/"
+    ],
+    [
+     "Adobe Express for Non-profits",
+     "https://www.adobe.com/be_en/nonprofits/express.html"
+    ],
+    [
+     "Adobe Generative AI User Guidelines",
+     "https://www.adobe.com/legal/licenses-terms/adobe-gen-ai-user-guidelines.html"
+    ],
+    [
+     "Adobe Privacy Policy",
+     "https://www.adobe.com/privacy/policy.html"
+    ],
+    [
+     "Adobe Firefly FAQ - Adobe Help Center",
+     "https://helpx.adobe.com/firefly/web/get-started/learn-the-basics/adobe-firefly-faq.html"
+    ]
+   ]
+  }
+ ]
+}
