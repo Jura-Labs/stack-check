@@ -6,7 +6,16 @@ function fromLib(l){
   FIELDS.forEach(function(f){t[f]="";});
   t.name=l.name||"";t.job=l.job||"";t.kind=l.k||"";
   if(l.k==="Devices"){t.signin=l.signin||"";}
-  else if(l.id){t.where=l.w||"";t.based=l.b||"";t.open=l.o?"Yes":"No";t.exp=l.x||"";t.loc=l.loc||(l.w===ELSE?"OTHER":"");t.hq=l.hq||"";t.note="";}
+  else if(l.id){
+    // A supplier fact of "Don't know" is not pre-filled as the person's answer: "Not sure" scores
+    // Control or Exit red before they have seen the question (review, 30 Sep). Blank is neutral,
+    // as in the register; the facts panel still shows what we found.
+    t.where=l.w&&l.w!==DK?l.w:"";t.based=l.b||"";t.open=l.o?"Yes":"No";t.exp=l.x&&l.x!==DK?l.x:"";t.loc=l.loc&&l.loc!=="UNKNOWN"?l.loc:(l.w===ELSE?"OTHER":"");t.hq=l.hq||"";t.note="";
+    // A UK data centre is only right for UK customers: elsewhere in Europe, use the EU region the supplier lists.
+    if(t.loc==="GB"&&typeof state!=="undefined"&&state&&state.loc&&state.loc!=="UK"&&(l.locs||[]).some(function(c){return c!=="GB";}))t.loc=(l.locs||[]).filter(function(c){return c!=="GB";})[0];
+    // Register v2.2: an app on our computers is not asked about location, supplier or export.
+    if(l.k==="App on our computers"){t.where="";t.based="";t.exp="";t.loc="";t.hq="";}
+  }
   return t;
 }
 function example(){
@@ -19,7 +28,7 @@ function example(){
    mk("canva",{owner:"Comms lead",account:"Organisation",admins:"Two or more",cost:0,hours:2,depend:"Minor",data:"None",renewal:"Free plan",signin:"Yes",where:ELSE,based:ELSE,open:"No",terms:"Yes",exp:"Partial",copy:"No",value:"Green",decision:"Keep"}),
    Object.assign(fromLib({name:"Donor CRM (UK-hosted)",job:"Donors and supporters",k:"Software"}),{loc:"GB",hq:"GB",owner:"Fundraising lead",account:"Organisation",admins:"Two or more",cost:1368,hours:4,depend:"Critical",data:"Sensitive",renewal:"Annual, January",signin:"Yes",where:EU,based:EUR,open:"No",terms:"Yes",exp:"Yes",copy:"Yes",value:"Green",decision:"Keep"}),
    mk("plausible-analytics",{owner:"Comms lead",account:"Organisation",admins:"Two or more",cost:108,hours:0,depend:"Minor",data:"None",renewal:"Annual, March",signin:"Yes",where:EU,based:EUR,open:"Yes",terms:"Yes",exp:"Yes",copy:"Yes",value:"Green",decision:"Keep"}),
-   mk("win10",{name:"Laptops on Windows 10 (5)",owner:"Office manager",account:"Organisation",admins:"Two or more",cost:0,hours:3,depend:"Critical",data:"Sensitive",renewal:"Updates ended Oct 2025",signin:"No",copy:"No",value:"Red",decision:"Replace",next:"Upgrade to Windows 11 where possible, test Linux Mint on one, and replace the rest."}),
+   mk("win10",{name:"Laptops on Windows 10 (5)",owner:"Office manager",account:"Organisation",admins:"Two or more",cost:0,hours:3,depend:"Critical",data:"Sensitive",renewal:"Updates ended Oct 2025",signin:"No",upd:"No",copy:"No",value:"Red",decision:"Replace",next:"Upgrade to Windows 11 where possible, test Linux Mint on one, and replace the rest."}),
    mk("chatgpt",{name:"ChatGPT (staff personal accounts)",job:"Drafting and summaries",owner:"",account:"Personal",admins:DK,cost:0,hours:0,depend:"Important",data:"Personal",signin:DK,where:ELSE,based:ELSE,open:"No",terms:"No",exp:"Partial",copy:"No",ai:"Yes",fits:"Needs discussion",value:"Green",decision:"Replace",next:"Agree one AI tool on an organisation account, and a one-page rule on what must never go into it."})
   ];
   var k=function(i){return tools[i].key;};

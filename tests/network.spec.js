@@ -14,8 +14,16 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   page.on("request", (r) => requests.push({ url: r.url(), headers: JSON.stringify(r.headers()), body: r.postData() || "" }));
   page.on("websocket", (ws) => requests.push({ url: ws.url(), headers: "", body: "websocket" }));
 
+  // Let the real Umami script count this test host too, so what it would send
+  // on check.juralabs.org is sent here, captured, and checked below.
+  await page.route("**/index.html", async (route) => {
+    const res = await route.fetch();
+    const html = (await res.text()).replace('data-domains="check.juralabs.org"', 'data-domains="check.juralabs.org,127.0.0.1"');
+    await route.fulfill({ response: res, body: html });
+  });
   await fresh(page);
-  await page.click("#startOwn");
+  await page.waitForFunction(() => !!window.umami);
+  await page.click("#startNew");
   await step(page, 1);
 
   // A custom tool named with the marker, plus library tools.
@@ -37,7 +45,9 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
       if (await input.isVisible() && await input.isEditable()) await input.fill("7");
     }
     const groups = await page.$$eval('#view input[type="radio"]', (els) => [...new Set(els.map((e) => e.name))]);
-    for (const g of groups) await page.locator(`#view input[type="radio"][name="${g}"]`).first().check({ force: true }).catch(() => {});
+    // Choose in the page, not by a forced click at the radio's position: a hidden radio has no
+    // position, and a forced click there can land on a header link and leave the page.
+    for (const g of groups) await page.locator(`#view input[type="radio"][name="${g}"]`).first().evaluate((e) => e.click());
     await page.click("#nextT");
   }
 
@@ -63,4 +73,20 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   expect(leaks, "requests carrying what the user entered").toEqual([]);
   const analytics = requests.filter((r) => new URL(r.url).host === ANALYTICS);
   for (const r of analytics) expect(new URL(r.url).search + new URL(r.url).hash).toBe("");
+
+  // What Umami actually sent: page views only, the path only, never the marker.
+  expect(page.analyticsSent.length, "Umami counted the visit").toBeGreaterThan(0);
+  for (const sent of page.analyticsSent) {
+    expect(sent.body).not.toContain(MARKER);
+    const payload = JSON.parse(sent.body).payload;
+    const sentUrl = new URL(payload.url, "https://check.juralabs.org");
+    expect(sentUrl.search + sentUrl.hash, "no query or hash in the counted address").toBe("");
+    expect(JSON.parse(sent.body).type).toBe("event");
+    expect(payload.name, "no custom events (24a)").toBeUndefined();
+  }
+  // No element anywhere carries a custom analytics event.
+  for (const s of [1, 2, 3, 4]) {
+    await step(page, s);
+    expect(await page.locator("[data-umami-event]").count()).toBe(0);
+  }
 });

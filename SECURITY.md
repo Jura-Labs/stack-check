@@ -16,10 +16,16 @@ other than its own files and `analytics.juralabs.org`.
 ## What does reach a server
 
 - **The page itself**, from GitHub Pages, as for any website.
-- **A visit count**, once analytics is switched on: Umami, hosted by Jura
-  Labs in the EU, records that the page was visited. It never records what
-  you enter, and the tool never puts your answers in the page address. There
-  are no custom analytics events.
+- **A visit count**: Umami, hosted by Jura Labs in the EU, records that the
+  page was visited, with the page address (never its query or hash), the
+  page title, the referring site, screen size and browser language. It sets
+  no cookies, counts only on check.juralabs.org, and respects Do Not Track.
+  It never records what you enter, and the tool never puts your answers in
+  the page address. There are no custom analytics events. The no-egress test
+  runs the real Umami script and checks what it sends.
+- **Saved files and CSV downloads** are made in your browser and saved where
+  you choose. They are not uploaded. An opened file is read as data only:
+  it is never run, and only plain text and numbers are taken from it.
 
 ## Known limits
 

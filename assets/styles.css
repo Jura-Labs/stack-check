@@ -6,26 +6,28 @@ img{max-width:100%}
 
 /* Layout: one working column (max 960px) under a sticky three-step bar; results read as a board-ready dashboard. No external requests of any kind, fonts included: the page practises what it checks. */
 :root{
-  --bg:#F2F5F3; --surface:#FFFFFF; --ink:#15231E; --muted:#56665F; --line:#D3DCD7; --tint:#E3ECE7;
-  --accent:#1E4C3F; --accent-ink:#FFFFFF; --focus:#2F7BD6; --brand:#a04838; --m-sea:#EAF0F2; --m-side:#DFE7EA; --m-land:#D9DDD9; --m-land2:#CFD6D2; --m-ukeu:#C9DCCF; --m-held:#8FBFA0;
+  /* Jura Labs brand (juralabs.org, 30 Sep): terracotta #A04838, deep terracotta #8B4532, cream #F1E9D2,
+     off-white #F4F1E8, charcoal #2B2D2F, light terracotta #E8B9A8. The lights keep green, amber and red. */
+  --bg:#F1E9D2; --surface:#FBF8EF; --ink:#2B2D2F; --muted:#5E574B; --line:#DACDB0; --tint:#EADFC4;
+  --accent:#A04838; --accent-ink:#FFFFFF; --focus:#2F6FD6; --brand:#A04838; --heading:#8B4532; --m-sea:#E7E2D4; --m-side:#E0D7C1; --m-land:#D5CDBB; --m-land2:#CAC1AD; --m-ukeu:#C9DCCF; --m-held:#8FBFA0;
   --good:#236B43; --good-bg:#DCEFE2; --warn:#8A5A00; --warn-bg:#FAEAC4; --bad:#A8231B; --bad-bg:#F7D9D5;
-  --f-display:"Avenir Next","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
-  --f-body:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --f-display:"Montserrat","Avenir Next","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-body:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --f-data:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#0E1613; --surface:#16211D; --ink:#E4EDE8; --muted:#9BAEA5; --line:#2A3A34; --tint:#1D2C26;
-  --accent:#86C9AC; --accent-ink:#0E1613; --focus:#7DB5F5; --brand:#E3957F; --m-sea:#101B20; --m-side:#15232A; --m-land:#26312D; --m-land2:#2C3833; --m-ukeu:#2A4236; --m-held:#3F7A5A;
-  --good:#8BD6A5; --good-bg:#17311F; --warn:#F1C466; --warn-bg:#382B10; --bad:#F39A92; --bad-bg:#3D1B18; color-scheme:dark}}
+  --bg:#2B2D2F; --surface:#34373A; --ink:#F1E9D2; --muted:#BDB5A4; --line:#484B4F; --tint:#3D4043;
+  --accent:#E8B9A8; --accent-ink:#2B2D2F; --focus:#7DB5F5; --brand:#E8B9A8; --heading:#E8B9A8; --m-sea:#232527; --m-side:#303235; --m-land:#3E4144; --m-land2:#47494C; --m-ukeu:#2F4A3A; --m-held:#4F8A68;
+  --good:#8BD6A5; --good-bg:#223A2B; --warn:#F1C466; --warn-bg:#40341A; --bad:#F5A39A; --bad-bg:#4A2622; color-scheme:dark}}
 :root[data-theme="dark"]{
-  --bg:#0E1613; --surface:#16211D; --ink:#E4EDE8; --muted:#9BAEA5; --line:#2A3A34; --tint:#1D2C26;
-  --accent:#86C9AC; --accent-ink:#0E1613; --focus:#7DB5F5; --brand:#E3957F; --m-sea:#101B20; --m-side:#15232A; --m-land:#26312D; --m-land2:#2C3833; --m-ukeu:#2A4236; --m-held:#3F7A5A;
-  --good:#8BD6A5; --good-bg:#17311F; --warn:#F1C466; --warn-bg:#382B10; --bad:#F39A92; --bad-bg:#3D1B18; color-scheme:dark}
+  --bg:#2B2D2F; --surface:#34373A; --ink:#F1E9D2; --muted:#BDB5A4; --line:#484B4F; --tint:#3D4043;
+  --accent:#E8B9A8; --accent-ink:#2B2D2F; --focus:#7DB5F5; --brand:#E8B9A8; --heading:#E8B9A8; --m-sea:#232527; --m-side:#303235; --m-land:#3E4144; --m-land2:#47494C; --m-ukeu:#2F4A3A; --m-held:#4F8A68;
+  --good:#8BD6A5; --good-bg:#223A2B; --warn:#F1C466; --warn-bg:#40341A; --bad:#F5A39A; --bad-bg:#4A2622; color-scheme:dark}
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body)}
 .wrap{max-width:960px;margin:0 auto;padding-inline:16px;padding-block:20px 64px}
 h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em}
-h1{font-size:clamp(1.7rem,4vw,2.3rem);line-height:1.1;font-weight:700}
+h1{font-size:clamp(1.7rem,4vw,2.3rem);line-height:1.1;font-weight:700;color:var(--heading)}
 h2{font-size:1.3rem;font-weight:700}
 h3{font-size:1.02rem;font-weight:650}
 p{margin:0;max-width:65ch}
@@ -75,7 +77,7 @@ nav.steps .sub{display:block;font-weight:400;font-size:.76rem;color:var(--muted)
 input[type=text],input[type=number],select{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.5rem .6rem;min-height:40px;width:100%}
 
 /* Step 2 */
-.progress{display:flex;flex-wrap:wrap;gap:.35rem}
+.progress{display:flex;flex-wrap:wrap;gap:.35rem;list-style:none;margin:0;padding:0}
 .pdot{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.25rem .55rem;font-size:.8rem;cursor:pointer;min-height:32px}
 .pdot.done{background:var(--tint)}
 .pdot[aria-current="true"]{border-color:var(--accent);font-weight:650}
@@ -138,35 +140,13 @@ td.num{font-variant-numeric:tabular-nums;font-family:var(--f-data);font-size:.82
 .copyout{width:100%;min-height:120px;border:1px solid var(--line);border-radius:8px;background:var(--bg);font:.8rem/1.4 var(--f-data);padding:.6rem}
 .toast{font-size:.85rem;color:var(--good);font-weight:600}
 .legend{display:flex;flex-wrap:wrap;gap:.8rem;font-size:.82rem;color:var(--muted)}
-/* Step 4: data journeys */
-.jgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.35fr);gap:1.2rem;align-items:start}
-@media (max-width:820px){.jgrid{grid-template-columns:1fr}}
-.edlist{list-style:none;margin:0;padding:0;display:grid;gap:.6rem}
-.edlist li{display:grid;gap:.4rem;border:1px solid var(--line);border-radius:10px;padding:.6rem .7rem;background:var(--bg)}
-.edlist .edtop{display:grid;grid-template-columns:auto 1fr auto;gap:.5rem;align-items:end}
-.idx{font:600 .78rem var(--f-data);width:1.7rem;height:1.7rem;border-radius:50%;display:grid;place-items:center;background:var(--accent);color:var(--accent-ink);flex:none}
-.flow{list-style:none;margin:0;padding:0;display:grid}
-.node{background:var(--surface);border:1px solid var(--line);border-left:6px solid var(--good);border-radius:10px;padding:.75rem .9rem;display:grid;gap:.5rem}
-.node.sev-watch{border-left-color:var(--warn)}
-.node.sev-risk{border-left-color:var(--bad)}
-.nhead{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:start}
-.loc{font-size:.76rem;font-weight:600;border-radius:6px;padding:.15rem .45rem;background:var(--tint);color:var(--muted);white-space:nowrap}
-.loc.out{background:var(--bad-bg);color:var(--bad)}
 .flags{list-style:none;margin:0;padding:0;display:grid;gap:.3rem;font-size:.86rem}
 .flags li{display:grid;grid-template-columns:1rem 1fr;gap:.4rem;align-items:start}
 .flags svg{width:.7rem;height:.7rem;margin-top:.35rem}
 .flags .risk svg{fill:var(--bad)}
 .flags .watch svg{fill:var(--warn)}
 .flags .ok{color:var(--good)}
-.link{margin-left:1.3rem;border-left:2px dashed var(--line);padding:.55rem 0 .55rem 1rem;display:grid;gap:.2rem;font-size:.86rem}
-.link .how{font-weight:650}
-.link.lvl-risk .how{color:var(--bad)}
-.link.lvl-watch .how{color:var(--warn)}
-.cross{justify-self:start;background:var(--bad-bg);color:var(--bad);font-weight:650;font-size:.8rem;border-radius:6px;padding:.2rem .55rem}
-.sensnote{background:var(--warn-bg);color:var(--ink);border-radius:8px;padding:.5rem .7rem;font-size:.86rem}
-.owners{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:.7rem}
-.jtabs{display:flex;flex-wrap:wrap;gap:.45rem}
-footer{margin-top:2rem;font-size:.82rem;color:var(--muted);display:grid;gap:.4rem}
+.owners{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr));gap:.7rem}
 @media (prefers-reduced-motion:no-preference){.panel,.tile{transition:border-color .15s}}
 [hidden]{display:none!important}
 .map{width:100%;height:auto;display:block;border-radius:10px;border:1px solid var(--line)}
@@ -176,16 +156,12 @@ footer{margin-top:2rem;font-size:.82rem;color:var(--muted);display:grid;gap:.4re
 .m-box{fill:var(--surface);stroke:var(--line);stroke-width:1.5}.m-boxheld{stroke:var(--warn);stroke-width:2.5}.m-boxunk.m-boxheld{stroke:var(--bad)}
 .m-label{font:600 13px var(--f-body);fill:var(--ink);paint-order:stroke;stroke:var(--m-sea);stroke-width:4px;stroke-linejoin:round}
 .m-boxlabel{font:600 13px var(--f-body);fill:var(--ink)}.m-lawlabel{font:italic 11px var(--f-body);fill:var(--muted)}
-.m-pin circle{fill:var(--accent);stroke:var(--surface);stroke-width:2}.m-pin text,.m-step text{font:700 12px var(--f-body);fill:var(--accent-ink)}
+.m-pin circle{fill:var(--accent);stroke:var(--surface);stroke-width:2}.m-pin text{font:700 12px var(--f-body);fill:var(--accent-ink)}
 .m-pin circle.m-pers{stroke:var(--ink);stroke-width:2}.m-pin circle.m-sens{stroke:var(--ink);stroke-width:4}
 .m-pin.m-out circle{fill:var(--warn)}.m-pin.m-unk circle{fill:var(--bad)}
-.m-step circle{fill:var(--good);stroke:var(--surface);stroke-width:2}.m-step.m-watch circle{fill:var(--warn)}.m-step.m-risk circle{fill:var(--bad)}
-.m-step text{fill:#fff}
-.m-line{fill:none;stroke:var(--muted);stroke-width:2.2}.m-line.m-watch{stroke:var(--warn)}.m-line.m-risk{stroke:var(--bad)}.m-line.m-cross{stroke-dasharray:7 5;stroke-width:3}
-.m-arrowhead{fill:var(--muted)}
 .m-law{fill:none;stroke:var(--muted);stroke-width:1.4;stroke-dasharray:2 4;opacity:.8}
 .lg{display:inline-block;width:26px;height:0;vertical-align:middle;margin-right:.35rem}
-.lg-cross{border-top:3px dashed var(--bad)}.lg-law{border-top:2px dotted var(--muted);margin-left:.2rem}
+.lg-law{border-top:2px dotted var(--muted);margin-left:.2rem}
 .factlist{display:grid;gap:.45rem;margin:.7rem 0 0}.factlist div{display:grid;grid-template-columns:minmax(120px,190px) 1fr;gap:.6rem}
 @media (max-width:560px){.factlist div{grid-template-columns:1fr;gap:.1rem}}
 .factlist dt{font-weight:600;font-size:.85rem}.factlist dd{margin:0;font-size:.88rem}
@@ -194,7 +170,7 @@ footer{margin-top:2rem;font-size:.82rem;color:var(--muted);display:grid;gap:.4re
 .qgrid{align-items:start}
 .owners .panel{align-content:start}
 .brandrow{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
-.logo{height:46px;width:auto;color:var(--brand);display:block}
+.logo{height:clamp(56px,9vw,84px);width:auto;color:var(--brand);display:block}
 .quote{font-family:var(--f-display);font-weight:650;font-size:1.05rem;color:var(--accent);max-width:60ch}
 .tiles{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
 .strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.6rem}
@@ -246,3 +222,110 @@ footer a{color:inherit}
    a label from the accessibility tree, which left the register table's
    decision, next-step and date fields with no name (axe: select-name, label). */
 .vh{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* File inputs are visually hidden; their label is the visible button, so it
+   shows the focus ring when the input has keyboard focus. */
+input[type=file].vh + label.btn{cursor:pointer}
+input[type=file].vh:focus-visible + label.btn{outline:3px solid var(--focus);outline-offset:2px}
+
+/* S1 (audit 29 Sep): visually hidden labels inside the register table are
+   absolutely positioned; without a containing block they stretched the whole
+   page sideways (WCAG 1.4.10). */
+.tablewrap{position:relative}
+
+/* M3: skip link, visible when focused. */
+.skip{position:absolute;left:16px;top:-100px;z-index:10;background:var(--surface);color:var(--ink);border:2px solid var(--focus);border-radius:8px;padding:.5rem .8rem}
+.skip:focus{top:8px}
+#view:focus{outline:none}
+
+.err{color:var(--bad);font-weight:600}
+details.maptable summary{cursor:pointer;font-weight:600;margin:.4rem 0}
+
+/* S4: forced colours (Windows high contrast). Chosen answers, the current
+   step and the current tool must not rely on colour or box-shadow. */
+@media (forced-colors:active){
+  .opt input:checked + span{forced-color-adjust:none;background:Highlight;color:HighlightText;border:3px solid Highlight}
+  .opt input:checked + span::before{content:"\2713  "}
+  nav.steps button[aria-current="step"]{border:3px solid CanvasText;border-bottom-width:6px}
+  .pdot[aria-current="true"]{border:3px solid CanvasText;text-decoration:underline}
+  .chip[aria-pressed="true"]{border:3px solid CanvasText}
+}
+/* Grid children may shrink below their content, so a wide table inside
+   (such as the map table in <details>) scrolls in its own region instead of
+   widening the page (WCAG 1.4.10). */
+.stack>*{min-width:0}
+
+/* M4 (audit 29 Sep): edges of controls at 3:1 or more against both the card
+   and the page background (WCAG 1.4.11). --line stays for decorative rules. */
+:root{--control:#857865}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--control:#8C8579}}
+:root[data-theme="dark"]{--control:#8C8579}
+input[type=text],input[type=number],input[type=date],select,.opt span,.chip,.btn,.pdot,nav.steps button{border-color:var(--control)}
+
+/* M5: at high zoom or on short screens the sticky step bar would cover a
+   third or more of the view, so it scrolls with the page instead. */
+@media (max-height:560px){nav.steps{position:static}}
+
+/* Folded sections on Decide ("Thinking of changing a tool?"). */
+details.fold{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:.2rem .9rem}
+details.fold>summary{cursor:pointer;font-weight:650;padding:.6rem 0;min-height:44px;display:list-item}
+details.fold[open]>summary{border-bottom:1px solid var(--line);margin-bottom:.8rem}
+details.fold>section{padding-bottom:.9rem}
+
+/* One-line privacy box after step 1 (Paul, 29 Sep). */
+header.top.compact .pmore{display:none}
+header.top.compact .privacy{padding:.4rem .8rem}
+/* The read-only example prompt stays in view wherever the person is. */
+.banner.exedit{position:fixed;left:16px;right:16px;bottom:16px;z-index:20;background:var(--surface);border-style:solid;box-shadow:0 4px 18px rgba(0,0,0,.18);max-width:960px;margin:0 auto}
+ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
+
+/* Header: theme switch and a larger Jura Labs logo, linked to juralabs.org (Paul, 30 Sep). */
+.brandright{display:flex;align-items:center;gap:1rem}
+.logolink{display:block;border-radius:6px}
+.themebtn{font-size:.85rem;min-height:40px}
+.themebtn::before{content:"\263E";margin-right:.4rem}
+.themebtn[aria-pressed="true"]::before{content:"\2600"}
+.tagline{font-family:var(--f-display);font-weight:600;font-size:1.05rem;color:var(--accent)}
+
+/* Footer: three columns on wide screens, one on narrow (Paul, 30 Sep). */
+footer{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:1.4rem;font-size:.84rem;color:var(--muted)}
+.fcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.2rem 2rem}
+.fcol{display:grid;gap:.45rem;align-content:start}
+.fcol p{max-width:none}
+.flogo{font-family:var(--f-display);font-weight:700;font-size:1.05rem;color:var(--brand)!important;text-decoration:none}
+.flogo:hover{text-decoration:underline}
+
+/* Register: four columns that fit the page; on phones each tool becomes a card. */
+table.reg{min-width:0;table-layout:fixed}
+table.reg th:nth-child(1){width:28%}
+table.reg th:nth-child(2){width:24%}
+table.reg th:nth-child(3){width:16%}
+table.reg td{overflow-wrap:anywhere}
+table.reg td>div+div{margin-top:.15rem}
+.minis{display:flex;flex-wrap:wrap;gap:.3rem}
+.minis .light{font-size:.76rem}
+.decgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,9.5rem);gap:.4rem .5rem}
+.decgrid .decnext{grid-column:1/-1}
+.decgrid label{font-size:.74rem;font-weight:600;color:var(--muted)}
+table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width:0;width:100%;min-height:36px;padding:.3rem .45rem}
+@media (max-width:700px){
+  .decgrid{grid-template-columns:1fr}
+  table.reg thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  table.reg,table.reg tbody,table.reg tr,table.reg td{display:block;width:auto}
+  table.reg tr{padding:.7rem .2rem;border-bottom:1px solid var(--line)}
+  table.reg tr:last-child{border-bottom:0}
+  table.reg td{border:0;padding:.3rem .6rem}
+  table.reg td[data-label]::before{content:attr(data-label);display:block;font-size:.72rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:.2rem}
+}
+
+/* Phones: the step bar is one short row (it took a quarter of the screen). The full step
+   name stays in each button for screen readers; a short word is shown instead. */
+nav.steps .short{display:none}
+@media (max-width:560px){
+  nav.steps ol{grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem}
+  nav.steps{padding-block:.4rem}
+  nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
+  nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+  nav.steps .short{display:block;font-size:.72rem;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+  nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
+}

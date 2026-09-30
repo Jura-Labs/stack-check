@@ -1,8 +1,19 @@
-/* Print: a clean board paper from the results step (Print to PDF).
-   First pass; the full print layout is a doc 24 phase 5 item. */
-nav.steps,.banner,.btn,.privacy,footer a[href$=".md"]{display:none!important}
-body{background:#fff;color:#000}
-.panel,.tile,.card,.prio li{break-inside:avoid;border-color:#999}
-.light{border:1px solid currentColor}
-.tablewrap{overflow:visible}
-table{min-width:0}
+/* Print: a clean board paper from the results step (Print or save as PDF). */
+@page{margin:15mm}
+nav.steps,.banner,.btn,.themebtn,label.btn,.privacy,.navrow,input[type=file],#copyArea,.toast,footer a{display:none!important}
+body{background:#fff;color:#000;font-size:11pt}
+.wrap{max-width:none;padding:0}
+header.top .muted{display:none}
+.panel,.tile,.card,.prio li,.zone,tr{break-inside:avoid;border-color:#999;background:#fff}
+h2,h3{break-after:avoid}
+.light{border:1px solid currentColor;background:#fff!important}
+.tablewrap{overflow:visible;border:0}
+table{min-width:0;font-size:9pt}
+select,input[type=text],input[type=date]{border:0;background:transparent;appearance:none;-webkit-appearance:none;padding:0;min-height:0}
+.map{max-height:120mm;width:auto}
+
+/* Decide prints as the board paper: folded extras are not printed.
+   "Your data" prints the map and its table. */
+details.fold{display:none}
+details.maptable{display:block}
+details.maptable>summary{display:none}
