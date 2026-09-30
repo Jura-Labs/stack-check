@@ -85,7 +85,7 @@ test("the example can still be explored: steps, compare, the map's toggle, organ
   await step(page, 1);
   await page.locator('label[for="org-1"]').click();
   await expect(page.locator("#exampleEdit")).toBeHidden();
-  expect(await page.evaluate(() => state.org)).toBe("business");
+  expect(await page.evaluate(() => state.org)).toBe("cci");
 });
 
 test("Start your own from the prompt; and looking at the example never overwrites your list", async ({ page }) => {
@@ -157,4 +157,22 @@ test("Decide tiles: no Critical tile; Personal data says 'tools hold this data';
   await expect(tiles.filter({ hasText: "Personal data" })).toContainText("tools hold this data");
   // "usually free" is gone from Fix now (Paul, 29 Sep)
   await expect(tiles.filter({ hasText: "Fix now" })).not.toContainText("usually free");
+});
+
+test("not-for-profits only: no business option in the picker; a saved business list still opens (Paul, 30 Sep)", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await expect(page.locator('input[name="org"]')).toHaveCount(3);
+  await expect(page.locator("#view")).not.toContainText("A small or medium business");
+  const opened = await page.evaluate(() => stateFromFile(JSON.stringify({ app: "stack-check", state: { v: 6, org: "business", tools: [{ name: "Xero", data: "Internal" }] } })).org);
+  expect(opened).toBe("business");
+});
+
+test("card links go to the guide's cards page anchors", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.tools.find((t) => t.lib === "dropbox").decision = "Retire"; });
+  await step(page, 3);
+  await page.locator('details[data-fold="cards"] summary').click();
+  const href = await page.locator('details[data-fold="cards"] a', { hasText: "Full card" }).first().getAttribute("href");
+  expect(href).toBe("https://juralabs.org/updates/stay-in-command-of-your-technology/reference-cards#files");
 });

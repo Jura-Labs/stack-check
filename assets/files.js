@@ -96,7 +96,7 @@ function stateFromFile(text) {
   return {
     v: 6,
     showLaw: s.showLaw !== false,
-    org: oneOf(s.org, ORGS.map(function (o) { return o[0]; }), "nonprofit"),
+    org: oneOf(s.org, ORGS_ALL.map(function (o) { return o[0]; }), "nonprofit"),
     loc: oneOf(s.loc, LOCS.map(function (l) { return l[0]; }), "UK"),
     home: typeof s.home === "string" && /^[A-Z]{2,5}$/.test(s.home) ? s.home : "GB",
     ccy: oneOf(s.ccy, Object.keys(CCY), "GBP"),
