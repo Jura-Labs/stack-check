@@ -3,7 +3,9 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
-## 2.2.0 (in development)
+## 2.2.0 (30 September 2026)
+
+- Launched at https://check.juralabs.org (decision 2026-09-30-stack-check-launch).
 
 - Register v2.2 (decision 2026-09-30): two new kinds. "App on our
   computers" (no online account, such as GIMP or KeePassXC) is not asked

@@ -1,3 +1,2 @@
-# Pre-launch: nothing indexed until the tool launches after user testing.
 User-agent: *
-Disallow: /
+Allow: /

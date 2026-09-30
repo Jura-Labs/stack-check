@@ -9,8 +9,8 @@ from Jura Labs. It is written for small charities, non-profits, cultural
 organisations, small businesses and sole traders in the UK, Europe and
 beyond, most of whom have no IT department.
 
-> **Status: in development.** Not yet launched. It will be served at
-> https://check.juralabs.org after testing with small organisations.
+> **Status: live** at https://check.juralabs.org since 30 September 2026.
+> User testing with small organisations follows the launch.
 
 ## Your answers stay in your browser
 
@@ -44,7 +44,7 @@ against its worked example.
 It is plain HTML, CSS and JavaScript, with no build step and nothing to
 install to use it.
 
-- **Online:** https://check.juralabs.org (after launch).
+- **Online:** https://check.juralabs.org
 - **On your own computer:** download a release zip and open `index.html`.
 - **On your own server:** copy the files. Any static web host works.
 

@@ -1,13 +1,13 @@
 # Deploys the site files to GitHub Pages at check.juralabs.org.
 #
-# Manual only until launch. The rule 10 record
-# (jura-brain decisions/2026-09-29-stack-check-repo-and-pages.md) does not
-# authorise launching before the user tests in Drive doc 24, so merging to main
-# does not publish. At launch, Paul adds "push: branches: [main]" here and
-# removes the noindex tag and robots.txt block.
+# Launched 30 September 2026 on Paul's instruction in session (decision
+# 2026-09-30-stack-check-launch in jura-brain): every merge to main publishes.
+# It can still be run by hand (workflow_dispatch) to redeploy a commit.
 name: Deploy to GitHub Pages
 
 on:
+  push:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
