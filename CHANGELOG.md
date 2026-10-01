@@ -3,8 +3,20 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
-## Unreleased
+## 2.2.3 (1 October 2026)
 
+- Library review of all 103 tools. Text about a supplier now states facts
+  and advice only: where something could not be established it says
+  "Unknown", without describing the research. 49 entries reworded.
+- Facts re-checked on suppliers' own pages for 32 tools. Newly recorded:
+  export for Adobe Creative Cloud, Affinity, GIMP, Inkscape, Infomaniak
+  kSuite, Dinero and Billy (yes) and for Calendly, Zoom AI Companion and
+  BrightHR (partial); two-step sign-in for Calendly, Zettle, Tally,
+  e-conomic and ForeningLet; data location for Betalingsservice (Denmark)
+  and Sage Payroll (Ireland, low confidence); Wix trains AI on user
+  content; nonprofit offers for FreeAgent and Zoom.
+- The facts panel and the comparison table show "Unknown" for anything not
+  established.
 - "The full card in the guide" now opens that card's own page
   (juralabs.org/updates/stay-in-command-of-your-technology/files and so
   on), published with guide v1.1, instead of the Step 4 section.
