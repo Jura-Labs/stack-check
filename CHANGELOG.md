@@ -3,6 +3,12 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## Unreleased
+
+- "The full card in the guide" now opens that card's own page
+  (juralabs.org/updates/stay-in-command-of-your-technology/files and so
+  on), published with guide v1.1, instead of the Step 4 section.
+
 ## 2.2.2 (30 September 2026)
 
 - Accessibility fixes from the live check: map labels on coloured
