@@ -263,16 +263,18 @@ function mapLegend(){
     '<span><label class="s2 row"><input type="checkbox" id="lawToggle" data-law'+(state.showLaw?" checked":"")+'> Show whose law applies <span class="lg lg-law"></span></label></span></div>';
 }
 function bindLaw(){view.querySelectorAll("[data-law]").forEach(function(l){l.addEventListener("change",function(){state.showLaw=l.checked;render();var e=document.getElementById(l.id);if(e)e.focus();});});}
+// A fact we could not establish is shown as "Unknown", without saying why (Paul, 1 Oct 2026).
+function known(v){return v==="Don't know"||v==="unclear"?"Unknown":v;}
 function factsPanel(t){
   var l=t.lib&&BYID[t.lib];
   if(!l||!l.src)return t.note?'<p class="note">'+esc(t.note)+'</p>':"";
-  var AI={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Not clear from what the supplier publishes"};
-  var RES={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Not clear"};
+  var AI={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Unknown"};
+  var RES={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Unknown"};
   function row(k,v){return v?'<div><dt>'+k+'</dt><dd>'+esc(v)+'</dd></div>':"";}
   return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' (checked 29 September 2026)</summary><dl class="factlist">'+
     row("Company",(l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par+(PLACE[l.parc]?" ("+PLACE[l.parc]+")":""):""))+
     row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans?": "+l.plans:""))+
-    row("Export",l.x)+row("Two-step sign-in (MFA)",l.mfa)+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
+    row("Export",known(l.x))+row("Two-step sign-in (MFA)",known(l.mfa))+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
     row("Nonprofit offer",l.np)+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
     '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
@@ -495,7 +497,7 @@ function renderAsk(){
   // Mission
   var nm=["ai","rights","env","fits"].filter(function(f){return t[f];}).length;
   h+='<details class="facts"'+(nm?" open":"")+'><summary id="missionSum">'+ML()+' check (optional, '+nm+' of 4 answered)</summary><div class="s14 qgrid">'+
-    q("ai",t,"Does the supplier use our data to train AI?","Check its privacy or AI page. Ask this of every supplier, not only AI companies."+(t.lib&&BYID[t.lib]&&BYID[t.lib].ai?' <b>Our research: '+esc({"yes":"yes, by default","no":"no","depends-on-plan":"it depends on the plan","not-applicable":"not applicable","unclear":"not clear"}[BYID[t.lib].ai]||BYID[t.lib].ai)+'.</b> See "What we found" above.':""))+
+    q("ai",t,"Does the supplier use our data to train AI?","Check its privacy or AI page. Ask this of every supplier, not only AI companies."+(t.lib&&BYID[t.lib]&&BYID[t.lib].ai?' <b>Our research: '+esc({"yes":"yes, by default","no":"no","depends-on-plan":"it depends on the plan","not-applicable":"not applicable","unclear":"unknown"}[BYID[t.lib].ai]||BYID[t.lib].ai)+'.</b> See "What we found" above.':""))+
     q("rights",t,"Are there human rights concerns?",'Could this supplier or technology contribute to harm to people, for example through surveillance, discrimination, exploitation of workers, or targeting vulnerable groups? The <a href="https://www.business-humanrights.org" target="_blank" rel="noopener noreferrer">Business and Human Rights Resource Centre<span class="vh"> (opens in a new tab)</span></a> is a good place to look.')+
     q("env",t,"Are there environmental concerns?","Consider energy use and data-centre claims, AI compute, duplicate tools doing the same job, and how long your devices last.")+
     q("fits",t,NP()?"Does it fit our mission and values?":"Does it fit our values?",PUBHINT())+
@@ -613,9 +615,9 @@ function renderResults(){
   var cb=state.cmpB&&BYID[state.cmpB]&&state.cmpB!==ca?state.cmpB:(same[0]?same[0].id:libAll.find(function(l){return l.id!==ca;}).id);
   function sel(id,val){return '<select id="'+id+'">'+LIB.map(function(g){var its=g.items.filter(function(l){return l.src;});if(!its.length)return "";return '<optgroup label="'+esc(g.g)+'">'+its.map(function(l){return '<option value="'+l.id+'"'+(l.id===val?" selected":"")+'>'+esc(l.name)+'</option>';}).join("")+'</optgroup>';}).join("")+'</select>';}
   var A=BYID[ca],B=BYID[cb];
-  var AIW={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Not clear"};
-  var RESW={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Not clear"};
-  function crow(k,fa,fb){return '<tr><th scope="row">'+k+'</th><td>'+esc(fa||"Not stated")+'</td><td>'+esc(fb||"Not stated")+'</td></tr>';}
+  var AIW={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Unknown"};
+  var RESW={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Unknown"};
+  function crow(k,fa,fb){return '<tr><th scope="row">'+k+'</th><td>'+esc(known(fa)||"Unknown")+'</td><td>'+esc(known(fb)||"Unknown")+'</td></tr>';}
   function co(l){return (l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par:"");}
   h+='<details class="fold" data-fold="cmp"'+(state.foldCmp?" open":"")+'><summary>Compare two tools: supplier facts side by side</summary><section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h3 id="cmpH">Compare two tools</h3><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+

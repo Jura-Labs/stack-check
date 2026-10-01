@@ -115,3 +115,29 @@ browser before launch, like the rows above.
 - [ ] Bluesky (medium): AI training "No" from Bluesky's public statement,
   not its terms (Paul's decision). Export is public records only.
 - Held, not shipped: Adobe Express (low), in `held/`.
+
+## Review of 1 October 2026 (wording and facts)
+
+All 103 entries were reviewed. Text now says "Unknown" where a point could
+not be established, without describing the research. 32 tools were
+re-checked on suppliers' own pages. These rest on thinner evidence than a
+full first-party read, so check them in a browser:
+
+- [ ] Adobe Creative Cloud: export "Yes" (downloads from the desktop app,
+  Libraries export, 30 days after a teams licence is cancelled). Adobe's
+  help pages could only be read as search excerpts.
+- [ ] Wix: AI training "yes", from Wix's Generative AI Policy (user content
+  listed as a data source). The Terms of Use clause itself was not read.
+- [ ] Tally and ForeningLet: two-step sign-in "all plans" because their
+  help pages state no plan limit. ForeningLet's is for administrators.
+- [ ] e-conomic two-step sign-in and the FreeAgent charity discount (50%,
+  on request): from search excerpts of first-party help pages.
+- [ ] Sage Payroll: data in Ireland, from a 2023 sub-processor list quoted
+  in search results. Confidence left at low.
+- [ ] Betalingsservice: "processed in Denmark and may be transferred to
+  other countries". Recorded as UK, EU or EEA.
+- [ ] Affinity: export formats from the older Affinity Designer help.
+- [ ] Facebook Page and Instagram: whether messages are included in Meta's
+  downloads is unknown (Meta's help pages returned only their titles).
+- [ ] Stripe (EU storage), Plausible and Matomo (AI training): the recorded
+  fact was "no" with no statement behind it; now "unknown".

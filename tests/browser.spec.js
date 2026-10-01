@@ -97,3 +97,26 @@ test("every script and stylesheet link carries the current version", async () =>
   }
   expect(fs.readFileSync("index.html", "utf8")).toContain(`<span id="version">${version}</span>`);
 });
+
+// Paul, 1 Oct 2026: library text states facts and advice. A point that could not be established
+// says "Unknown", without describing the research (no "I found", "could not be opened", "Don't know…").
+test("library text never narrates the research, and unknown facts show as Unknown", async ({ page }) => {
+  await fresh(page);
+  const bad = await page.evaluate(() => {
+    const rx = /\b(I|we) (could not|did not|found|have not|could (read|open))\b|could not be (opened|read|loaded)|did not load|search (excerpt|summary|result)|\b403\b|pages? (we|I) (read|found|could)|blocked the|Don.t know/i;
+    const out = [];
+    LIB.forEach((g) => g.items.forEach((t) => ["store", "plans", "aid", "np", "note", "co"].forEach((k) => {
+      if (typeof t[k] === "string" && rx.test(t[k])) out.push(t.id + "." + k);
+    })));
+    return out;
+  });
+  expect(bad).toEqual([]);
+  // In the tool, an unknown export or two-step sign-in reads "Unknown".
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["membersite"])]; state.cur = 0; });
+  await step(page, 2);
+  const facts = page.locator("details.facts").first();
+  await facts.locator("summary").click();
+  await expect(facts).toContainText("Unknown");
+  await expect(facts).not.toContainText("Don't know");
+  await expect(facts).not.toContainText("unclear");
+});
