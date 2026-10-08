@@ -705,7 +705,7 @@ function registerRows(){
     .map(function(v){return String(v==null?"":v).replace(/[\t\n\r]/g," ");});});
   return [H].concat(rows);
 }
-function tsv(){return registerRows().map(function(r){return r.join("\t");}).join("\n");}
+function tsv(){return registerRows().map(function(r){return r.map(formulaSafe).join("\t");}).join("\n");}
 function board(){
   var d=state.tools.filter(answered);
   function by(a){return d.filter(function(t){return action(t)===a;});}
