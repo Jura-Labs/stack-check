@@ -111,6 +111,37 @@ test("save to a file, clear everything, open the file: the answers come back", a
   expect(errors).toEqual([]);
 });
 
+test("Clear everything leaves nothing of the old answers in the browser, not even the kind of organisation", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.org = "cci"; state.loc = "EU"; state.home = "DK"; state.ccy = "DKK"; state.tools[0].owner = "Finance lead"; render(); });
+  await step(page, 3);
+  expect(await page.evaluate(() => localStorage.getItem("stackcheck.v5"))).toContain("DKK");
+  await page.click("#clearAll");
+  await page.click("#clearYes");
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(1);
+  const saved = await page.evaluate(() => localStorage.getItem("stackcheck.v5") || "");
+  for (const old of ['"cci"', '"DK"', "DKK", '"EU"', "Finance lead", "Microsoft"]) expect(saved).not.toContain(old);
+  expect(await page.evaluate(() => [state.org, state.loc, state.home, state.ccy, state.tools.length])).toEqual(["nonprofit", "UK", "GB", "GBP", 0]);
+});
+
+test("Copy for owners: an owner's name that looks like a formula cannot start a line as one", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } } });
+    state.mode = "own"; state.tools[0].owner = "=1+1"; state.tools[1].owner = "-2+3"; state.tools[2].owner = " @SUM(1)"; state.tools[3].owner = "Finance lead"; render();
+  });
+  await step(page, 3);
+  await page.click("#copyOwners");
+  await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
+  const lines = (await page.evaluate(() => window.__copied[0])).split("\n");
+  expect(lines).toContain("'=1+1");
+  expect(lines).toContain("'-2+3");
+  expect(lines).toContain("'@SUM(1)");
+  expect(lines).toContain("Finance lead");
+  for (const line of lines) expect(line).not.toMatch(/^\s*[=+@]/);
+});
+
 test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {
   await fresh(page);
   await step(page, 1);

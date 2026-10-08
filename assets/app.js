@@ -673,7 +673,8 @@ function ownerTasks(){
 }
 function ownersText(){
   var by=ownerTasks(),L=[];
-  Object.keys(by).forEach(function(o){L.push(o);by[o].forEach(function(x){L.push("- "+x.tool+": "+x.task);});L.push("");});
+  // An owner's name starts its own line, so it gets the same guard as a copied cell.
+  Object.keys(by).forEach(function(o){L.push(tsvCell(o));by[o].forEach(function(x){L.push("- "+x.tool+": "+x.task);});L.push("");});
   return L.join("\n");
 }
 
@@ -776,6 +777,7 @@ var exPending=false;
 function closeClear(){document.getElementById("confirmClear").hidden=true;var c=document.getElementById("clearAll");if(c)c.focus();}
 document.getElementById("clearNo").addEventListener("click",closeClear);
 document.getElementById("confirmClear").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeClear();}});
-document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();state.mode="own";try{localStorage.removeItem(KEY);}catch(e){}go(1);});
+document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;// Clear everything means everything: the kind of organisation, place and currency go back to the defaults too.
+  state=null;try{localStorage.removeItem(KEY);}catch(e){}state=blank();go(1);});
 render();
 padForSteps();
