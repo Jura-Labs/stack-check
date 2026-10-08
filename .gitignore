@@ -1,5 +1,6 @@
 node_modules/
 test-results/
+tests/.cache/
 playwright-report/
 _site/
 .DS_Store
