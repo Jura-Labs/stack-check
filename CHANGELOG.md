@@ -3,6 +3,16 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.8 (8 October 2026)
+
+- Each tool's facts now show the date that tool was last checked. The
+  footer said every fact was checked on 29 September 2026; it now gives
+  the range, 29 September to 8 October 2026.
+- Library: Adobe Express added (data location "Don't know"; Adobe says it
+  does not train generative AI on your content). Adobe Creative Cloud AI
+  training is now "no", from Adobe's General Terms of Use. Box is removed
+  from the MobilePay entry: MobilePay says a Box is for private use only.
+
 ## 2.2.7 (8 October 2026)
 
 - Library: the open review items were checked on suppliers' own pages in

@@ -481,14 +481,14 @@ S.dkNonprofit = {
     { lib: "foreninglet", name: "ForeningLet", a: g({ data: "Personal", ai: "No", rights: "Some concerns", env: "None known", fits: "Yes" }), L: "GGGGA", act: "Keep", zone: "in", map: "UK, EU or EEA, country not stated", owner: null },
     // Outside the UK, Microsoft 365 pre-fills its EU region, not the London and Cardiff site (change 9).
     { lib: "microsoft-365", name: "Microsoft 365", a: g({ data: "Personal", based: ELSE }), L: "GGGGN", act: "Keep", zone: "in", map: "UK, EU or EEA, country not stated", owner: null, law: "Microsoft 365: United States" },
-    { lib: "mobilepay", name: "MobilePay (Box, MyShop, Donations)", a: g({ data: "Personal", loc: "DK", ai: "Yes", fits: "Needs discussion" }), L: "GGGGR", act: "Board decision", zone: "in", map: "Denmark", owner: "Your board",
+    { lib: "mobilepay", name: "MobilePay (MyShop, Donations)", a: g({ data: "Personal", loc: "DK", ai: "Yes", fits: "Needs discussion" }), L: "GGGGR", act: "Board decision", zone: "in", map: "Denmark", owner: "Your board",
       step: ["Take the Mission concern to your board. Record who approved the trade-off, or plan a change."], reasons: ["The supplier trains AI on personal data you hold."] },
     { custom: { name: "Official post mailbox", job: "Official post", k: "Software" }, name: "Official post mailbox", a: g({ data: "Sensitive", signin: "No", loc: "DK" }), L: "RGGGN", act: "Fix now", zone: "in", map: "Denmark", owner: "Office manager",
       step: ["Switch on two-step sign-in (MFA) for everyone."], reasons: ["It holds sensitive data, and sign-in is not protected."] },
     { lib: "win11", kind: "device", name: "Laptops on Windows 11", a: d(), L: "GGGGN", act: "Keep", zone: "dev", map: "Your office and devices", owner: null },
   ],
   tiles: { tools: 6, pers: 5, fix: 1, dec: 1, year: 0 }, zones: [5, 0, 0, 1], costLine: "No costs entered",
-  board: { fix: 1, dec: 1, year: 0, ren: 0, also: 0, lines: ["Technology check: summary for our board", "Board decisions (1):\n- MobilePay (Box, MyShop, Donations): The supplier trains AI on personal data you hold."] },
+  board: { fix: 1, dec: 1, year: 0, ren: 0, also: 0, lines: ["Technology check: summary for our board", "Board decisions (1):\n- MobilePay (MyShop, Donations): The supplier trains AI on personal data you hold."] },
 };
 
 S.eea = {
