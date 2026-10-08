@@ -34,6 +34,18 @@ test("CSV: a tool name that looks like a formula cannot run as one", async ({ pa
   expect(text).toContain(`"'-2"`);
 });
 
+test("CSV: a formula behind a space, a tab or a return cannot run either", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.tools[0].name = " =1+1"; state.tools[1].name = "\t=2+2"; state.tools[2].name = "\r\n=3+3"; state.tools[3].owner = "  -4"; render(); });
+  await step(page, 3);
+  const { text } = await download(page, "#dlCsv");
+  expect(text).toContain(`"' =1+1"`);
+  expect(text).toContain(`"' =2+2"`);
+  expect(text).toContain(`"'  =3+3"`);
+  expect(text).toContain(`"'  -4"`);
+  for (const line of text.slice(1).trim().split("\r\n")) for (const cell of line.slice(1, -1).split('","')) expect(cell).not.toMatch(/^\s*[=+\-@]/);
+});
+
 test("Copy register for a spreadsheet: a tool name that looks like a formula cannot run as one", async ({ page }) => {
   await fresh(page);
   await page.evaluate(() => {

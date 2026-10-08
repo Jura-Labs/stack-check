@@ -24,13 +24,15 @@ function downloadFile(name, mime, text) {
   setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 
-// A spreadsheet treats a cell starting with = + - @ tab or return as a formula.
+// A spreadsheet treats a cell starting with = + - @ as a formula, and may
+// ignore spaces in front of it (a tab or a return in a field reaches here as
+// a space).
 // A tool name typed by a colleague, or opened from someone else's file, must
 // never run as one (CSV injection). Prefix such cells with an apostrophe.
-// The CSV download and "Copy register for a spreadsheet" both use this.
+// The CSV download uses this. Copied text has its own guard, tsvCell below.
 function formulaSafe(v) {
   var s = v == null ? "" : String(v);
-  return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
+  return /^\s*[=+\-@]/.test(s) ? "'" + s : s;
 }
 
 // Copied text has no quoting, so it needs more care than the CSV: a tab
