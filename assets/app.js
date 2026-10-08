@@ -671,10 +671,12 @@ function ownerTasks(){
   var keys=Object.keys(out).sort(function(a,b){return a===NOBODY?-1:b===NOBODY?1:a===BOARDK?1:b===BOARDK?-1:a.localeCompare(b);});
   var r={};keys.forEach(function(k){r[k]=out[k];});return r;
 }
+// A tab or a line break inside a name or a next step must not start a new line or column in copied text.
+function oneLine(v){return String(v==null?"":v).replace(/[\t\n\r]+/g," ");}
 function ownersText(){
   var by=ownerTasks(),L=[];
   // An owner's name starts its own line, so it gets the same guard as a copied cell.
-  Object.keys(by).forEach(function(o){L.push(tsvCell(o));by[o].forEach(function(x){L.push("- "+x.tool+": "+x.task);});L.push("");});
+  Object.keys(by).forEach(function(o){L.push(tsvCell(o));by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
   return L.join("\n");
 }
 

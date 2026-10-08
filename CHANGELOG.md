@@ -8,9 +8,10 @@ register v2.2, Stack Check 2.2.x.
 - "Clear everything" now clears everything. The kind of organisation,
   the region, the country and the currency used to stay in the browser
   after the tools and answers were removed. They now go back to the
-  defaults.
+  defaults. "Start a new list" asks the same question and does the same.
 - "Copy for owners": an owner's name that starts with =, +, - or @ is
-  copied with an apostrophe in front, like a cell in the register.
+  copied with an apostrophe in front, like a cell in the register. A line
+  break inside a tool's name or next step no longer starts a new line.
 
 ## 2.2.5 (8 October 2026)
 

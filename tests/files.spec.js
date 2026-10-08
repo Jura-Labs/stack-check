@@ -129,7 +129,8 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
   await page.evaluate(() => {
     window.__copied = [];
     Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } } });
-    state.mode = "own"; state.tools[0].owner = "=1+1"; state.tools[1].owner = "-2+3"; state.tools[2].owner = " @SUM(1)"; state.tools[3].owner = "Finance lead"; render();
+    state.mode = "own"; state.tools[0].owner = "=1+1"; state.tools[1].owner = "-2+3"; state.tools[2].owner = " @SUM(1)"; state.tools[3].owner = "Finance lead";
+    state.tools[3].name = "Payroll\n=HYPERLINK(1)"; state.tools[3].next = "Tidy up\n=1+1"; render();
   });
   await step(page, 3);
   await page.click("#copyOwners");
@@ -139,7 +140,9 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
   expect(lines).toContain("'-2+3");
   expect(lines).toContain("'@SUM(1)");
   expect(lines).toContain("Finance lead");
+  // A line break inside a tool name or a next step cannot start a line of its own.
   for (const line of lines) expect(line).not.toMatch(/^\s*[=+@]/);
+  for (const line of lines) expect(line === "" || /^(- |'|[A-Za-z])/.test(line)).toBe(true);
 });
 
 test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {
