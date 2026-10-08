@@ -3,6 +3,16 @@
 const { test, expect } = require("@playwright/test");
 const { watchErrors, fresh, step } = require("./helpers");
 
+test("the footer's checked dates match the library, and each tool shows its own", async ({ page }) => {
+  await fresh(page);
+  const d = await page.evaluate(() => ({ first: longDate(CHECKED), last: longDate(lastChecked()), bs: longDate(checkedOn("betalingsservice")), ms: longDate(checkedOn("microsoft-365")) }));
+  expect(d.first).toBe("29 September 2026");
+  expect(d.ms).toBe("29 September 2026");
+  expect(d.bs).not.toBe("29 September 2026");
+  const footer = await page.locator("footer").innerText();
+  expect(footer).toContain("between " + d.first.replace(" 2026", "") + " and " + d.last);
+});
+
 const ORGS = ["nonprofit", "business", "cci", "sole"];
 const LOCS = ["UK", "EU", "CA", "US", "OTHER"];
 

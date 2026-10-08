@@ -271,7 +271,7 @@ function factsPanel(t){
   var AI={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Unknown"};
   var RES={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Unknown"};
   function row(k,v){return v?'<div><dt>'+k+'</dt><dd>'+esc(v)+'</dd></div>':"";}
-  return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' (checked 29 September 2026)</summary><dl class="factlist">'+
+  return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' (checked '+longDate(checkedOn(l.id))+')</summary><dl class="factlist">'+
     row("Company",(l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par+(PLACE[l.parc]?" ("+PLACE[l.parc]+")":""):""))+
     row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans?": "+l.plans:""))+
     row("Export",known(l.x))+row("Two-step sign-in (MFA)",known(l.mfa))+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
@@ -619,7 +619,7 @@ function renderResults(){
   var RESW={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Unknown"};
   function crow(k,fa,fb){return '<tr><th scope="row">'+k+'</th><td>'+esc(known(fa)||"Unknown")+'</td><td>'+esc(known(fb)||"Unknown")+'</td></tr>';}
   function co(l){return (l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par:"");}
-  h+='<details class="fold" data-fold="cmp"'+(state.foldCmp?" open":"")+'><summary>Compare two tools: supplier facts side by side</summary><section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h3 id="cmpH">Compare two tools</h3><p class="muted">Facts from the suppliers\' own pages, checked 29 September 2026. This compares what we found. It does not recommend.</p></div>'+
+  h+='<details class="fold" data-fold="cmp"'+(state.foldCmp?" open":"")+'><summary>Compare two tools: supplier facts side by side</summary><section class="stack" aria-labelledby="cmpH"><div class="s4 stack"><h3 id="cmpH">Compare two tools</h3><p class="muted">Facts from the suppliers\' own pages, checked between '+longDate(CHECKED)+' and '+longDate(lastChecked())+'. This compares what we found. It does not recommend.</p></div>'+
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
     '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
