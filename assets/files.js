@@ -29,7 +29,7 @@ function downloadFile(name, mime, text) {
 // a space).
 // A tool name typed by a colleague, or opened from someone else's file, must
 // never run as one (CSV injection). Prefix such cells with an apostrophe.
-// The CSV download and "Copy register for a spreadsheet" both use this.
+// The CSV download uses this. Copied text has its own guard, tsvCell below.
 function formulaSafe(v) {
   var s = v == null ? "" : String(v);
   return /^\s*[=+\-@]/.test(s) ? "'" + s : s;
