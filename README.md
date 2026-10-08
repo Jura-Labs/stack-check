@@ -6,8 +6,8 @@ uses, see where your data goes, and get a recommendation on what to do.
 Stack Check is the online version of the free
 [Stay in command register](https://juralabs.org/updates/stay-in-command-of-your-technology)
 from Jura Labs. It is written for small charities, non-profits, cultural
-organisations, small businesses and sole traders in the UK, Europe and
-beyond, most of whom have no IT department.
+organisations and sole traders in the UK, Europe and beyond, most of whom
+have no IT department.
 
 > **Status: live** at https://check.juralabs.org since 30 September 2026.
 > User testing with small organisations follows the launch.
@@ -74,8 +74,8 @@ The scripts are classic scripts, not ES modules, so the page still works
 when opened from a file. No runtime dependencies: the `devDependencies` are
 for testing only and never reach the page.
 
-Changes go through pull requests, so the checks run. Deploying is a
-manual workflow until launch.
+Changes go through pull requests, so the checks run. Every merge to
+`main` deploys to https://check.juralabs.org.
 
 ## Licences
 
