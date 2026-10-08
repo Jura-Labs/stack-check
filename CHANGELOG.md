@@ -3,6 +3,12 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.5 (8 October 2026)
+
+- Security: the CSV download now also protects a cell where a formula
+  sits behind a space, a tab or a return. The copy button has done this
+  since 2.2.4. A new test fails on the old code.
+
 ## 2.2.4 (8 October 2026)
 
 - Security: "Copy register for a spreadsheet" now protects cells that
