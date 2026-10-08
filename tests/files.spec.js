@@ -34,6 +34,50 @@ test("CSV: a tool name that looks like a formula cannot run as one", async ({ pa
   expect(text).toContain(`"'-2"`);
 });
 
+test("Copy register for a spreadsheet: a tool name that looks like a formula cannot run as one", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } } });
+    state.tools[0].name = '=HYPERLINK("http://example.invalid","x")'; state.tools[1].name = "+1"; state.tools[2].name = "@SUM(A1)"; state.tools[3].name = "-2"; render();
+  });
+  await step(page, 3);
+  await page.click("#copyRows");
+  await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
+  const lines = (await page.evaluate(() => window.__copied[0])).split("\n");
+  expect(lines).toHaveLength(10);
+  expect(lines[0].split("\t")).toHaveLength(34);
+  expect(lines[1].split("\t")[0]).toBe(`'=HYPERLINK("http://example.invalid","x")`);
+  expect(lines[2].split("\t")[0]).toBe("'+1");
+  expect(lines[3].split("\t")[0]).toBe("'@SUM(A1)");
+  expect(lines[4].split("\t")[0]).toBe("'-2");
+  // No cell anywhere in the copied text starts a formula.
+  for (const line of lines) for (const cell of line.split("\t")) expect(cell).not.toMatch(/^[=+\-@]/);
+});
+
+test("Copy register for a spreadsheet: spaces, tabs, quotes and the currency cannot smuggle a formula in", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } } });
+    state.tools[0].name = " =1+1"; state.tools[1].name = "\t=1+1"; state.tools[2].name = "\r\n=1+1";
+    state.tools[3].name = '"=1+1"'; state.tools[4].name = '"=1+1'; state.tools[5].owner = "x\t=1+1";
+    state.ccy = "GBP)\t=1+1\t("; render();
+  });
+  await step(page, 3);
+  await page.click("#copyRows");
+  await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
+  const lines = (await page.evaluate(() => window.__copied[0])).split("\n");
+  expect(lines).toHaveLength(10);
+  for (const line of lines) {
+    const cells = line.split("\t");
+    expect(cells).toHaveLength(34);
+    for (const cell of cells) expect(cell).not.toMatch(/^\s*["=+\-@]/);
+  }
+  expect(lines[1].split("\t")[0]).toBe("' =1+1");
+  expect(lines[4].split("\t")[0]).toBe(`'"=1+1"`);
+});
+
 test("save to a file, clear everything, open the file: the answers come back", async ({ page }) => {
   const errors = watchErrors(page);
   await fresh(page);

@@ -3,6 +3,15 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.4 (8 October 2026)
+
+- Security: "Copy register for a spreadsheet" now protects cells that
+  start with =, +, - or @, the same way the CSV download already did. A
+  tool name written as a formula, typed in or opened from someone else's
+  file, is pasted as text and cannot run. The same goes for a cell that
+  hides the formula behind spaces, a tab or a double quote. Found by a
+  check of the live site. Two new tests fail on the old code.
+
 ## 2.2.3 (1 October 2026)
 
 - Library review of all 103 tools. Text about a supplier now states facts
