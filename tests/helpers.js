@@ -13,11 +13,13 @@ function watchErrors(page) {
 
 const fs = require("node:fs");
 const path = require("node:path");
-const UMAMI = fs.readFileSync(path.join(__dirname, "fixtures", "umami-script.js"), "utf8");
+// Fetched by global-setup.js before the tests start. Not kept in the repository.
+const UMAMI = fs.readFileSync(path.join(__dirname, ".cache", "umami-script.js"), "utf8");
 
-// Tests never contact the real analytics server. The real Umami script (a
-// saved copy) is served in its place, and whatever it sends is captured in
-// page.analyticsSent for the network test to inspect.
+// Tests never send anything to the real analytics server. The real Umami
+// script (fetched once, see global-setup.js) is served from a local copy, and
+// whatever it sends is captured in page.analyticsSent for the network test
+// to inspect.
 async function stubAnalytics(page) {
   page.analyticsSent = [];
   await page.route("https://analytics.juralabs.org/**", (route) => {
