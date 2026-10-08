@@ -33,6 +33,14 @@ function formulaSafe(v) {
   return /^[=+\-@\t\r]/.test(s) ? "'" + s : s;
 }
 
+// Copied text has no quoting, so it needs more care than the CSV: a tab
+// would start a new column, a leading double quote can be unwrapped on
+// paste, and a spreadsheet may trim spaces in front of a formula.
+function tsvCell(v) {
+  var s = (v == null ? "" : String(v)).replace(/[\t\n\r]/g, " ");
+  return /^\s*["=+\-@]/.test(s) ? "'" + s : s;
+}
+
 function csvCell(v) {
   return '"' + formulaSafe(v).replace(/"/g, '""') + '"';
 }
