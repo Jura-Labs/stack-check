@@ -671,9 +671,12 @@ function ownerTasks(){
   var keys=Object.keys(out).sort(function(a,b){return a===NOBODY?-1:b===NOBODY?1:a===BOARDK?1:b===BOARDK?-1:a.localeCompare(b);});
   var r={};keys.forEach(function(k){r[k]=out[k];});return r;
 }
+// A tab or a line break inside a name or a next step must not start a new line or column in copied text.
+function oneLine(v){return String(v==null?"":v).replace(/[\t\n\r]+/g," ");}
 function ownersText(){
   var by=ownerTasks(),L=[];
-  Object.keys(by).forEach(function(o){L.push(o);by[o].forEach(function(x){L.push("- "+x.tool+": "+x.task);});L.push("");});
+  // An owner's name starts its own line, so it gets the same guard as a copied cell.
+  Object.keys(by).forEach(function(o){L.push(tsvCell(o));by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
   return L.join("\n");
 }
 
@@ -776,6 +779,7 @@ var exPending=false;
 function closeClear(){document.getElementById("confirmClear").hidden=true;var c=document.getElementById("clearAll");if(c)c.focus();}
 document.getElementById("clearNo").addEventListener("click",closeClear);
 document.getElementById("confirmClear").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeClear();}});
-document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;state=blank();state.mode="own";try{localStorage.removeItem(KEY);}catch(e){}go(1);});
+document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;// Clear everything means everything: the kind of organisation, place and currency go back to the defaults too.
+  state=null;try{localStorage.removeItem(KEY);}catch(e){}state=blank();go(1);});
 render();
 padForSteps();
