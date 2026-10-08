@@ -3,6 +3,25 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.7 (8 October 2026)
+
+- Library: the open review items were checked on suppliers' own pages in
+  a browser, and 21 tools are corrected.
+- Changed facts: Betalingsservice data location is now "Don't know".
+  Google Ads names Google Commerce Limited as the contracting company for
+  "eligible non-business use", otherwise Google Ireland Limited. Zapier is
+  Zapier, Inc. in the US and offers no EU-only storage. Sage Payroll
+  contracts through Sage (UK) Ltd and two-factor sign-in is mandatory.
+  BrightHR does not train AI on what you enter. LinkedIn Company Page AI
+  training is "unclear", as Facebook and Instagram are. Two-step sign-in
+  is "all plans" for Shopify, Wix, Google Ads and BrightHR.
+- Corrected text: e-conomic is hosted on Google Cloud and Microsoft Azure.
+  Adobe points non-profit teams to discounted Education Teams plans. A
+  MobilePay Box is for private use only. Zettle's product library exports
+  as an Excel file. Smaller corrections to Shopify, Stripe, Tally,
+  Facebook Page, Instagram, Bluesky, Figma, Affinity, Billy, Membersite,
+  FreeAgent, SumUp and Breathe HR.
+
 ## 2.2.6 (8 October 2026)
 
 - "Clear everything" now clears everything. The kind of organisation,

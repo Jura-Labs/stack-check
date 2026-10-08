@@ -16,6 +16,8 @@ const CHECKED_ON = {
   "2026-09-30": ["adobe-creative-cloud", "figma", "affinity", "gimp", "inkscape", "x-twitter", "bluesky"],
   // Re-checked in the wording and facts review of 1 October 2026.
   "2026-10-01": ["adobe-creative-cloud", "affinity", "betalingsservice", "billy", "bluesky", "breathe-hr", "brighthr", "brightpay", "calendly", "dinero", "dropbox", "e-conomic", "facebook-page", "foreninglet", "freeagent", "gimp", "google-ads", "infomaniak-ksuite", "inkscape", "instagram-professional", "linkedin-company-page", "membersite", "meta-business-suite", "mobilepay", "sage-payroll", "squarespace", "sumup", "tally", "wix", "x-twitter", "zettle", "zoom-ai-companion"],
+  // Checked on suppliers' own pages in a real browser, 8 October 2026 (issue #8).
+  "2026-10-08": ["adobe-creative-cloud", "affinity", "betalingsservice", "billy", "bluesky", "breathe-hr", "brighthr", "brightpay", "calendly", "e-conomic", "facebook-page", "figma", "foreninglet", "freeagent", "gimp", "google-ads", "inkscape", "instagram-professional", "linkedin-company-page", "matomo-cloud", "membersite", "meta-business-suite", "mobilepay", "sage-payroll", "shopify", "stripe", "sumup", "tally", "wix", "zapier", "zettle"],
 };
 // The latest date an entry was checked on.
 const checkedFor = (id) => Object.keys(CHECKED_ON).sort().reverse().find((d) => CHECKED_ON[d].includes(id)) || CHECKED;
