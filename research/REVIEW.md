@@ -21,7 +21,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
 - [x] **Google Ads (and Ad Grants).** Contracting entity (Google Ireland
   Limited for UK advertisers?) from a search summary; the ads data
   processing terms link was not opened; two-step sign-in unclear.
-- [ ] **Betalingsservice.** The creditor rules and privacy notice PDFs could
+- [x] **Betalingsservice.** The creditor rules and privacy notice PDFs could
   not be read: data location, export and exit terms need a person. Supplier
   base is set to Europe (the Danish entity), though Mastercard (US) is the
   parent. Which do you want?
@@ -59,7 +59,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
     https://www.facebook.com/business/help/280940009201586
   - a Page with nobody holding full control is deactivated:
     https://www.facebook.com/help/289207354498410
-- [ ] AI training is "unclear" for Facebook, Instagram and Business Suite
+- [x] AI training is "unclear" for Facebook, Instagram and Business Suite
   (Meta's statements cover adults' public posts, not Pages), and "yes" for
   LinkedIn (member data, a per-member setting). Agree?
 - [x] LinkedIn's generative AI page lists the UK among covered regions;
@@ -92,7 +92,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
 - No residency option stated is recorded as "unclear", not "no", unless the
   supplier says there is none.
 - "All plans" for two-step sign-in is used when the supplier offers it with
-  no plan limit stated.
+  no plan limit stated. **Confirmed by Paul, 8 October 2026.**
 
 ## Added 30 September 2026
 
@@ -152,15 +152,16 @@ library and in CHANGELOG.md.
 
 Still open, and why:
 
-- Betalingsservice: the facts are checked. The supplier-base question is
-  Paul's (the parent, Mastercard, is in the US).
+- Betalingsservice supplier base: settled by Paul, 8 October 2026. It
+  stays "UK or Europe": the contract is with Mastercard Payment Services
+  Denmark A/S. The parent, Mastercard, is in the US.
 - SumUp: both sentences are confirmed. Whether they mean a UK account is
   kept in the EEA is a reading, so it is Paul's.
 - Calendly: no Calendly page says there is no storage choice. Recorded as
   "no"; the convention above would make it "unclear".
-- AI training for Facebook, Instagram, Business Suite and LinkedIn: the
-  quotes are confirmed. LinkedIn is recorded "yes" and Meta "unclear" on
-  the same kind of evidence, which is Paul's to settle.
+- AI training for Facebook, Instagram, Business Suite and LinkedIn:
+  settled by Paul, 8 October 2026. All four are "unclear": the suppliers'
+  pages speak of members' and users' own content, not of Pages.
 - Digital Post and e-Boks sign-in, and Digital Post as controller: no
   supplier page settles either question. Neither tool is in the library.
 - Adobe Creative Cloud export: the value holds. Three sentences in the old
@@ -168,6 +169,7 @@ Still open, and why:
 - Facebook Page: whether a Page download includes the inbox is not stated
   by Meta. Instagram lists messages among what can be downloaded.
 - X: its new terms start on 9 October 2026 (issue #9).
-- The three conventions above are still Paul's to confirm. Two-step
-  sign-in for Shopify, Wix, Google Ads and BrightHR stays "unclear" until
-  he does.
+- Two of the three conventions above are still Paul's to confirm (supplier
+  base for a US parent; "unclear" against "no" for a storage choice). The
+  third, "all plans", is confirmed, so two-step sign-in for Shopify, Wix,
+  Google Ads and BrightHR is now "all plans".
