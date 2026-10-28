@@ -10,7 +10,7 @@ const vm = require("node:vm");
 const ctx = vm.createContext({ state: { org: "nonprofit" } });
 vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "assets", "tools.js"), "utf8"), ctx);
 const LIB = vm.runInContext("LIB", ctx);
-// The checked dates live in assets/tools.js, so the tool and these files agree.
+// The checked dates live on each entry in assets/tools.js, so the tool and these files agree.
 const checkedFor = vm.runInContext("checkedOn", ctx);
 
 // Quote every field; neutralise leading formula characters for spreadsheets.
@@ -26,7 +26,8 @@ const FACTS = [
   ["data_kept", "w"], ["supplier_based", "b"], ["supplier_hq", "hq"], ["contracting_entity", "co"],
   ["parent", "par"], ["storage", "store"], ["residency_option", "res"], ["plans", "plans"],
   ["export", "x"], ["open_source", "o"], ["mfa", "mfa"], ["ai_training", "ai"], ["ai_detail", "aid"],
-  ["nonprofit_offer", "np"], ["note", "note"], ["confidence", "conf"],
+  ["nonprofit_offer_type", "npk"], ["nonprofit_offer", "np"], ["note", "note"], ["confidence", "conf"],
+  ["region", "region"],
 ];
 const facts = [FACTS.map((f) => f[0]).concat(["sources", "checked"])];
 const sources = [["id", "name", "source_title", "source_url", "checked"]];

@@ -92,6 +92,8 @@ function cleanKeys(tools) {
   (tools || []).forEach(function (t, i) {
     if (typeof t.key !== "string" || !KEY_OK.test(t.key) || seen[t.key]) t.key = "tool-" + i + "-" + Math.random().toString(36).slice(2, 7);
     seen[t.key] = 1;
+    // A library entry merged into another (LIB_ALIAS in tools.js) opens as the merged entry.
+    if (typeof t.lib === "string" && Object.prototype.hasOwnProperty.call(LIB_ALIAS, t.lib)) t.lib = LIB_ALIAS[t.lib];
   });
   return tools;
 }
