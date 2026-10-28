@@ -45,7 +45,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
   which plans can require two-step sign-in. Headquarters left as Other.
 - [x] Wix: US and Ireland both listed, no choice stated. The TechSoup offer
   covers 40+ countries; the UK is not confirmed.
-- [ ] Calendly: its help says no EU storage on any plan; one secondary
+- [x] Calendly: its help says no EU storage on any plan; one secondary
   source says Enterprise can use Ireland. Left as "no".
 - [x] Zapier: contracting entity and headquarters left blank (the terms page
   did not load). AI training "yes" means trains unless you opt out, for
@@ -90,7 +90,7 @@ Facts per tool are in `tool-facts.csv`; every link is in `tool-sources.csv`.
 - A US parent with an Irish or EU contracting entity is recorded as
   supplier based "Elsewhere" (as Microsoft 365 already is). Confirm.
 - No residency option stated is recorded as "unclear", not "no", unless the
-  supplier says there is none.
+  supplier says there is none. **Confirmed by Paul, 8 October 2026.**
 - "All plans" for two-step sign-in is used when the supplier offers it with
   no plan limit stated. **Confirmed by Paul, 8 October 2026.**
 
@@ -157,8 +157,8 @@ Still open, and why:
   Denmark A/S. The parent, Mastercard, is in the US.
 - SumUp: both sentences are confirmed. Whether they mean a UK account is
   kept in the EEA is a reading, so it is Paul's.
-- Calendly: no Calendly page says there is no storage choice. Recorded as
-  "no"; the convention above would make it "unclear".
+- Calendly storage choice: settled by Paul, 8 October 2026. It stays "no":
+  Calendly says it stores data in US data centres on all plans.
 - AI training for Facebook, Instagram, Business Suite and LinkedIn:
   settled by Paul, 8 October 2026. All four are "unclear": the suppliers'
   pages speak of members' and users' own content, not of Pages.
@@ -169,7 +169,8 @@ Still open, and why:
 - Facebook Page: whether a Page download includes the inbox is not stated
   by Meta. Instagram lists messages among what can be downloaded.
 - X: its new terms start on 9 October 2026 (issue #9).
-- Two of the three conventions above are still Paul's to confirm (supplier
-  base for a US parent; "unclear" against "no" for a storage choice). The
-  third, "all plans", is confirmed, so two-step sign-in for Shopify, Wix,
-  Google Ads and BrightHR is now "all plans".
+- One of the three conventions above is still Paul's to confirm (supplier
+  base for a US parent). "All plans" and "unclear, not no" are confirmed.
+- Also decided by Paul, 8 October 2026: Box is removed from the MobilePay
+  entry; Adobe Creative Cloud AI training is "no"; Adobe Express is added
+  with data location "Don't know".

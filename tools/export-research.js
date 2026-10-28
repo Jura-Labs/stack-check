@@ -10,17 +10,8 @@ const vm = require("node:vm");
 const ctx = vm.createContext({ state: { org: "nonprofit" } });
 vm.runInContext(fs.readFileSync(path.join(__dirname, "..", "assets", "tools.js"), "utf8"), ctx);
 const LIB = vm.runInContext("LIB", ctx);
-const CHECKED = "2026-09-29"; // Drive doc 24a decision 16
-// Entries researched later than the first batch, with their own checked date.
-const CHECKED_ON = {
-  "2026-09-30": ["adobe-creative-cloud", "figma", "affinity", "gimp", "inkscape", "x-twitter", "bluesky"],
-  // Re-checked in the wording and facts review of 1 October 2026.
-  "2026-10-01": ["adobe-creative-cloud", "affinity", "betalingsservice", "billy", "bluesky", "breathe-hr", "brighthr", "brightpay", "calendly", "dinero", "dropbox", "e-conomic", "facebook-page", "foreninglet", "freeagent", "gimp", "google-ads", "infomaniak-ksuite", "inkscape", "instagram-professional", "linkedin-company-page", "membersite", "meta-business-suite", "mobilepay", "sage-payroll", "squarespace", "sumup", "tally", "wix", "x-twitter", "zettle", "zoom-ai-companion"],
-  // Checked on suppliers' own pages in a real browser, 8 October 2026 (issue #8).
-  "2026-10-08": ["adobe-creative-cloud", "affinity", "betalingsservice", "billy", "bluesky", "breathe-hr", "brighthr", "brightpay", "calendly", "e-conomic", "facebook-page", "figma", "foreninglet", "freeagent", "gimp", "google-ads", "inkscape", "instagram-professional", "linkedin-company-page", "matomo-cloud", "membersite", "meta-business-suite", "mobilepay", "sage-payroll", "shopify", "stripe", "sumup", "tally", "wix", "zapier", "zettle"],
-};
-// The latest date an entry was checked on.
-const checkedFor = (id) => Object.keys(CHECKED_ON).sort().reverse().find((d) => CHECKED_ON[d].includes(id)) || CHECKED;
+// The checked dates live in assets/tools.js, so the tool and these files agree.
+const checkedFor = vm.runInContext("checkedOn", ctx);
 
 // Quote every field; neutralise leading formula characters for spreadsheets.
 const cell = (v) => {
