@@ -3,6 +3,34 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.10 (28 October 2026)
+
+A shorter library for small charities (Paul's decisions of 28 October
+2026, options 1 to 4 and 8).
+
+- Twelve business tools leave the main list: Shopify, Squarespace, Wix,
+  FreeAgent, Sage Payroll, BrightPay, BrightHR, Breathe, Calendly,
+  Zapier, Meta Business Suite and Google Ads. Type a name in "Find a
+  tool" to find them. Saved files that use them still open.
+- Near-duplicates are merged: Microsoft 365 now covers Teams and Copilot,
+  WhatsApp covers WhatsApp Business, and "Facebook and Instagram" covers
+  a Facebook Page, an Instagram professional account and Meta Business
+  Suite. A file saved with one of the old tools opens with the merged
+  entry. Zoom and Zoom AI Companion stay separate, because their facts
+  about where data is kept differ.
+- Each tool's nonprofit offer is now one of Free, Discount, On request,
+  None or Unknown, with one short line. Prices and percentages are in
+  the linked sources. The offer is always shown, in the facts and in
+  the comparison.
+- Library text no longer describes what a supplier's pages do not say.
+  Where a fact is not known, it says "Unknown".
+- Tools in each group are listed with those from where you are first:
+  UK tools for the UK, Danish and then EU tools for Denmark, EU tools
+  elsewhere in Europe.
+- A tool whose facts have not been checked for six months says "not
+  checked since" and the date.
+- The main list has 86 tools; 99 in all with those found by searching.
+
 ## 2.2.8 (8 October 2026)
 
 - Each tool's facts now show the date that tool was last checked. The
