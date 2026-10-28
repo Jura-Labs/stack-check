@@ -9,7 +9,9 @@
 var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
 // charity leader would see it). These are aimed at freelancers and micro-businesses.
-var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
+// Paul, 28 Oct 2026 (decisions/2026-10-28-stack-check-simplify.md, option 1): the business tools
+// leave the main list too. They keep their ids and facts, so saved files still open.
+var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1};
 // The offline register templates (register v2.2), the same rules as this tool.
 // Analytics (Paul, 30 Sep 2026, decision 2026-09-30-stack-check-analytics-events): Umami counts clicks on
 // a few buttons and links, with fixed names and values only. Nothing a person types or chooses is sent.
@@ -386,7 +388,9 @@ function renderPick(){
     '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
-    h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
+    // A group whose tools are all search-only shows only when a search finds one, or one is ticked.
+    var allExtra=extra.length===g.items.length&&!extra.some(function(t){return chosen[t.id];});
+    h+='<div class="group"'+(allExtra?" hidden":"")+'><h3>'+esc(g.g)+'</h3><div class="chips">';
     g.items.forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
     h+='</div>'+(extra.length?'<p class="small muted groupmore">Also in the list: '+esc(extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", "))+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
