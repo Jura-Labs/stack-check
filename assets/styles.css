@@ -335,12 +335,15 @@ table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width
    name stays in each button for screen readers; a short word is shown instead. */
 nav.steps .short{display:none}
 @media (max-width:560px){
-  nav.steps ol{grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem}
+  /* Each step takes the width its word needs, so "Questions" stays on one line where it fits; at
+     high zoom the words may break, but the bar never makes the page scroll sideways (28 Oct 2026). */
+  nav.steps ol{display:flex;gap:.3rem}
+  nav.steps li{flex:1 1 auto;min-width:0}
   nav.steps{padding-block:.4rem}
   nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
   nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  /* One word on one line: "Questions" broke as "Questi ons" at 320px (28 Oct 2026). */
-  nav.steps .short{display:block;font-size:clamp(.66rem,3.3vw,.78rem);font-weight:600;line-height:1.1;white-space:nowrap}
+  /* "Questions" broke as "Questi ons" at 320px with equal columns (28 Oct 2026). */
+  nav.steps .short{display:block;font-size:clamp(.72rem,3.4vw,.78rem);font-weight:600;line-height:1.1;overflow-wrap:anywhere;max-width:100%}
   nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
 }
 

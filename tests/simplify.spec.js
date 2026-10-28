@@ -53,8 +53,9 @@ test("B2: a sole trader's summary is in one voice, and has no 'Nothing' above th
   ]);
   const b = await page.evaluate(() => board());
   expect(b).toContain("1. What I depend on\nI use 2 tools.");
-  expect(b).toContain("2. What I am fixing now (0)\n- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva).");
-  expect(b).not.toContain("- Nothing");
+  // Fix round 1: the recovery codes have their own heading and count, so "(0)" never sits above a line.
+  expect(b).toContain("2. What I am fixing now (0)\n- Nothing\nPlan for it (1):\n- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva).");
+  expect(b).not.toContain("(0)\n- Recovery");
   expect(b).toContain("3. What I need to decide\nMy decisions (0):\n- None");
   expect(b).toContain("I review the register once a year, and whenever I start using a new tool.");
   for (const we of ["What we", "We use", "We review", "Your decision", "what we need you"]) expect(b, we).not.toContain(we);
@@ -94,12 +95,36 @@ test("1: Decide marks reasons from our research and from More detail answers not
   const item = page.locator("ol.prio > li", { hasText: "Mailchimp" });
   await expect(item.locator("p.small.muted").first()).toContainText("Personal data stored outside the UK, EU or EEA.");
   const note = item.locator("p.srcnote");
-  await expect(note).toHaveText("From our research, not your own answer: where the data is kept. Check it under More detail in step 2. Not answered yet: data protection terms and full export. They are under More detail in step 2.");
+  // Fix round 1: one short line per item, the explanation once above the list, and a way to the answer.
+  await expect(note).toHaveText("Filled in from the supplier's pages: where the data is kept. Not answered yet: data protection terms and full export. Check it in step 2 for Mailchimp");
+  await expect(note).not.toContainText("not your own answer");
+  await expect(page.locator("#srcIntro")).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Check it in step 2 for Mailchimp" })).toBeVisible();
   // Once the person answers, their answer is no longer marked.
   await page.evaluate(() => { state.tools[0].terms = "No"; state.tools[0].exp = "No"; state.tools[0].where = "Elsewhere"; render(); });
-  await expect(note).toHaveText("From our research, not your own answer: where the data is kept. Check it under More detail in step 2.");
+  await expect(note).toHaveText("Filled in from the supplier's pages: where the data is kept. Check it in step 2 for Mailchimp");
+  // The button goes to that tool's More detail, open and focused.
+  await note.getByRole("button").click();
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(2);
+  await expect(page.locator("#askH")).toHaveText("Mailchimp");
+  await expect(page.locator("details.moredetail")).toHaveAttribute("open", "");
+  await expect(page.locator("details.moredetail > summary")).toBeFocused();
+  await step(page, 3);
   await page.evaluate(() => { state.tools[0].lib = null; render(); });
   await expect(item.locator("p.srcnote")).toHaveCount(0);
+  await expect(page.locator("#srcIntro")).toHaveCount(0);
+});
+
+test("1: a blank answer is not called 'not answered' when the supplier does not say", async ({ page }) => {
+  // Facebook does not publish where it keeps data: our research has "Don't know", so nothing is pre-filled.
+  await own(page, "nonprofit", "UK", [{ lib: "facebook-page", a: Object.assign({}, ANSWERED, { where: "" }) }]);
+  const r = await page.evaluate(() => { const t = state.tools[0]; const w = why(t); return { lib: BYID["facebook-page"].w || "", control: w.control, note: detailNote(t, w.control) }; });
+  expect(["", "Don't know"]).toContain(r.lib);
+  expect(r.control).toContain("The platform does not publish where it keeps data.");
+  expect(r.note).not.toContain("where the data is kept");
+  // A tool added by hand with the same blank answer is told it is not answered.
+  await page.evaluate(() => { state.tools[0].lib = null; });
+  expect(await page.evaluate(() => { const t = state.tools[0]; return detailNote(t, why(t).control); })).toContain("Not answered yet: where the data is kept.");
 });
 
 test("1: step 2 says outside the fold that some answers are pre-filled", async ({ page }) => {

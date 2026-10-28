@@ -247,7 +247,10 @@ async function run(page, sc) {
   soft(b, "board: decisions").toContain(`${sc.org === "sole" ? "My decision" : sc.decLabel}s (${sc.board.dec}):`);
   // B2 (28 Oct 2026): "Nothing" under fixing now only when nothing at all is listed there.
   const sec2 = b.slice(b.indexOf("2. What"), b.indexOf("3. What"));
-  const sec2Items = sec2.trim().split("\n").slice(1).filter((l) => l !== "- Nothing");
+  // The lines straight under the heading; a sole trader's "Plan for it" list that follows has its own heading.
+  const sec2Lines = sec2.trim().split("\n").slice(1);
+  const sec2End = sec2Lines.findIndex((l) => !l.startsWith("- "));
+  const sec2Items = (sec2End < 0 ? sec2Lines : sec2Lines.slice(0, sec2End)).filter((l) => l !== "- Nothing");
   soft(sec2.includes("- Nothing"), "board: Nothing only when section 2 is empty").toBe(sec2Items.length === 0);
   soft(b, "board: this year").toContain(`Reviews this year (${sc.board.year}):`);
   if (sc.board.ren) soft(b, "board: at renewal").toContain(`Reviews at renewal (${sc.board.ren}):`);
@@ -363,7 +366,7 @@ S.soleCodes = {
   ],
   group: { title: "You are the only person who can get into 2 tools", names: "Xero, Canva.", when: "Plan for it", bold: "For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where." },
   tiles: { tools: 3, pers: 2, fix: 0, dec: 0, year: 0 }, zones: [1, 2, 0, 0], noOwners: true, costLine: "No costs entered",
-  board: { fix: 0, dec: 0, year: 0, ren: 0, also: 0, lines: ["Technology check: summary, ", "My decisions (0):", "2. What I am fixing now (0)\n- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva). Write down the recovery codes and tell someone I trust where they are.\n\n3. What I need to decide", "1. What I depend on\nI use 3 tools.", "I review the register once a year"], noLines: ["Add a second admin", "- Nothing", "What we", "We use", "Your decisions", "We review"] },
+  board: { fix: 0, dec: 0, year: 0, ren: 0, also: 0, lines: ["Technology check: summary, ", "My decisions (0):", "2. What I am fixing now (0)\n- Nothing\nPlan for it (1):\n- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva). Write down the recovery codes and tell someone I trust where they are.\n\n3. What I need to decide", "1. What I depend on\nI use 3 tools.", "I review the register once a year"], noLines: ["Add a second admin", "(0)\n- Recovery", "What we", "We use", "Your decisions", "We review"] },
 };
 
 S.soleValues = {

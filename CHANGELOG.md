@@ -9,26 +9,34 @@ Simpler steps for small charities, and three bug fixes. The lights and
 the suggested action are unchanged.
 
 - Fixed: choosing where you are based no longer replaces a currency you
-  chose yourself.
-- Fixed: a sole trader's copied summary no longer says "Nothing" under
-  "fixing now" when it lists the recovery codes, and it is written as
-  "I" throughout ("My decisions", "What I depend on").
+  chose yourself, and a saved file remembers that you chose it. In
+  Europe, the country now sets its own currency where it has one
+  (Denmark, Sweden, Norway, Switzerland).
+- Fixed: a sole trader's copied summary is written as "I" throughout
+  ("My decisions", "What I depend on", the review lines). The recovery
+  codes have their own heading, "Plan for it", so "fixing now (0)" never
+  sits above a line.
 - Fixed: step 1 no longer asks you to include online banking, and the
   example tool name is one that is not already in the list.
 - After the start screen the header is shorter, so the questions start
   sooner on a phone. The privacy sentence stays.
-- Step 1: "Are you returning?" is gone ("Open a saved file" is on the
-  start screen). The currency is folded under More detail and follows
-  where you are based. "Ask your team" is folded, and not shown to sole
-  traders.
+- Step 1: "Are you returning?" is gone. "Open a saved file" is on the
+  start screen and in the save bar on steps 1, 2 and 4. The currency is
+  folded under More detail and follows where you are based; a change is
+  announced to screen readers. "Ask your team" is folded, and not shown
+  to sole traders. Folds stay open when the page is redrawn.
+- Find a tool says how many tools it found.
 - Step 2: plain questions ("Who owns it?", "Whose account is it?", "Who
   can manage it?", and for devices "Who can get into them if the user
   leaves?"). For a tool from the list, its kind is folded behind
   "(change)". More detail no longer opens by itself for a tool you added.
   A note outside the fold says when answers are pre-filled from our
   research.
-- Decide: a reason that rests on an answer pre-filled from our research,
-  or on one not yet given under More detail, now says so.
+- Decide: a step that rests on an answer filled in from the supplier's
+  pages, or not yet given under More detail, now says so in one short
+  line, with a button that opens that tool's More detail in step 2.
+- Where one person can get into devices, the advice is to make sure a
+  second person can get into them, not to "add a second admin".
 - Gift Aid and Cyber Essentials are mentioned to UK organisations only.
 - When you are not sure two-step sign-in is on, the suggested step is to
   check it first.
@@ -36,10 +44,12 @@ the suggested action are unchanged.
   example of who approved a trade-off.
 - Print leaves out the copy and save buttons and "Thinking of changing a
   tool?", and prints the date.
-- The skip link says where it goes on each step, and "Questions" no longer
-  breaks across two lines in the step bar on small phones.
+- The skip link says where it goes on each step, and on step 1 it goes to
+  the list of tools. "Questions" no longer breaks across two lines in the
+  step bar on small phones, and with large text the bar no longer makes
+  the page scroll sideways.
 
-## 2.2.8 (8 October 2026)
+## 2.2.8 (28 October 2026)
 
 - Each tool's facts now show the date that tool was last checked. The
   footer said every fact was checked on 29 September 2026; it now gives
