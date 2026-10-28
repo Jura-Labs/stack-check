@@ -105,7 +105,11 @@ details.facts summary{cursor:pointer;font-weight:600}
 .light.a{background:var(--warn-bg);color:var(--warn)}
 .light.r{background:var(--bad-bg);color:var(--bad)}
 .light.n{background:var(--tint);color:var(--muted)}
-.light svg{width:.7rem;height:.7rem;fill:currentColor}
+.light svg{width:.7rem;height:.7rem;fill:currentColor;flex:none}
+/* With large text on a phone a light ("Mission Amber") can be wider than its row: it may wrap
+   rather than push the page sideways (WCAG 1.4.10; found with Linux fonts at 200%, 28 Oct 2026). */
+.light{max-width:100%;min-width:0}
+@media (max-width:560px){.light{white-space:normal;overflow-wrap:anywhere}}
 
 /* Step 3 */
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}

@@ -25,6 +25,29 @@ test("fix 1: at 320px with text at 150% and 200%, the step bar never makes the p
   }
 });
 
+// The same with a wide font, as on the Linux CI runner (where this first failed by 12px: a light in step 2's
+// "So far" row could not wrap). The CSP is bypassed only to add the font rule; nothing is sent anywhere.
+test.describe("with a wide font", () => {
+  test.use({ bypassCSP: true });
+  test("fix 1: at 320px with text at 150% and 200% and a wide font, step 2 never scrolls sideways", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 640 });
+    await fresh(page);
+    await step(page, 2);
+    await page.addStyleTag({ content: '*{font-family:Verdana,"DejaVu Sans",sans-serif!important;letter-spacing:.05em!important}' });
+    for (const size of ["150%", "200%"]) {
+      await page.evaluate((s) => { document.documentElement.style.fontSize = s; }, size);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth), size).toBeLessThanOrEqual(0);
+      const over = await page.$$eval("nav.steps .short", (els) => els.map((e) => e.closest("button").scrollWidth - e.closest("button").clientWidth));
+      expect(over.every((x) => x <= 0), `${size}: ${over}`).toBe(true);
+    }
+    // Where it fits, each step name is still on one line.
+    await page.evaluate(() => { document.documentElement.style.fontSize = ""; });
+    await page.setViewportSize({ width: 375, height: 640 });
+    const lines = await page.$$eval("nav.steps .short", (els) => els.map((e) => { const r = document.createRange(); r.selectNodeContents(e); return r.getClientRects().length; }));
+    expect(lines).toEqual([1, 1, 1, 1]);
+  });
+});
+
 test("fix 2: changing the location keeps step 1's folds open, and a currency change is announced", async ({ page }) => {
   await fresh(page);
   await page.click("#startNew");
