@@ -229,3 +229,31 @@ test("a crafted file cannot inject HTML through a tool's key, from the file or f
   expect(await page.evaluate(() => load().tools[0].key)).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
   expect(navs.some((u) => u.includes("evil.example"))).toBe(false);
 });
+
+// W44-15 (28 Oct 2026): five library entries were merged into others. A file saved before the merge,
+// or answers kept in this browser, still open, and each old tool shows as the merged entry.
+test("a saved file with a merged library id opens as the merged entry", async ({ page }) => {
+  const errors = watchErrors(page);
+  await fresh(page);
+  const base = { kind: "Software", owner: "Office manager", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes", copy: "No" };
+  const old = { "microsoft-teams": "microsoft-365", "microsoft-365-copilot": "microsoft-365", "whatsapp-business": "whatsapp", "instagram-professional": "facebook-page", "meta-business-suite": "facebook-page" };
+  const tools = Object.keys(old).map((id, i) => Object.assign({ key: "t" + i, lib: id, name: "Old " + id, job: "Saved before the merge" }, base));
+  const file = JSON.stringify({ app: "stack-check", state: { v: 6, org: "nonprofit", loc: "UK", tools } });
+  await step(page, 1);
+  await page.setInputFiles("#openFile1", { name: "old.json", mimeType: "application/json", buffer: Buffer.from(file) });
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
+  // The answers are the file's own; only the library id changes.
+  expect(await page.evaluate(() => state.tools.map((t) => [t.lib, t.name]))).toEqual(Object.keys(old).map((id) => [old[id], "Old " + id]));
+  await step(page, 1);
+  await expect(page.locator('button.chip[data-lib="microsoft-365"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('button.chip[data-lib="facebook-page"]')).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('button.chip[data-lib="microsoft-teams"]')).toHaveCount(0);
+  await step(page, 2);
+  await expect(page.locator("details.facts summary").first()).toContainText("What we found about Microsoft 365");
+  // The same ids kept in this browser's storage are rewritten too, and an old id still finds the merged facts.
+  await page.evaluate(() => {
+    localStorage.setItem("stackcheck.v5", JSON.stringify({ v: 6, org: "nonprofit", loc: "UK", mode: "own", step: 1, tools: [{ key: "s1", lib: "instagram-professional", name: "Stored", data: "Internal", kind: "Account on a platform" }], journeys: [] }));
+  });
+  expect(await page.evaluate(() => [load().tools[0].lib, BYID["meta-business-suite"].name, BYID["microsoft-365-copilot"].id])).toEqual(["facebook-page", "Facebook and Instagram", "microsoft-365"]);
+  expect(errors).toEqual([]);
+});

@@ -440,8 +440,11 @@ S.ukRenewal = {
 S.ukPlatforms = {
   title: "UK charity: accounts on a platform (Facebook, X, Bluesky, LinkedIn) against Software with an unknown location",
   org: "nonprofit", loc: "UK", home: "GB", ccy: "GBP", ml: "Mission", decLabel: "Trustee decision", tr: "trustees",
+  // Since W44-15 (28 Oct 2026) Facebook, Instagram and Meta Business Suite are one library entry,
+  // "Facebook and Instagram"; the old ids open as it. Each account here keeps its own name, as a person
+  // listing two accounts would name them, so the lights are read for the same tools as before.
   tools: [
-    { lib: "facebook-page", kind: "platform", name: "Facebook Page", a: { owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", where: DK, based: ELSE, copy: "No", value: "Green" }, L: "GAAGN", act: "Keep", zone: "unk", map: "Not sure where", owner: null,
+    { lib: "facebook-page", kind: "platform", name: "Facebook Page", a: { name: "Facebook Page", owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", where: DK, based: ELSE, copy: "No", value: "Green" }, L: "GAAGN", act: "Keep", zone: "unk", map: "Not sure where", owner: null,
       why2: ["The platform does not publish where it keeps data.", "You can only export some of the data.", "No tested copy of your own."], noWhy2: ["You are not sure where the data is stored.", "No data protection terms recorded."] },
     { lib: "x-twitter", kind: "platform", name: "X (formerly Twitter)", a: { owner: "", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "No", where: DK, based: ELSE, copy: "No", value: "Amber" }, L: "ARAAN", act: "Fix now", zone: "unk", map: "Not sure where", owner: NOBODY,
       step: ["Name an owner."], reasons: ["Nobody owns it."], noReasons: ["You are not sure where the data is stored."] },
@@ -452,7 +455,7 @@ S.ukPlatforms = {
     { lib: "linkedin-company-page", kind: "platform", name: "LinkedIn Company Page", a: { owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Critical", data: "Personal", signin: "Yes", where: DK, based: ELSE, exp: "No", copy: "No", value: "Green" }, L: "GARGN", act: "Review this year", zone: "unk", map: "Not sure where", owner: "Comms lead",
       step: ["Keep your own copy of the data, and test that you can restore it."], reasons: ["The platform does not publish where it keeps data.", "You may not be able to get the data out.", "No tested copy of your own, and you depend on it."] },
     // "Where" left blank on a platform counts like Don't know: Control capped at amber (change 2).
-    { lib: "instagram-professional", kind: "platform", name: "Instagram (professional account)", a: { owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Minor", data: "Internal", signin: "Yes", based: ELSE, copy: "Yes", value: "Green" }, L: "GAAGN", act: "Keep", zone: "unk", map: "Not sure where", owner: null,
+    { lib: "instagram-professional", kind: "platform", name: "Instagram (professional account)", a: { name: "Instagram (professional account)", owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Minor", data: "Internal", signin: "Yes", based: ELSE, copy: "Yes", value: "Green" }, L: "GAAGN", act: "Keep", zone: "unk", map: "Not sure where", owner: null,
       why2: ["The platform does not publish where it keeps data."], noWhy2: ["You are not sure where the data is stored."] },
   ],
   tiles: { tools: 6, pers: 4, fix: 2, dec: 0, year: 2 }, zones: [0, 0, 6, 0],
@@ -587,10 +590,10 @@ S.cciValues = {
   title: "Cultural organisation: Values red on a platform that needs a fix, and a Board decision",
   org: "cci", loc: "UK", home: "GB", ccy: "GBP", ml: "Values", decLabel: "Board decision", tr: "board",
   tools: [
-    { lib: "meta-business-suite", kind: "platform", name: "Meta Business Suite (Business Portfolio)", a: { owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "No", where: DK, based: ELSE, copy: "No", env: "Serious concern", value: "Green" }, L: "RAAGR", act: "Fix now", zone: "unk", map: "Not sure where", owner: ["Comms lead", "Your board"],
+    { lib: "meta-business-suite", kind: "platform", name: "Meta Business Suite (Business Portfolio)", a: { name: "Meta Business Suite (Business Portfolio)", owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "No", where: DK, based: ELSE, copy: "No", env: "Serious concern", value: "Green" }, L: "RAAGR", act: "Fix now", zone: "unk", map: "Not sure where", owner: ["Comms lead", "Your board"],
       ownerTask: ["Your board", "After the fix, decide on the Values concern. A serious environmental concern."],
       step: ["Switch on two-step sign-in (MFA) for everyone.", "Then take the Values concern to your board."], reasons: ["It holds personal data, and sign-in is not protected.", "The platform does not publish where it keeps data.", "A serious environmental concern."] },
-    { lib: "instagram-professional", kind: "platform", name: "Instagram (professional account)", a: { owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes", where: DK, based: ELSE, copy: "Yes", fits: "No", value: "Amber" }, L: "GAAAR", act: "Board decision", zone: "unk", map: "Not sure where", owner: "Your board",
+    { lib: "instagram-professional", kind: "platform", name: "Instagram (professional account)", a: { name: "Instagram (professional account)", owner: "Comms lead", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes", where: DK, based: ELSE, copy: "Yes", fits: "No", value: "Amber" }, L: "GAAAR", act: "Board decision", zone: "unk", map: "Not sure where", owner: "Your board",
       step: ["Take the Values concern to your board. Record who approved the trade-off, or plan a change."], reasons: ["It does not fit your values."] },
     { lib: "eventbrite", name: "Eventbrite", a: g({ data: "Personal", where: ELSE, based: ELSE }), L: "GAGGN", act: "Keep", zone: "out", map: "United States", owner: null },
     { lib: "ticket-tailor", name: "Ticket Tailor", a: g({ data: "Personal" }), L: "GGGGN", act: "Keep", zone: "in", map: "Dublin", row: "Dublin, Ireland", owner: null },

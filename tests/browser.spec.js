@@ -83,7 +83,7 @@ test("every tool in the library can be chosen, answered and shown on the results
     render();
     return all.length;
   });
-  expect(n).toBeGreaterThanOrEqual(100);
+  expect(n).toBeGreaterThanOrEqual(99);
   for (const s of [2, 3, 4]) {
     await step(page, s);
     await expect(page.locator("#view h2").first()).toBeVisible();
@@ -110,10 +110,17 @@ test("every script and stylesheet link carries the current version", async () =>
 
 // Paul, 1 Oct 2026: library text states facts and advice. A point that could not be established
 // says "Unknown", without describing the research (no "I found", "could not be opened", "Don't know…").
+// Widened on 28 Oct 2026 (W44-15, option 3): nor what a supplier's pages do not say ("X does not
+// say which country…", "No AI features are listed on…", "no statement on…", "only says…").
 test("library text never narrates the research, and unknown facts show as Unknown", async ({ page }) => {
   await fresh(page);
   const bad = await page.evaluate(() => {
-    const rx = /\b(I|we) (could not|did not|found|have not|could (read|open))\b|could not be (opened|read|loaded)|did not load|search (excerpt|summary|result)|\b403\b|pages? (we|I) (read|found|could)|blocked the|Don.t know/i;
+    const rx = new RegExp([
+      /\b(I|we) (could not|did not|found|have not|could (read|open))\b|could not be (opened|read|loaded)|did not load|search (excerpt|summary|result)|\b403\b|pages? (we|I) (read|found|could)|blocked the|Don.t know/.source,
+      /\b(does|do|did|doesn.t|don.t) not (say|state|mention|list|name|describe|specify|publish|disclose|advertise)\b/.source,
+      /\bnot (stated|listed|published|specified|mentioned|disclosed|described)\b|\bno (published|public)\b|\bno (explicit )?statement\b/.source,
+      /\b(only|just) says\b|\b(lists|names|gives|publishes|advertises?|mentions) no\b|\bis silent\b|\b(is|are) listed on\b|\b(no|any) [\w -]{1,40}(is|are)? listed\b/.source,
+    ].join("|"), "i");
     const out = [];
     LIB.forEach((g) => g.items.forEach((t) => ["store", "plans", "aid", "np", "note", "co"].forEach((k) => {
       if (typeof t[k] === "string" && rx.test(t[k])) out.push(t.id + "." + k);
@@ -129,4 +136,88 @@ test("library text never narrates the research, and unknown facts show as Unknow
   await expect(facts).toContainText("Unknown");
   await expect(facts).not.toContainText("Don't know");
   await expect(facts).not.toContainText("unclear");
+});
+
+// W44-15 (Paul, 28 Oct 2026, option 2): the nonprofit offer is one fixed choice plus one short line,
+// with no prices, and it shows the same way in the facts panel and in the compare table.
+test("the nonprofit offer is a fixed choice, always shown the same way in the facts and the comparison", async ({ page }) => {
+  await fresh(page);
+  const bad = await page.evaluate(() => {
+    const out = [];
+    LIB.forEach((g) => g.items.forEach((t) => {
+      if (t.k === "Devices") return;
+      if (["Free", "Discount", "On request", "None", "Unknown"].indexOf(t.npk) < 0) out.push(t.id + ".npk");
+      if (t.np && /\d+ ?%|[£$€]|\bUSD\b|\bkr\b/.test(t.np)) out.push(t.id + ".np has a price");
+      if (t.npk === "Unknown" && t.np) out.push(t.id + ".np with Unknown");
+    }));
+    return out;
+  });
+  expect(bad).toEqual([]);
+  // An entry with no offer line (Unknown) still shows the row, in both places.
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["beacon-crm"]), fromLib(BYID["canva"])]; state.cur = 0; state.cmpA = "beacon-crm"; state.cmpB = "canva"; state.foldCmp = true; });
+  await step(page, 2);
+  const facts = page.locator("details.facts").first();
+  await facts.locator("summary").click();
+  await expect(facts.locator("dt", { hasText: "Nonprofit offer" })).toHaveCount(1);
+  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Nonprofit offer" }) }).locator("dd")).toHaveText("Unknown");
+  await step(page, 3);
+  const row = page.locator("table.cmp tr", { has: page.locator("th", { hasText: "Nonprofit offer" }) });
+  await expect(row.locator("td").nth(0)).toHaveText("Unknown");
+  await expect(row.locator("td").nth(1)).toHaveText(await page.evaluate(() => npText(BYID["canva"])));
+  expect(await page.evaluate(() => npText(BYID["canva"]))).toMatch(/^Free\. /);
+});
+
+// Library SKILL.md: a tool with no check in the last six months shows "not checked since <date>".
+test("facts older than six months say 'not checked since', with the date", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2027-04-01T12:00:00"));
+  await fresh(page);
+  expect(await page.evaluate(() => [notCheckedSince("microsoft-365"), notCheckedSince("betalingsservice")])).toEqual([true, false]);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["microsoft-365"]), fromLib(BYID["betalingsservice"])]; state.cur = 0; });
+  await step(page, 2);
+  const s = page.locator("details.facts summary").first();
+  await expect(s).toContainText("(not checked since 29 September 2026)");
+  await expect(page.locator("details.facts").first()).toContainText("may be out of date");
+  await page.evaluate(() => { state.cur = 1; render(); });
+  await expect(page.locator("details.facts summary").first()).toContainText("(checked 8 October 2026)");
+});
+
+test("facts checked in the last six months show their checked date only", async ({ page }) => {
+  await page.clock.setFixedTime(new Date("2026-10-28T12:00:00"));
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["microsoft-365"])]; state.cur = 0; });
+  await step(page, 2);
+  await expect(page.locator("details.facts summary").first()).toContainText("(checked 29 September 2026)");
+  await expect(page.locator("details.facts").first()).not.toContainText("may be out of date");
+});
+
+// W44-15 (option 8): within each group, tools local to where the user is come first, then Global.
+test("chips in each group follow the user's location: local first, then Global", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 1);
+  const first = async (loc, home) => {
+    await page.evaluate(([l, h]) => { state.loc = l; state.home = h; render(); }, [loc, home]);
+    return page.locator(".group", { has: page.locator("h3", { hasText: "Supporters and fundraising" }) }).locator("button.chip[data-lib]").first().getAttribute("data-lib");
+  };
+  expect(await first("UK", "GB")).toBe("beacon-crm");
+  expect(await first("EU", "DK")).toBe("foreninglet");
+  expect(await first("EU", "DE")).toBe("brevo");
+  expect(await first("US", "US")).toBe("mailchimp");
+});
+
+// W44-15 (option 1): business tools are found by search only, and keep their ids.
+test("business tools are not in the main list, but a search finds them", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 1);
+  for (const id of ["shopify", "squarespace", "wix", "freeagent", "sage-payroll", "brightpay", "brighthr", "breathe-hr", "calendly", "zapier", "google-ads"]) {
+    await expect(page.locator(`button.chip[data-lib="${id}"]`)).toBeHidden();
+  }
+  await expect(page.locator(".group", { has: page.locator("h3", { hasText: "Staff, payroll and HR" }) })).toBeHidden();
+  await page.fill("#findTool", "brightpay");
+  await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeVisible();
+  await page.fill("#findTool", "");
+  await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeHidden();
+  // On the main list: 99 entries less 13 found by search only.
+  expect(await page.evaluate(() => { let n = 0; LIB.forEach((g) => g.items.forEach((t) => { if (!SEARCH_ONLY[t.id]) n++; })); return n; })).toBe(86);
 });

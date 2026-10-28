@@ -153,7 +153,7 @@ test("Money shows the charity tools; FreeAgent, Dinero and Billy appear when sea
   await startOwn(page);
   await expect(page.locator('[data-lib="xero"]')).toBeVisible();
   for (const id of ["freeagent", "dinero", "billy"]) await expect(page.locator(`[data-lib="${id}"]`)).toBeHidden();
-  await expect(page.locator(".groupmore")).toContainText("FreeAgent");
+  await expect(page.locator(".group", { has: page.locator("h3", { hasText: "Money" }) }).locator(".groupmore")).toContainText("FreeAgent");
   await page.fill("#findTool", "freeagent");
   await expect(page.locator('[data-lib="freeagent"]')).toBeVisible();
   await page.click('[data-lib="freeagent"]');
