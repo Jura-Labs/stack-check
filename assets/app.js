@@ -31,7 +31,7 @@ var CARDS={
  meetings:{title:"Meetings",anchor:"/meetings",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
   options:["The video tool in your file or email bundle: Nextcloud Talk with IONOS Nextcloud Workspace, or Proton Meet with Proton Workspace.","Jitsi: open source. The free public service now needs a Google, GitHub or Facebook login to start a room. Running your own server needs someone technical."],
   effort:"Low for internal meetings.",approach:"Move internal meetings first. Keep Zoom or Teams for large external calls and webinars.",stay:"You run webinars or large events, or your funders and partners only use Teams."},
- windows10:{title:"Laptops still on Windows 10",anchor:"/windows-10",replaces:"",reduce:"Windows 10 stopped getting free security updates on 14 October 2025. Paid extended updates cost US$61 per device for the first year, then double each year. Unsupported software also fails Cyber Essentials.",
+ windows10:{title:"Laptops still on Windows 10",anchor:"/windows-10",replaces:"",reduce:"Windows 10 stopped getting free security updates on 14 October 2025. Paid extended updates cost US$61 per device for the first year, then double each year.",reduceUK:" Unsupported software also fails Cyber Essentials.",
   options:["Upgrade to Windows 11 if the laptop meets Microsoft's requirements. The PC Health Check app will tell you.","Install Linux Mint: free, open source, supported until 2029, and runs well on older laptops.","Replace the device, refurbished where possible."],
   effort:"Medium. Someone comfortable installing an operating system, for an hour or two per laptop.",approach:"Start with laptops used mainly for web-based work. Back everything up, try Linux Mint from a USB stick first, install with disk encryption on.",stay:"The person relies on Windows-only software, such as a desktop finance package or a screen reader like JAWS. Upgrade or replace those machines instead."}
 };
@@ -45,9 +45,11 @@ var FAMILY=[
 ];
 function familyOf(t){for(var i=0;i<FAMILY.length;i++)if(FAMILY[i][1](t))return FAMILY[i][0];return "";}
 var DUPS=[["files and documents",function(t){var f=familyOf(t);return f==="files"||f==="documents";}],["newsletter",function(t){return /newsletter/i.test(t.job||"");}],["meetings and chat",function(t){return familyOf(t)==="meetings"||/chat/i.test(t.job||"");}],["website analytics",function(t){return familyOf(t)==="analytics";}],["passwords",function(t){return familyOf(t)==="passwords";}],["donors and supporters (CRM)",function(t){return /donors|supporters|crm/i.test(t.job||"");}],["accounts",function(t){return /accounting|bookkeeping|^accounts?$/i.test((t.job||"").trim());}],["payroll and HR",function(t){return /payroll|\bHR\b|human resources/i.test(t.job||"");}],["forms and surveys",function(t){return /form|survey/i.test(t.job||"");}],["tasks and projects",function(t){return /task|project/i.test(t.job||"");}],["AI writing and summaries",function(t){return t.kind==="AI tool"&&/writing|summar|draft/i.test(t.job||"");}],["donations, payments and tickets",function(t){return /donat|payment|ticket/i.test(t.job||"");}]];
+// Cyber Essentials is a UK scheme, so its sentence is for UK organisations only (28 Oct 2026).
+function reduceText(c){return c.reduce+(c.reduceUK&&state.loc==="UK"?c.reduceUK:"");}
 function cardHtml(c,tools){
   return '<div class="card"><h3>'+esc(c.title)+'</h3><p class="small muted">For: '+esc(tools.map(function(t){return t.name;}).join(", "))+(c.replaces?'. Usually replaces '+esc(c.replaces):"")+'</p><dl>'+
-    '<dt>Reduce dependency without moving</dt><dd>'+esc(c.reduce)+'</dd>'+
+    '<dt>Reduce dependency without moving</dt><dd>'+esc(reduceText(c))+'</dd>'+
     '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
     '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer" data-umami-event="guide-visit" data-umami-event-place="card">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
@@ -76,8 +78,29 @@ function supplierEmail(t){
 }
 
 // ---------- Plain-English reasons ----------
+// What fromLib (example.js) pre-fills from our research. A value still equal to it was not changed by the person.
+function libValue(t,f){var l=t.lib&&BYID[t.lib];if(!l||l.k==="Devices"||l.k==="App on our computers")return "";return f==="where"?(l.w&&l.w!==DK?l.w:""):f==="based"?(l.b||""):f==="exp"?(l.x&&l.x!==DK?l.x:""):f==="open"?(l.o?"Yes":"No"):"";}
+function fromResearch(t,f){var v=libValue(t,f);return !!v&&t[f]===v;}
+function prefilledAny(t){return ["where","based","exp","open"].some(function(f){return fromResearch(t,f);});}
+// Decide says which reasons rest on an answer the person may not have seen: one pre-filled from our
+// research, or one left blank under "More detail" (28 Oct 2026). w.from maps a reason to its field.
+var DETAIL_NAME={where:"where the data is kept",based:"where the supplier is based",exp:"full export",terms:"data protection terms"};
+function detailNote(t,reasons){
+  var w=why(t),pre=[],blank=[];
+  reasons.forEach(function(x){var f=w.from[x];if(!f)return;var n=DETAIL_NAME[f];if(fromResearch(t,f)){if(pre.indexOf(n)<0)pre.push(n);}else if(!t[f]&&blank.indexOf(n)<0)blank.push(n);});
+  var s=[];
+  if(pre.length)s.push("From our research, not your own answer: "+pre.join(" and ")+". Check "+(pre.length>1?"them":"it")+" under More detail in step 2.");
+  if(blank.length)s.push("Not answered yet: "+blank.join(" and ")+". "+(blank.length>1?"They are":"It is")+" under More detail in step 2.");
+  return s.join(" ");
+}
+function kindQ(t){
+  var qq=q("kind",t,"What kind of tool is it?","App on our computers: software with no online account, such as GIMP or KeePassXC. Account on a platform: a page or account on a service such as Facebook, LinkedIn, X or Bluesky.");
+  if(!t.lib||!t.kind)return qq;
+  return '<details class="kindfold" id="kindFold-'+esc(t.key)+'"'+(KIND_OPEN[t.key]?" open":"")+'><summary>What kind of tool it is: <b>'+esc(t.kind)+'</b> <span class="muted">(change)</span></summary>'+qq+'</details>';
+}
+var KIND_OPEN={};
 function why(t){
-  var w={safety:[],control:[],exit:[],mission:[]};
+  var w={safety:[],control:[],exit:[],mission:[],from:{}};
   if(!answered(t))return w;
   if(safety(t)==="Red")w.safety.push(dev(t)?(devUnsure(t)?"You are not sure the devices are encrypted and still get security updates.":"The devices are not encrypted, or no longer get security updates."):"It holds "+t.data.toLowerCase()+" data, and sign-in is not "+(t.signin===DK?"known to be ":"")+"protected.");
   if(safety(t)==="Amber")w.safety.push("Sign-in is not protected, but it holds no personal data.");
@@ -87,14 +110,15 @@ function why(t){
   if(t.admins===DK)w.control.push("You are not sure who can manage it.");
   if(t.where===DK&&!app(t)&&!platform(t))w.control.push("You are not sure where the data is stored.");
   if(control(t)==="Amber"){
-    if(platform(t)&&(t.where===DK||!t.where))w.control.push("The platform does not publish where it keeps data.");
-    if(personal(t)&&t.terms!=="Yes"&&!dev(t)&&!app(t)&&!platform(t))w.control.push("No data protection terms recorded.");
-    if(t.data==="Sensitive"&&(t.where===ELSE||t.based===ELSE))w.control.push("Sensitive data "+(t.where===ELSE?"stored":"with a supplier based")+" outside the UK, EU or EEA. Understand and document it.");
-    else if(t.data==="Personal"&&t.where===ELSE)w.control.push("Personal data stored outside the UK, EU or EEA. Understand and document it.");
+    if(platform(t)&&(t.where===DK||!t.where)){w.control.push("The platform does not publish where it keeps data.");w.from["The platform does not publish where it keeps data."]="where";}
+    if(personal(t)&&t.terms!=="Yes"&&!dev(t)&&!app(t)&&!platform(t)){w.control.push("No data protection terms recorded.");w.from["No data protection terms recorded."]="terms";}
+    var sx="Sensitive data "+(t.where===ELSE?"stored":"with a supplier based")+" outside the UK, EU or EEA. Understand and document it.",px="Personal data stored outside the UK, EU or EEA. Understand and document it.";
+    if(t.data==="Sensitive"&&(t.where===ELSE||t.based===ELSE)){w.control.push(sx);w.from[sx]=t.where===ELSE?"where":"based";}
+    else if(t.data==="Personal"&&t.where===ELSE){w.control.push(px);w.from[px]="where";}
   }
   var e=exitL(t);
   if(e&&e!=="Green"){
-    if(!dev(t)&&!app(t)&&t.exp!=="Yes")w.exit.push(t.exp==="Partial"?"You can only export some of the data.":"You may not be able to get the data out.");
+    if(!dev(t)&&!app(t)&&t.exp!=="Yes"){var ex=t.exp==="Partial"?"You can only export some of the data.":"You may not be able to get the data out.";w.exit.push(ex);w.from[ex]="exp";}
     if(t.copy!=="Yes")w.exit.push("No tested copy of your own"+(t.depend==="Critical"?", and you depend on it.":"."));
   }
   var m=mission(t);
@@ -106,6 +130,7 @@ function why(t){
   }
   return w;
 }
+var CCY_FOR={UK:"GBP",EU:"EUR",CA:"CAD",US:"USD"};
 var CCY={GBP:"£",EUR:"€",USD:"US$",CAD:"CA$",DKK:"DKK ",SEK:"SEK ",NOK:"NOK ",CHF:"CHF "};
 // Not-for-profits only (Paul, 30 Sep): "small or medium business" is no longer offered. Its wording
 // (BOARD "team") stays in the code, dormant, so a saved list that uses it still opens.
@@ -117,7 +142,9 @@ function ML(){return state.org==="nonprofit"?"Mission":"Values";}
 function BOARD(){if(SOLE())return "";if(state.org==="business")return "team";return state.org==="nonprofit"&&state.loc==="UK"?"trustees":"board";}
 function DATAHINT(){
   var o=state.org;
-  if(o==="business"||o==="sole")return "None: nothing about people. Internal: documents about the business, no personal details. Personal: customers, staff, suppliers. Sensitive: payroll, ID documents, health information, anything about children. Public posts only count as Internal.";
+  if(o==="business")return "None: nothing about people. Internal: documents about the business, no personal details. Personal: customers, staff, suppliers. Sensitive: payroll, ID documents, health information, anything about children. Public posts only count as Internal.";
+  // Sole traders who work with charities (28 Oct 2026): their clients, not "customers, staff".
+  if(o==="sole")return "None: nothing about people. Internal: your own work documents, no personal details. Personal: clients, contacts, the people you work with. Sensitive: ID documents, health information, anything about children or the people a client supports. Public posts only count as Internal.";
   if(o==="cci")return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: audiences, artists, freelancers, staff. Sensitive: payroll, ID documents, health information, anything about children or young people. Public posts only count as Internal.";
   return "None: nothing about people. Internal: documents about the organisation, no personal details. Personal: supporters, staff, volunteers. Sensitive: safeguarding records, files about the people you support, health, children. Public posts only count as Internal.";
 }
@@ -140,7 +167,7 @@ function soloTools(){return state.tools.filter(function(t){return answered(t)&&t
 function nextStep(t,skipAdmin){
   var a=action(t),s=[];
   if(a==="Fix now"){
-    if(safety(t)==="Red")s.push(dev(t)?(devUnsure(t)?"Check encryption (BitLocker or FileVault) and updates on each device.":"Upgrade, encrypt or replace these devices."):SOLE()?"Switch on two-step sign-in (MFA).":"Switch on two-step sign-in (MFA) for everyone.");
+    if(safety(t)==="Red")s.push(dev(t)?(devUnsure(t)?"Check encryption (BitLocker or FileVault) and updates on each device.":"Upgrade, encrypt or replace these devices."):t.signin===DK?(SOLE()?"Check whether two-step sign-in (MFA) is on, and switch it on if not.":"Check whether two-step sign-in (MFA) is on for everyone, and switch it on where it is not."):SOLE()?"Switch on two-step sign-in (MFA).":"Switch on two-step sign-in (MFA) for everyone.");
     if(!own(t))s.push("Name an owner.");
     if(oneAdmin(t)&&!(skipAdmin&&!app(t)))s.push(app(t)?"Make sure someone else can open the files"+(t.lib==="keepassxc"?", and knows where the master password is kept.":"."):"Add a second admin.");
     if(t.account==="Personal"&&personal(t)&&!app(t))s.push(dev(t)?"Agree rules for using personal devices for work, or provide work devices.":SOLE()?"Move it to a business account.":"Move the work to an organisation account.");
@@ -356,6 +383,11 @@ function render(){
   var own=state.mode==="example"&&ownSaved(),sb=document.getElementById("startOwn");if(sb)sb.textContent=own?"Back to your list":"Start your own";
   // 3. The privacy box is one line after step 1 (Paul, 29 Sep): the claims row 28 sentence only.
   var top=document.querySelector("header.top");if(top)top.classList.toggle("compact",state.step>=2);
+  // After the start screen the header is short, so a phone shows the questions sooner. The privacy
+  // sentence (claims row 28) always stays (28 Oct 2026).
+  if(top)top.classList.toggle("inner",state.step>=1);
+  var sk=document.querySelector("a.skip");if(sk)sk.textContent=["Skip to the start","Skip to your tools","Skip to the questions","Skip to what to do","Skip to your data"][state.step]||"Skip to the questions";
+  var pd=document.getElementById("printDate");if(pd)pd.textContent="Printed "+new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})+" from Stack Check "+document.getElementById("version").textContent+".";
   stepCounts();
   [1,2,3,4].forEach(function(n){var b=document.getElementById("nav"+n);if(state.step===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
   if(state.step===0)renderStart();else if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
@@ -377,12 +409,16 @@ function renderPick(){
     '<p class="small muted">This changes the words, such as "trustees" or "board". The scoring is the same'+(SOLE()?', except that being the only admin is treated as normal and handled as one item':'')+'.</p>'+
     '<fieldset class="q"><legend>Where are you based?</legend>'+radios("loc",LOCS.map(function(o){return o[0];}),state.loc||"UK",LOCS.map(function(o){return o[1];}))+'</fieldset>'+
     (state.loc==="EU"?'<div class="s3 field"><label for="home">Which country? (for the map)</label><select id="home">'+euOpts.map(function(c){return '<option value="'+c+'"'+((state.home||"EU")===c?" selected":"")+'>'+esc(PLACE[c])+'</option>';}).join("")+'</select></div>':"")+
-    OUTSIDE_NOTE()+
-    '<div class="s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+[["GBP","Pound sterling (£)"],["EUR","Euro (€)"],["USD","US dollar (US$)"],["CAD","Canadian dollar (CA$)"],["DKK","Danish krone (DKK)"],["SEK","Swedish krona (SEK)"],["NOK","Norwegian krone (NOK)"],["CHF","Swiss franc (CHF)"]].map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">Use one currency for the whole register. The check does not convert between currencies.</span></div></section>'+
-    '<section class="panel stack" aria-labelledby="fileH"><h2 id="fileH">Are you returning?</h2><p class="small muted">If you or a colleague previously saved your answers to a file, open it here.</p><div class="row"><input type="file" id="openFile1" class="vh" accept=".json,application/json"><label class="btn" for="openFile1">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div></section>';
-  h+='<section class="panel stack" aria-labelledby="askTeamH"><div class="s4 stack"><h2 id="askTeamH">Before you start, ask your team</h2><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p></div>'+
-    '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
-  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, AI tools, online banking, and your laptops. It takes about 2 minutes per tool to complete. You can always return and add more detail later.</p></div>'+
+    OUTSIDE_NOTE();
+  // Step 1 is shorter (28 Oct 2026): the currency is folded, since it follows the location and is used
+  // only for costs; "Open a saved file" is on the start screen; asking the team is folded, and not
+  // shown to sole traders.
+  var CCYS=[["GBP","Pound sterling (£)"],["EUR","Euro (€)"],["USD","US dollar (US$)"],["CAD","Canadian dollar (CA$)"],["DKK","Danish krone (DKK)"],["SEK","Swedish krona (SEK)"],["NOK","Norwegian krone (NOK)"],["CHF","Swiss franc (CHF)"]];
+  var ccyName=(CCYS.find(function(o){return o[0]===(state.ccy||"GBP");})||CCYS[0])[1];
+  h+='<details class="facts"><summary id="ccySum">More detail (optional: the currency for costs, now '+esc(ccyName)+')</summary><div class="s11 s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+CCYS.map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">It follows where you are based. Use one currency for the whole register. The check does not convert between currencies.</span></div></details></section>';
+  if(!SOLE())h+='<details class="fold"><summary>Before you start, ask your team</summary><div class="stack askfold"><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p>'+
+    '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></div></details>';
+  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH">List every service</h2><p class="muted">Include the free ones, AI tools, and your laptops. It takes about 2 minutes per tool to complete. You can always return and add more detail later.</p></div>'+
     '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
@@ -391,27 +427,28 @@ function renderPick(){
     h+='</div>'+(extra.length?'<p class="small muted groupmore">Also in the list: '+esc(extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", "))+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
-     '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: JustGiving"><span id="newNameErr" class="small err" role="status"></span></div>'+
-     '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: online donations"></div>'+
+     '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: Volunteer rota spreadsheet"><span id="newNameErr" class="small err" role="status"></span></div>'+
+     '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: volunteer shifts"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+esc(t.key)+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
   h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h+(state.tools.length?SAVE_ROW:"");
   bindSaveRow();
-  bindOpenFile(document.getElementById("openFile1"),document.getElementById("fileStatus"));
-  document.getElementById("ccy").addEventListener("change",function(e){state.ccy=e.target.value;save();});
+  // A currency the person chose stays when they change the location (28 Oct 2026).
+  document.getElementById("ccy").addEventListener("change",function(e){state.ccy=e.target.value;state.ccyMine=true;save();var cs=document.getElementById("ccySum");if(cs)cs.textContent="More detail (optional: the currency for costs, now "+e.target.selectedOptions[0].textContent+")";});
   var hm=document.getElementById("home");if(hm)hm.addEventListener("change",function(e){state.home=e.target.value;save();});
   view.querySelectorAll('input[name="org"]').forEach(function(r){r.addEventListener("change",function(){state.org=r.value;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
-  view.querySelectorAll('input[name="loc"]').forEach(function(r){r.addEventListener("change",function(){state.loc=r.value;
+  view.querySelectorAll('input[name="loc"]').forEach(function(r){r.addEventListener("change",function(){var was=CCY_FOR[state.loc||"UK"];state.loc=r.value;
     state.home=r.value==="UK"?"GB":r.value==="EU"?(state.home&&PLACE[state.home]&&state.home!=="GB"&&state.home!=="US"?state.home:"EU"):r.value;
-    state.ccy={UK:"GBP",EU:"EUR",CA:"CAD",US:"USD"}[r.value]||state.ccy;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
+    // The location sets the currency only while it is still the default, never over one the person chose.
+    if(!state.ccyMine&&(!was||state.ccy===was))state.ccy=CCY_FOR[r.value]||state.ccy;save();render();var e=document.getElementById(r.id);if(e)e.focus();});});
   var ft=document.getElementById("findTool");
   function filterTools(){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
     view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=qv?c.dataset.find.indexOf(qv)>=0:(!c.dataset.more||c.getAttribute("aria-pressed")==="true");c.hidden=!show;if(show){any=true;hits++;}});g.hidden=!any;var gm=g.querySelector(".groupmore");if(gm)gm.hidden=!!qv;});
     var none=document.getElementById("findNone");none.textContent=qv&&!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':"";
     if(qv&&!hits){var nn=document.getElementById("newName");if(nn&&!nn.value)nn.value=ft.value.trim();}}
   ft.addEventListener("input",filterTools);if(ft.value)filterTools();
-  document.getElementById("copyAsk").addEventListener("click",function(){copy(ASK);});
+  var ca=document.getElementById("copyAsk");if(ca)ca.addEventListener("click",function(){copy(ASK);});
   view.querySelectorAll("[data-lib]").forEach(function(b){b.addEventListener("click",function(){
     var id=b.dataset.lib,idx=state.tools.findIndex(function(t){return t.lib===id;});
     if(idx>=0)state.tools.splice(idx,1);else state.tools.push(fromLib(BYID[id]));
@@ -442,6 +479,7 @@ function whyList(t){
 function renderAsk(){
   if(!state.tools.length){go(1);return;}
   if(state.cur>=state.tools.length)state.cur=state.tools.length-1;
+  view.querySelectorAll("details.kindfold").forEach(function(d){KIND_OPEN[d.id.slice(9)]=d.open;});
   var t=state.tools[state.cur],i=state.cur,n=state.tools.length,k=t.key,d=dev(t);
   var h='<ul class="progress" aria-label="Your tools">'+state.tools.map(function(x,j){
     return '<li><button type="button" class="pdot'+(essentialsDone(x)?" done":"")+'" data-jump="'+j+'"'+(j===i?' aria-current="true"':"")+'>'+pdotLabel(x)+'</button></li>';}).join("")+'</ul>';
@@ -451,22 +489,26 @@ function renderAsk(){
   var sole=SOLE(),loc=app(t),plat=platform(t),records=!!(t.lib&&BYID[t.lib]&&BYID[t.lib].group==="Money");
   h+='<div class="sect"><h3>The essentials</h3><div class="qgrid">'+
     txt("job",t,"The job it does","Writing down the job makes duplicates obvious.","For example: shared files")+
-    q("kind",t,"Kind","App on our computers: software with no online account, such as GIMP or KeePassXC. Account on a platform: a page or account on a service such as Facebook, LinkedIn, X or Bluesky.")+
-    txt("owner",t,"The owner",sole?"Usually you. Write \"Me\" if so.":"A named role, not a team. If nobody owns it, leave it blank.",sole?"Me":"For example: Office manager")+
-    (loc?"":q("account",t,"Account",plat?"Is the page or account owned by the "+(sole?"business":"organisation")+" (for example in a Business Portfolio), not tied to one person's own profile?":sole?"Is it a business account, or a personal one you also use for work?":"Is it an organisation account, or someone's personal account?",sole?["Business","Personal"]:null))+
-    q("admins",t,sole?"Can anyone else get in?":"Admins",loc?"If the person who uses it left, could someone else open the files"+(t.lib==="keepassxc"?" and the password file (they need the master password)":"")+"? If so, answer "+(sole?"Yes, someone else can":"Two or more")+".":plat?(sole?"If you were ill for a month, could someone you trust get full control of it?":"Can two or more people get full control of the page or account?"):sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:["Two or more","One person","Not sure"])+
+    // Plain questions (28 Oct 2026). For a tool from the list the kind is already known, so it is folded.
+    kindQ(t)+
+    txt("owner",t,"Who owns it?",sole?"Usually you. Write \"Me\" if so.":"A named role, not a team, such as Treasurer or Office manager. Leave it blank only if nobody does: that is the first thing to fix.",sole?"Me":"For example: Treasurer")+
+    (loc?"":d?q("account",t,"Whose devices are they?",sole?"Are they business devices, or your own personal ones that you also use for work?":"Does the organisation own them, or are they staff's own?",sole?["Business","Personal"]:["The organisation's","Staff's own"]):q("account",t,"Whose account is it?",plat?"Is the page or account owned by the "+(sole?"business":"organisation")+" (for example in a Business Portfolio), not tied to one person's own profile?":sole?"Is it a business account, or a personal one you also use for work?":"Is it an organisation account, or someone's personal account?",sole?["Business","Personal"]:null))+
+    q("admins",t,sole?"Can anyone else get in?":d?"Who can get into them if the user leaves?":loc?"Can someone else open the files?":"Who can manage it?",d?(sole?"If you were ill for a month, could someone you trust get into them?":"If someone leaves, can two or more people get into their laptop or phone and the work on it?"):loc?"If the person who uses it left, could someone else open the files"+(t.lib==="keepassxc"?" and the password file (they need the master password)":"")+"? If so, answer "+(sole?"Yes, someone else can":"Two or more")+".":plat?(sole?"If you were ill for a month, could someone you trust get full control of it?":"Can two or more people get full control of the page or account?"):sole?"If you were ill for a month, could someone you trust get into it?":"Can two or more people manage it?",sole?["Yes, someone else can","Only me","Not sure"]:d?["Two or more people","Only one person","Not sure"]:["Two or more","One person","Not sure"])+
     q("depend",t,"How much do you depend on it?","Critical: you would struggle to work for a week without it.")+
     q("data",t,"What data or content do you store in this tool?",DATAHINT())+
     (d?q("enc",t,"If one is lost or stolen, is the information on it locked?","This is called encryption. On Windows look for BitLocker or Device encryption in Settings; on a Mac, FileVault. Not sure? Ask whoever set them up.",["Yes, all of them","Only some","No","Not sure"])+
        q("upd",t,"Do they still get security updates?","Windows 10 stopped getting free security updates in October 2025. Windows 11, and recent Mac, iPhone and Android versions, still get them.",["Yes","No","Not sure"])
       :q("signin",t,"Two-step sign-in on for everyone?","Two-step sign-in (also called MFA or 2FA) asks for a code from a phone app, a text message or a security key as well as the password. \"Not offered\" means the tool has no two-step sign-in at all.",["Yes","No","Not offered","Not sure"]))+
-    q("copy",t,"Do you have a backup of this data?",records?"Do you download and keep your own records (such as statements, Gift Aid schedules or payslips) somewhere else, and have you checked you can open them? If so, answer Yes.":loc?"Are the files copied somewhere else, such as a backup drive or shared folder, and have you checked you can open the copy?":'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
+    q("copy",t,"Do you have a backup of this data?",records?"Do you download and keep your own records (such as statements"+(state.loc==="UK"?", Gift Aid schedules or payslips":" or payslips")+") somewhere else, and have you checked you can open them? If so, answer Yes.":loc?"Are the files copied somewhere else, such as a backup drive or shared folder, and have you checked you can open the copy?":'Do you hold a recent copy of the data separately, and have you tried restoring from it? "The supplier backs it up" only counts if you know how to get it back.',["Yes, tested","No","Not sure"])+
     '</div>';
   if(personal(t))h+='<div class="pause" role="note"><b>If it holds personal data, pause.</b><span>Some information can cause real damage or harm if it is lost or leaked. Are we comfortable putting personal information here? You need a written contract with the supplier, and you may need a data protection impact assessment (DPIA).</span></div>';
   h+='</div>';
   // More detail
+  // Not opened by itself, for custom tools too (28 Oct 2026): the essentials come first. What is
+  // pre-filled from our research is said here, outside the fold, so it is seen.
   var hasDetail=!!(t.cost||t.hours||t.renewal||t.users);
-  h+='<details class="facts"'+((!t.lib||hasDetail)?" open":"")+'><summary>More detail (optional: cost, renewal, where the data is, export)</summary><div class="s11 stack">'+
+  if(!d&&!loc&&prefilledAny(t))h+='<p class="small muted" id="preNote">Some answers under More detail are pre-filled from what we found about '+esc(t.name)+'. Check them.</p>';
+  h+='<details class="facts"'+(hasDetail?" open":"")+'><summary>More detail (optional: cost, renewal, where the data is, export)</summary><div class="s11 stack">'+
     '<div class="qgrid">'+
     txt("users",t,"How many people use it (optional)","","0","number")+
     txt("cost",t,"Cost per year: licence, fees or charges ("+SYM()+", optional)","Currency is set in step 1.","0","number")+
@@ -477,7 +519,7 @@ function renderAsk(){
   if(loc)h+='<div class="sect"><h3>Control</h3><p class="small muted">An app on your computers has no supplier holding your data, so where it is kept, the supplier and data protection terms are not asked.</p><div class="qgrid">'+
       q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+'</div></div>';
   else if(!d){
-    h+='<div class="sect"><h3>Control'+(t.lib?' <span class="s12 muted">(some answers pre-filled, check them)</span>':"")+'</h3>'+OUTSIDE_NOTE()+'<div class="qgrid">'+
+    h+='<div class="sect"><h3>Control'+(prefilledAny(t)?' <span class="s12 muted">(some answers pre-filled, check them)</span>':"")+'</h3>'+OUTSIDE_NOTE()+'<div class="qgrid">'+
       q("where",t,"Where is the data kept?",(plat?"Most platforms do not say. If you cannot find it, answer Not sure: for an account on a platform that gives amber, not red. ":"")+"Check the supplier's privacy page or trust centre. If you cannot find it, ask them. The EEA is the EU plus Norway, Iceland and Liechtenstein, where GDPR applies. Switzerland counts as Elsewhere: transfers there are lawful under adequacy decisions, but it is outside the EEA.",["UK, EU or EEA","Elsewhere","Not sure"])+
       q("based",t,"Where is the supplier based?","Control is not about where a company is based. It is about whether you understand and manage the relationship.",["UK or Europe","Elsewhere"])+
       q("terms",t,"Data protection terms in place?",plat?"Not needed for an account on a platform. Record it if you have them.":"A contract or data processing agreement that says what the supplier may do with your data.",["Yes","No","Not sure"])+
@@ -501,7 +543,7 @@ function renderAsk(){
     q("rights",t,"Are there human rights concerns?",'Could this supplier or technology contribute to harm to people, for example through surveillance, discrimination, exploitation of workers, or targeting vulnerable groups? The <a href="https://www.business-humanrights.org" target="_blank" rel="noopener noreferrer">Business and Human Rights Resource Centre<span class="vh"> (opens in a new tab)</span></a> is a good place to look.')+
     q("env",t,"Are there environmental concerns?","Consider energy use and data-centre claims, AI compute, duplicate tools doing the same job, and how long your devices last.")+
     q("fits",t,NP()?"Does it fit our mission and values?":"Does it fit our values?",PUBHINT())+
-    txt("approved",t,"Who approved the trade-off?","Write down who accepted it, and when.","For example: Chair, June 2026")+
+    txt("approved",t,"Who approved the trade-off?","Write down who accepted it, and when.",sole?"For example: Me, June 2026":"For example: Chair, June 2026")+
     '</div></details>';
   h+='<div class="s5 stack"><div class="row small" id="lightsRow">'+lightsRow(t)+'</div><div id="whyBox">'+whyList(t)+'</div></div>';
   h+='</section><div class="navrow"><button type="button" class="btn" id="prevT">'+(i===0?"Back to the list":"Previous tool")+'</button><span class="row">'+(i<n-1?'<button type="button" class="btn ghost" id="toResults">See what to do now</button>':"")+'<button type="button" class="btn primary" id="nextT">'+(i===n-1?"See what to do":"Next tool")+'</button></span></div>'+SAVE_ROW;
@@ -516,6 +558,7 @@ function renderAsk(){
   ["job","owner","renewal","approved"].forEach(function(f){var e=document.getElementById(f+"-"+k);e.addEventListener("input",function(){t[f]=e.value;leaveExample();partial();});});
   ["loc","hq","renewalDate"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("change",function(){t[f]=e.value;leaveExample();save();});});
   var asks=document.getElementById("askSupplier");if(asks)asks.addEventListener("click",function(){copy(supplierEmail(t));});
+  var kf=document.getElementById("kindFold-"+k);if(kf)kf.addEventListener("toggle",function(){KIND_OPEN[k]=kf.open;});
   ["cost","hours","users"].forEach(function(f){var e=document.getElementById(f+"-"+k);if(e)e.addEventListener("input",function(){t[f]=e.value===""?"":Math.max(0,Number(e.value)||0);leaveExample();save();});});
   view.querySelectorAll("[data-jump]").forEach(function(b){b.addEventListener("click",function(){state.cur=+b.dataset.jump;render();focusHeading("#askH");});});
   document.getElementById("prevT").addEventListener("click",function(){if(i===0)go(1);else{state.cur--;render();window.scrollTo({top:0});focusHeading("#askH");}});
@@ -534,6 +577,8 @@ function renderAsk(){
 // ---------- Step 3 ----------
 var ORDER=[["Fix now","now","Fix now"],["Trustee decision","dec","Decide"],["Review this year","year","This year"],["Review at renewal","ren","At renewal"]];
 function renderResults(){
+  // A fold's "toggle" event comes after the click, so a redraw straight after it could miss it: read the folds first.
+  view.querySelectorAll("details[data-fold]").forEach(function(d){if(d.dataset.fold==="cards")state.foldCards=d.open;else state.foldCmp=d.open;});
   var ts=state.tools,done=ts.filter(answered);
   function by(a){return done.filter(function(t){return action(t)===a;});}
   var fix=by("Fix now"),dec=by("Trustee decision"),year=by("Review this year"),later=fix.filter(pendingMission);
@@ -556,7 +601,7 @@ function renderResults(){
     cardMission.map(function(t){return '<p class="small"><b>'+esc(t.name)+' also has a '+esc(ML())+' concern.</b> '+esc([].concat(why(t).mission).join(" "))+' '+(SOLE()?"After the fix, decide whether you accept it.":"After the fix, take it to your "+TR()+".")+'</p>';}).join("")+'</div></li>':"";
   h+='<section class="stack" aria-labelledby="prioH"><div class="s4 stack"><h2 id="prioH">What to do</h2><p class="muted">'+((pri.length||groupCard)?"Everything not listed here can stay as it is. Please review again in 12 months.":"Nothing needs attention. Please review again in 12 months, or when someone starts using a new tool.")+'</p></div>';
   if(pri.length||groupCard)h+='<ol class="prio">'+groupCard+pri.map(function(p){var w=why(p.t),r=[].concat(w.safety.filter(function(){return safety(p.t)==="Red";}),w.control.filter(function(x){return !(grouped&&!app(p.t)&&x==="Only one person can manage it.");}),w.exit.filter(function(){return exitL(p.t)==="Red";}),w.mission);
-    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+(p.c!=="dec"&&pendingMission(p.t)?" "+(SOLE()?"Then decide whether you accept the "+ML()+" concern.":"Then take the "+ML()+" concern to your "+TR()+"."):"")+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+'</ol>';
+    return '<li><span class="when '+p.c+'">'+esc(p.w)+'</span><div class="s15 stack"><h3>'+esc(p.t.name)+'</h3>'+(r.length?'<p class="small muted">'+esc(r.join(" "))+'</p>':"")+(function(n){return n?'<p class="small muted srcnote">'+esc(n)+'</p>':"";})(detailNote(p.t,r))+'<p class="small"><b>'+esc(nextStep(p.t,grouped))+(p.c!=="dec"&&pendingMission(p.t)?" "+(SOLE()?"Then decide whether you accept the "+ML()+" concern.":"Then take the "+ML()+" concern to your "+TR()+"."):"")+'</b></p>'+(p.t.next?'<p class="small">Your next step: '+esc(p.t.next)+' '+dueChip(p.t.due)+'</p>':"")+'</div></li>';}).join("")+'</ol>';
   h+='<p class="small muted"><b>Note:</b> If you are considering moving to a new service, weigh the short-term cost in money and staff time against the benefits in the future. Alternatively, consider how you can reduce your dependency on that service.</p></section>';
 
   // Who does what
@@ -590,7 +635,7 @@ function renderResults(){
       '<div class="field decnext"><label for="next-'+esc(t.key)+'">Next step<span class="vh"> for '+esc(t.name)+'</span></label><input type="text" id="next-'+esc(t.key)+'" data-next="'+esc(t.key)+'" value="'+esc(t.next)+'" placeholder="One concrete action"></div></div></td></tr>';
   });
   h+='</tbody></table></div><p class="small muted">Record your own decision: Keep, Reduce dependency, Replace or Retire. Then add one concrete next step, with a date.</p><p id="decStatus" class="small toast" role="status" aria-live="polite"></p></section>';
-  h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records":"Copy three things for your "+TR())+': what we depend on, what we are fixing now, and what we need you to decide. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
+  h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records: what I depend on, what I am fixing now, and what I need to decide":"Copy three things for your "+TR()+": what we depend on, what we are fixing now, and what we need you to decide")+'. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
    '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
    '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
    '<div class="s4 stack"><h3>Save a record of your audit</h3><p>Stack Check does not keep your data on any server. You can save a record of your audit to a file on your computer, and open it here at a later date.</p></div>'+
@@ -604,7 +649,7 @@ function renderResults(){
   var famKeys=Object.keys(byFam);
   if(famKeys.length||reduceLines.length){
     h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+(famKeys.length+reduceLines.length)+' tool'+(famKeys.length+reduceLines.length===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
-    if(reduceLines.length)h+='<ul class="dup">'+reduceLines.map(function(x){return '<li><b>'+esc(x[0].name)+', reduce dependency:</b> '+esc(x[1].reduce)+'</li>';}).join("")+'</ul>';
+    if(reduceLines.length)h+='<ul class="dup">'+reduceLines.map(function(x){return '<li><b>'+esc(x[0].name)+', reduce dependency:</b> '+esc(reduceText(x[1]))+'</li>';}).join("")+'</ul>';
     h+=famKeys.map(function(f){return cardHtml(CARDS[f],byFam[f]);}).join("")+'</section></details>';
   }
   // Compare two tools
@@ -716,29 +761,33 @@ function board(){
   var crit=d.filter(function(t){return t.depend==="Critical";}).length,pers=d.filter(personal).length,ai=state.tools.filter(function(t){return t.kind==="AI tool";}).length;
   var cost=state.tools.reduce(function(s,t){return s+(Number(t.cost)||0);},0);
   var today=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
-  var L=[(SOLE()?"Technology check: summary":"Technology check: summary for our "+TR())+", "+today,""];
+  // A sole trader's summary is written as "I" throughout; everyone else's as "we" (28 Oct 2026).
+  var me=SOLE(),my=function(s){return me?s.replace(/\byour\b/g,"my").replace(/\byou hold\b/g,"I hold"):s;};
+  var L=[(me?"Technology check: summary":"Technology check: summary for our "+TR())+", "+today,""];
   var open=state.tools.length-d.length;
-  L.push("1. What we depend on");
-  L.push("We use "+state.tools.length+" tools"+(ai?", including "+ai+" AI tool"+(ai===1?"":"s"):"")+". "+crit+" are critical and "+pers+" hold personal or sensitive data."+(cost>0?" Listed licence costs: "+money(cost)+" a year.":""));
+  L.push(me?"1. What I depend on":"1. What we depend on");
+  L.push((me?"I use ":"We use ")+state.tools.length+" tools"+(ai?", including "+ai+" AI tool"+(ai===1?"":"s"):"")+". "+crit+" are critical and "+pers+" hold personal or sensitive data."+(cost>0?" Listed licence costs: "+money(cost)+" a year.":""));
   if(open)L.push(open+" tool"+(open===1?" is":"s are")+" not answered yet and not included below.");
   L.push("");
   // One line for the tools whose only fix is a second admin, not one line each.
   // The same tools as the "only one admin" card on Decide, so the two counts agree.
   var solo=soloTools(),adminFix=SOLE()?[]:solo.filter(function(t){return action(t)==="Fix now";});
-  L.push("2. What we are fixing now ("+fix.length+")");
+  L.push((me?"2. What I am fixing now (":"2. What we are fixing now (")+fix.length+")");
+  var fixLines=L.length;
   fix.forEach(function(t){var n=nextStep(t,adminFix.length>1);if(n)L.push("- "+t.name+": "+n);});
   if(adminFix.length>1)L.push("- Add a second admin to "+adminFix.length+" tools: "+adminFix.map(function(t){return t.name;}).join(", ")+".");
-  if(SOLE()&&solo.length)L.push("- Recovery codes: I am the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s")+" ("+solo.map(function(t){return t.name;}).join(", ")+"). Write down the recovery codes and tell someone I trust where they are.");
-  if(!fix.length)L.push("- Nothing");L.push("");
-  L.push(SOLE()?"3. What I need to decide":"3. What we need you to decide");
-  L.push(ACT("Trustee decision")+"s ("+dec.length+"):");dec.forEach(function(t){L.push("- "+t.name+": "+[].concat(why(t).mission).join(" "));});if(!dec.length)L.push("- None");
+  if(me&&solo.length)L.push("- Recovery codes: I am the only person who can get into "+solo.length+" tool"+(solo.length===1?"":"s")+" ("+solo.map(function(t){return t.name;}).join(", ")+"). Write down the recovery codes and tell someone I trust where they are.");
+  // "Nothing" only when no line at all was written under this heading.
+  if(L.length===fixLines)L.push("- Nothing");L.push("");
+  L.push(me?"3. What I need to decide":"3. What we need you to decide");
+  L.push((me?"My decisions":ACT("Trustee decision")+"s")+" ("+dec.length+"):");dec.forEach(function(t){L.push("- "+t.name+": "+my([].concat(why(t).mission).join(" ")));});if(!dec.length)L.push("- None");
   // A Mission concern on a tool that also needs a fix is still a decision for the board (review, 30 Sep).
   var alsoDec=fix.filter(pendingMission);
-  if(alsoDec.length){L.push("Also to decide, once the fix is done ("+alsoDec.length+"):");alsoDec.forEach(function(t){L.push("- "+t.name+": "+[].concat(why(t).mission).join(" "));});}
+  if(alsoDec.length){L.push("Also to decide, once the fix is done ("+alsoDec.length+"):");alsoDec.forEach(function(t){L.push("- "+t.name+": "+my([].concat(why(t).mission).join(" ")));});}
   L.push("Reviews this year ("+year.length+"):");year.forEach(function(t){L.push("- "+t.name+": "+nextStep(t));});if(!year.length)L.push("- None");
   if(ren.length){L.push("Reviews at renewal ("+ren.length+"):");ren.forEach(function(t){L.push("- "+t.name);});}
   var cu=comingUp();if(cu.length){L.push("");L.push("Coming up in the next 90 days:");cu.forEach(function(i){L.push("- "+fmtDate(i.d)+": "+i.tool+", "+i.what+(i.who?" ("+i.who+")":""));});}
-  L.push("");L.push("Everything else stays as it is. We review the register once a year, and whenever someone starts using a new tool.");
+  L.push("");L.push(me?"Everything else stays as it is. I review the register once a year, and whenever I start using a new tool.":"Everything else stays as it is. We review the register once a year, and whenever someone starts using a new tool.");
   return L.join("\n");
 }
 function copy(text){

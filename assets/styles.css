@@ -275,6 +275,20 @@ details.fold>section{padding-bottom:.9rem}
 /* One-line privacy box after step 1 (Paul, 29 Sep). */
 header.top.compact .pmore{display:none}
 header.top.compact .privacy{padding:.4rem .8rem}
+/* Steps 1 to 4: a short header, so phones reach the questions sooner (28 Oct 2026).
+   The privacy sentence stays. The start screen keeps the full header. */
+header.top.inner .eyebrow,header.top.inner .tagline,header.top.inner>p.muted{display:none}
+header.top.inner{gap:.5rem;margin-bottom:.8rem}
+header.top.inner h1{font-size:clamp(1.2rem,3vw,1.55rem)}
+header.top.inner .logo{height:clamp(36px,6vw,56px)}
+.brandright{margin-left:auto}
+/* Step 2: the kind of a tool from the list is folded behind "(change)". */
+details.kindfold>summary{cursor:pointer;min-height:24px}
+details.kindfold[open]>summary{margin-bottom:.6rem}
+/* Shown only in print (print.css), with the date. */
+.printdate{display:none}
+/* Folded "ask your team" on step 1. */
+.askfold{padding-bottom:.9rem}
 /* The read-only example prompt stays in view wherever the person is. */
 .banner.exedit{position:fixed;left:16px;right:16px;bottom:16px;z-index:20;background:var(--surface);border-style:solid;box-shadow:0 4px 18px rgba(0,0,0,.18);max-width:960px;margin:0 auto}
 ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
@@ -325,7 +339,8 @@ nav.steps .short{display:none}
   nav.steps{padding-block:.4rem}
   nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
   nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  nav.steps .short{display:block;font-size:.78rem;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+  /* One word on one line: "Questions" broke as "Questi ons" at 320px (28 Oct 2026). */
+  nav.steps .short{display:block;font-size:clamp(.66rem,3.3vw,.78rem);font-weight:600;line-height:1.1;white-space:nowrap}
   nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
 }
 

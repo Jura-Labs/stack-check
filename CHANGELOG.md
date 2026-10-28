@@ -3,6 +3,42 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.9 (28 October 2026)
+
+Simpler steps for small charities, and three bug fixes. The lights and
+the suggested action are unchanged.
+
+- Fixed: choosing where you are based no longer replaces a currency you
+  chose yourself.
+- Fixed: a sole trader's copied summary no longer says "Nothing" under
+  "fixing now" when it lists the recovery codes, and it is written as
+  "I" throughout ("My decisions", "What I depend on").
+- Fixed: step 1 no longer asks you to include online banking, and the
+  example tool name is one that is not already in the list.
+- After the start screen the header is shorter, so the questions start
+  sooner on a phone. The privacy sentence stays.
+- Step 1: "Are you returning?" is gone ("Open a saved file" is on the
+  start screen). The currency is folded under More detail and follows
+  where you are based. "Ask your team" is folded, and not shown to sole
+  traders.
+- Step 2: plain questions ("Who owns it?", "Whose account is it?", "Who
+  can manage it?", and for devices "Who can get into them if the user
+  leaves?"). For a tool from the list, its kind is folded behind
+  "(change)". More detail no longer opens by itself for a tool you added.
+  A note outside the fold says when answers are pre-filled from our
+  research.
+- Decide: a reason that rests on an answer pre-filled from our research,
+  or on one not yet given under More detail, now says so.
+- Gift Aid and Cyber Essentials are mentioned to UK organisations only.
+- When you are not sure two-step sign-in is on, the suggested step is to
+  check it first.
+- Sole traders get their own hint for the kinds of data, and their own
+  example of who approved a trade-off.
+- Print leaves out the copy and save buttons and "Thinking of changing a
+  tool?", and prints the date.
+- The skip link says where it goes on each step, and "Questions" no longer
+  breaks across two lines in the step bar on small phones.
+
 ## 2.2.8 (8 October 2026)
 
 - Each tool's facts now show the date that tool was last checked. The

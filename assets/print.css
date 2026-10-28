@@ -15,5 +15,9 @@ select,input[type=text],input[type=date]{border:0;background:transparent;appeara
 /* Decide prints as the board paper: folded extras are not printed.
    "Your data" prints the map and its table. */
 details.fold{display:none}
+/* Not printed: the copy and save buttons' section, and "Thinking of changing a tool?".
+   The date is printed under the title (28 Oct 2026). */
+section[aria-labelledby="outH"],section[aria-labelledby="chgH"]{display:none}
+.printdate{display:block;font-size:10pt}
 details.maptable{display:block}
 details.maptable>summary{display:none}
