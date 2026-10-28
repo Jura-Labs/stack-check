@@ -26,7 +26,7 @@ const FACTS = [
   ["data_kept", "w"], ["supplier_based", "b"], ["supplier_hq", "hq"], ["contracting_entity", "co"],
   ["parent", "par"], ["storage", "store"], ["residency_option", "res"], ["plans", "plans"],
   ["export", "x"], ["open_source", "o"], ["mfa", "mfa"], ["ai_training", "ai"], ["ai_detail", "aid"],
-  ["nonprofit_offer_type", "npk"], ["nonprofit_offer", "np"], ["note", "note"], ["confidence", "conf"],
+  ["nonprofit_offer_type", "npk"], ["nonprofit_offer", "np"], ["note", "note"], ["note_more", "more"], ["confidence", "conf"],
   ["region", "region"],
 ];
 const facts = [FACTS.map((f) => f[0]).concat(["sources", "checked"])];

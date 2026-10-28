@@ -11,25 +11,34 @@ A shorter library for small charities (Paul's decisions of 28 October
 - Business tools leave the main list: Shopify, Squarespace, Wix,
   FreeAgent, Sage Payroll, BrightPay, BrightHR, Breathe, Calendly,
   Zapier and Google Ads. Type a name in "Find a tool" to find them.
+  The "Staff, payroll and HR" group keeps its heading and says so.
   Meta Business Suite is merged into "Facebook and Instagram" (below).
   Saved files that use any of them still open.
 - Near-duplicates are merged: Microsoft 365 now covers Teams and Copilot,
   WhatsApp covers WhatsApp Business, and "Facebook and Instagram" covers
   a Facebook Page, an Instagram professional account and Meta Business
   Suite. A file saved with one of the old tools opens with the merged
-  entry. Zoom and Zoom AI Companion stay separate, because their facts
-  about where data is kept differ.
+  entry; if it held two of them, they open as one tool with the first
+  one's answers. The note above the questions is kept to about three
+  sentences, and the rest is under "More about it" in the facts.
+  Zoom and Zoom AI Companion stay separate, because their facts about
+  where data is kept differ.
 - Each tool's nonprofit offer is now one of Free, Discount, On request,
   None or Unknown, with one short line. Prices and percentages are in
   the linked sources. The offer is always shown, in the facts and in
   the comparison.
 - Library text no longer describes what a supplier's pages do not say.
-  Where a fact is not known, it says "Unknown".
+  Where a fact is not known, it says "Unknown", and a sentence that
+  only said a point was unknown is removed.
 - Tools in each group are listed with those from where you are first:
   UK tools for the UK, Danish and then EU tools for Denmark, EU tools
   elsewhere in Europe.
 - A tool whose facts have not been checked for six months says "not
   checked since" and the date.
+- Nonprofit offers for Calendly, Dropbox, Enthuse, Mattermost Cloud and
+  Zoom AI Companion were checked on 28 October 2026 on the suppliers' own
+  pages. Calendly offers special pricing on request; for Dropbox it is
+  unknown. The footer's range now runs to 28 October 2026.
 - The main list has 86 tools; 99 in all with those found by searching.
 
 ## 2.2.8 (8 October 2026)

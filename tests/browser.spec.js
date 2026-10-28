@@ -120,9 +120,13 @@ test("library text never narrates the research, and unknown facts show as Unknow
       /\b(does|do|did|doesn.t|don.t) not (say|state|mention|list|name|describe|specify|publish|disclose|advertise)\b/.source,
       /\bnot (stated|listed|published|specified|mentioned|disclosed|described)\b|\bno (published|public)\b|\bno (explicit )?statement\b/.source,
       /\b(only|just) says\b|\b(lists|names|gives|publishes|advertises?|mentions) no\b|\bis silent\b|\b(is|are) listed on\b|\b(no|any) [\w -]{1,40}(is|are)? listed\b/.source,
+      // Fix round 1 (28 Oct 2026): "Unknown and nothing more" also rules out an unknown point
+      // inside the text ("Opt-out: unknown.", "Whether X applies: unknown."). A field may still be,
+      // or start with, "Unknown." as its own value.
+      /:\s*unknown\b|\bwhether\b[^.]*\bunknown\b/.source,
     ].join("|"), "i");
     const out = [];
-    LIB.forEach((g) => g.items.forEach((t) => ["store", "plans", "aid", "np", "note", "co"].forEach((k) => {
+    LIB.forEach((g) => g.items.forEach((t) => ["store", "plans", "aid", "np", "note", "more", "co"].forEach((k) => {
       if (typeof t[k] === "string" && rx.test(t[k])) out.push(t.id + "." + k);
     })));
     return out;
@@ -213,7 +217,13 @@ test("business tools are not in the main list, but a search finds them", async (
   for (const id of ["shopify", "squarespace", "wix", "freeagent", "sage-payroll", "brightpay", "brighthr", "breathe-hr", "calendly", "zapier", "google-ads"]) {
     await expect(page.locator(`button.chip[data-lib="${id}"]`)).toBeHidden();
   }
-  await expect(page.locator(".group", { has: page.locator("h3", { hasText: "Staff, payroll and HR" }) })).toBeHidden();
+  // The payroll group keeps its heading and says how to add one (fix round 1).
+  const payroll = page.locator(".group", { has: page.locator("h3", { hasText: "Staff, payroll and HR" }) });
+  await expect(payroll).toBeVisible();
+  await expect(payroll.locator(".groupmore")).toHaveText(/^Staff, payroll and HR tools, such as BrightPay, .*: type a name in Find a tool to add one\.$/);
+  await page.fill("#findTool", "zzz");
+  await page.fill("#findTool", "");
+  await expect(payroll).toBeVisible();
   await page.fill("#findTool", "brightpay");
   await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeVisible();
   await page.fill("#findTool", "");
