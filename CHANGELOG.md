@@ -8,10 +8,11 @@ register v2.2, Stack Check 2.2.x.
 A shorter library for small charities (Paul's decisions of 28 October
 2026, options 1 to 4 and 8).
 
-- Twelve business tools leave the main list: Shopify, Squarespace, Wix,
+- Business tools leave the main list: Shopify, Squarespace, Wix,
   FreeAgent, Sage Payroll, BrightPay, BrightHR, Breathe, Calendly,
-  Zapier, Meta Business Suite and Google Ads. Type a name in "Find a
-  tool" to find them. Saved files that use them still open.
+  Zapier and Google Ads. Type a name in "Find a tool" to find them.
+  Meta Business Suite is merged into "Facebook and Instagram" (below).
+  Saved files that use any of them still open.
 - Near-duplicates are merged: Microsoft 365 now covers Teams and Copilot,
   WhatsApp covers WhatsApp Business, and "Facebook and Instagram" covers
   a Facebook Page, an Instagram professional account and Meta Business
