@@ -3,6 +3,13 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.11 (30 October 2026)
+
+- Opening a saved file when you already have a list in progress now asks
+  "Replace your current list?" first. "Keep my list" leaves your answers
+  as they are; "Replace it" opens the file. With no list of your own, the
+  file opens straight away as before.
+
 ## 2.2.9 (28 October 2026)
 
 Simpler steps for small charities, and three bug fixes. The lights and

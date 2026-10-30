@@ -132,7 +132,7 @@ function stateFromFile(text) {
   };
 }
 
-// Wires an <input type="file"> so choosing a file replaces the current answers.
+// Wires an <input type="file"> so choosing a file replaces the current answers (askReplace is in app.js).
 function bindOpenFile(input, status) {
   if (!input) return;
   input.addEventListener("change", function () {
@@ -141,17 +141,18 @@ function bindOpenFile(input, status) {
     if (f.size > FILE_MAX_BYTES) { status.textContent = "This file is too large to be a Stack Check file."; input.value = ""; return; }
     var r = new FileReader();
     r.onload = function () {
-      try {
-        state = stateFromFile(String(r.result));
+      var s;
+      try { s = stateFromFile(String(r.result)); } catch (e) { status.textContent = e.message; input.value = ""; return; }
+      input.value = "";
+      // A file that can be opened replaces the current list only after asking, if there is work in it (30 Oct 2026).
+      askReplace(input, status, function () {
+        state = s;
         render();
         var h = document.querySelector("#view h2");
         var msg = document.getElementById("fileStatus");
         if (msg) msg.textContent = "Opened " + f.name + ": " + state.tools.length + " tools.";
         if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
-      } catch (e) {
-        status.textContent = e.message;
-      }
-      input.value = "";
+      });
     };
     r.onerror = function () { status.textContent = "The file could not be read."; input.value = ""; };
     r.readAsText(f);
