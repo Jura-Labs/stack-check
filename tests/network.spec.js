@@ -30,6 +30,8 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   await step(page, 1);
 
   // A custom tool named with the marker, plus library tools.
+  // Every fold open, so the marker also goes into fields that start folded (claims row 28, 28 Oct 2026).
+  await page.$$eval("details", (ds) => ds.forEach((d) => (d.open = true)));
   await page.fill("#newName", MARKER + " tool");
   await page.fill("#newJob", MARKER + " job");
   await page.click("#addTool");
@@ -41,6 +43,7 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   await step(page, 2);
   const n = await page.evaluate(() => state.tools.length);
   for (let i = 0; i < n; i++) {
+    await page.$$eval("details", (ds) => ds.forEach((d) => (d.open = true)));
     for (const input of await page.locator('#view input[type="text"], #view input:not([type]), #view textarea').all()) {
       if (await input.isVisible() && await input.isEditable()) await input.fill(MARKER + " " + i);
     }
@@ -57,6 +60,7 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   // Steps 3 and 4: every text field there too.
   for (const s of [3, 4]) {
     await step(page, s);
+    await page.$$eval("details", (ds) => ds.forEach((d) => (d.open = true)));
     for (const input of await page.locator('#view input[type="text"], #view textarea').all()) {
       if (await input.isVisible() && await input.isEditable()) await input.fill(MARKER + " step" + s);
     }
@@ -66,6 +70,10 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   // The marker was really entered: it is in this browser's storage...
   const stored = await page.evaluate(() => JSON.stringify(localStorage));
   expect(stored).toContain(MARKER);
+  // ...including the fields under More detail and the Mission check, which start folded.
+  const plainStored = stored.replace(/\\/g, "");
+  for (const f of ["renewal", "approved"]) expect(plainStored, f).toContain(`"${f}":"${MARKER}`);
+  expect(plainStored).toContain('"cost":7');
   // ...and never in the address bar, which analytics would record.
   expect(page.url()).not.toContain(MARKER);
 

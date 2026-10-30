@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' https://analytics.juralabs.org; style-src 'self'; img-src 'self'; connect-src https://analytics.juralabs.org; font-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; manifest-src 'self'">
 <meta name="referrer" content="no-referrer">
-<!-- Umami, page views only (Drive doc 24a decision 5): counted only on check.juralabs.org; never the query or hash; Do Not Track respected; no custom events anywhere in the tool. -->
+<!-- Umami: page views and three fixed click events (start-own, register-download, guide-visit; decisions/2026-09-30-stack-check-analytics-events.md); counted only on check.juralabs.org; never the query or hash; Do Not Track respected. -->
 <script defer src="https://analytics.juralabs.org/script.js" data-website-id="4fe2c185-82ce-433b-8d40-0256ba356f04" data-domains="check.juralabs.org" data-exclude-search="true" data-exclude-hash="true" data-do-not-track="true"></script>
 <title>Stack Check</title>
 <meta name="description" content="List every tool you use, see where your data goes, and get a recommendation on what to do to stay in command of your technology. Free, from Jura Labs.">
@@ -17,15 +17,15 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="favicon.png" type="image/png">
-<link rel="stylesheet" href="assets/styles.css?v=2.2.8">
-<link rel="stylesheet" href="assets/print.css?v=2.2.8" media="print">
-<script src="assets/theme.js?v=2.2.8"></script>
-<script src="assets/tools.js?v=2.2.8" defer></script>
-<script src="assets/map.js?v=2.2.8" defer></script>
-<script src="assets/example.js?v=2.2.8" defer></script>
-<script src="assets/scoring.js?v=2.2.8" defer></script>
-<script src="assets/files.js?v=2.2.8" defer></script>
-<script src="assets/app.js?v=2.2.8" defer></script>
+<link rel="stylesheet" href="assets/styles.css?v=2.2.9">
+<link rel="stylesheet" href="assets/print.css?v=2.2.9" media="print">
+<script src="assets/theme.js?v=2.2.9"></script>
+<script src="assets/tools.js?v=2.2.9" defer></script>
+<script src="assets/map.js?v=2.2.9" defer></script>
+<script src="assets/example.js?v=2.2.9" defer></script>
+<script src="assets/scoring.js?v=2.2.9" defer></script>
+<script src="assets/files.js?v=2.2.9" defer></script>
+<script src="assets/app.js?v=2.2.9" defer></script>
 </head>
 <body>
 <noscript><p class="noscript">Stack Check runs in your browser and needs JavaScript switched on. If you would rather not, download the register as a spreadsheet: <a href="downloads/stay-in-command-register-v2.2.ods">OpenDocument (.ods)</a> or <a href="downloads/stay-in-command-register-v2.2.xlsx">Excel (.xlsx)</a>.</p></noscript>
@@ -45,6 +45,7 @@
       <svg class="lock" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Z"/></svg>
       <span><b>No account. Your answers stay in this browser and are never sent anywhere.</b><span class="pmore"> They are saved here so you can come back to them.</span></span>
     </div>
+    <p class="printdate" id="printDate">Stack Check</p>
   </header>
 
   <nav class="steps" aria-label="Steps">
@@ -85,7 +86,7 @@
       </div>
       <div class="fcol">
         <p>© 2026 Jura Labs CIC. The questions, scoring rules and text are licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer license">Creative Commons Attribution 4.0 (CC BY 4.0)<span class="vh"> (opens in a new tab)</span></a>. Share and adapt them as long as you credit Jura Labs. Suggested credit: "Based on the Stay in command register by Jura Labs (juralabs.org), CC BY 4.0."</p>
-        <p>Stack Check <span id="version">2.2.8</span>. <a href="CHANGELOG.md">What changed</a>. <a href="https://github.com/Jura-Labs/stack-check">Source code</a> (MIT). <a href="https://juralabs.org/updates/stay-in-command-of-your-technology" data-umami-event="guide-visit" data-umami-event-place="footer">The guide</a>.</p>
+        <p>Stack Check <span id="version">2.2.9</span>. <a href="CHANGELOG.md">What changed</a>. <a href="https://github.com/Jura-Labs/stack-check">Source code</a> (MIT). <a href="https://juralabs.org/updates/stay-in-command-of-your-technology" data-umami-event="guide-visit" data-umami-event-place="footer">The guide</a>.</p>
       </div>
     </div>
   </footer>

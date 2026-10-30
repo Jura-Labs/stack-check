@@ -103,8 +103,8 @@ test("save to a file, clear everything, open the file: the answers come back", a
   await page.click("#clearYes");
   await expect.poll(() => page.evaluate(() => state.tools.length)).toBe(0);
 
-  await step(page, 1);
-  await page.setInputFiles("#openFile1", { name: "saved.json", mimeType: "application/json", buffer: Buffer.from(saved.text) });
+  await page.reload(); // "Open a saved file" is on the start screen (28 Oct 2026)
+  await page.setInputFiles("#openFile0", { name: "saved.json", mimeType: "application/json", buffer: Buffer.from(saved.text) });
   await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
   expect(await page.evaluate(() => JSON.stringify(state.tools))).toBe(before);
   await expect(page.locator("#fileStatus")).toContainText("9 tools");
@@ -147,14 +147,13 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
 
 test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {
   await fresh(page);
-  await step(page, 1);
-  const before = await page.evaluate(() => JSON.stringify(state));
+  const before = await page.evaluate(() => JSON.stringify(state)); // on the start screen, where "Open a saved file" is
   for (const [body, msg] of [
     ["not json", "not a Stack Check file"],
     [JSON.stringify({ app: "something-else", state: {} }), "not a Stack Check file"],
     [JSON.stringify({ app: "stack-check", state: { v: 99, tools: [] } }), "different version"],
   ]) {
-    await page.setInputFiles("#openFile1", { name: "x.json", mimeType: "application/json", buffer: Buffer.from(body) });
+    await page.setInputFiles("#openFile0", { name: "x.json", mimeType: "application/json", buffer: Buffer.from(body) });
     await expect(page.locator("#fileStatus")).toContainText(msg);
     expect(await page.evaluate(() => JSON.stringify(state))).toBe(before);
   }
@@ -176,8 +175,8 @@ test("an opened file cannot inject markup or odd values", async ({ page }) => {
       journeys: "nope",
     },
   };
-  await step(page, 1);
-  await page.setInputFiles("#openFile1", { name: "evil.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(evil)) });
+  // fresh() lands on the start screen, where "Open a saved file" is (28 Oct 2026).
+  await page.setInputFiles("#openFile0", { name: "evil.json", mimeType: "application/json", buffer: Buffer.from(JSON.stringify(evil)) });
   await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
   const s = await page.evaluate(() => state);
   expect([s.org, s.loc, s.ccy, s.home]).toEqual(["nonprofit", "UK", "GBP", "GB"]);
@@ -215,8 +214,8 @@ test("a crafted file cannot inject HTML through a tool's key, from the file or f
   const navs = [];
   page.on("framenavigated", (f) => { if (f === page.mainFrame()) navs.push(f.url()); });
   await page.route("https://evil.example/**", (r) => r.abort());
-  await step(page, 1);
-  await page.setInputFiles("#openFile1", { name: "crafted.json", mimeType: "application/json", buffer: Buffer.from(file) });
+  // fresh() lands on the start screen, where "Open a saved file" is (28 Oct 2026).
+  await page.setInputFiles("#openFile0", { name: "crafted.json", mimeType: "application/json", buffer: Buffer.from(file) });
   await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
   expect(await page.evaluate(() => state.tools[0].key)).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
   for (const s of [2, 3, 4]) await step(page, s);

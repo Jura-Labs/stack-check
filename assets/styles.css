@@ -105,7 +105,11 @@ details.facts summary{cursor:pointer;font-weight:600}
 .light.a{background:var(--warn-bg);color:var(--warn)}
 .light.r{background:var(--bad-bg);color:var(--bad)}
 .light.n{background:var(--tint);color:var(--muted)}
-.light svg{width:.7rem;height:.7rem;fill:currentColor}
+.light svg{width:.7rem;height:.7rem;fill:currentColor;flex:none}
+/* With large text on a phone a light ("Mission Amber") can be wider than its row: it may wrap
+   rather than push the page sideways (WCAG 1.4.10; found with Linux fonts at 200%, 28 Oct 2026). */
+.light{max-width:100%;min-width:0}
+@media (max-width:560px){.light{white-space:normal;overflow-wrap:anywhere}}
 
 /* Step 3 */
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
@@ -275,6 +279,20 @@ details.fold>section{padding-bottom:.9rem}
 /* One-line privacy box after step 1 (Paul, 29 Sep). */
 header.top.compact .pmore{display:none}
 header.top.compact .privacy{padding:.4rem .8rem}
+/* Steps 1 to 4: a short header, so phones reach the questions sooner (28 Oct 2026).
+   The privacy sentence stays. The start screen keeps the full header. */
+header.top.inner .eyebrow,header.top.inner .tagline,header.top.inner>p.muted{display:none}
+header.top.inner{gap:.5rem;margin-bottom:.8rem}
+header.top.inner h1{font-size:clamp(1.2rem,3vw,1.55rem)}
+header.top.inner .logo{height:clamp(36px,6vw,56px)}
+.brandright{margin-left:auto}
+/* Step 2: the kind of a tool from the list is folded behind "(change)". */
+details.kindfold>summary{cursor:pointer;min-height:24px}
+details.kindfold[open]>summary{margin-bottom:.6rem}
+/* Shown only in print (print.css), with the date. */
+.printdate{display:none}
+/* Folded "ask your team" on step 1. */
+.askfold{padding-bottom:.9rem}
 /* The read-only example prompt stays in view wherever the person is. */
 .banner.exedit{position:fixed;left:16px;right:16px;bottom:16px;z-index:20;background:var(--surface);border-style:solid;box-shadow:0 4px 18px rgba(0,0,0,.18);max-width:960px;margin:0 auto}
 ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
@@ -321,11 +339,15 @@ table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width
    name stays in each button for screen readers; a short word is shown instead. */
 nav.steps .short{display:none}
 @media (max-width:560px){
-  nav.steps ol{grid-template-columns:repeat(4,minmax(0,1fr));gap:.3rem}
+  /* Each step takes the width its word needs, so "Questions" stays on one line where it fits; at
+     high zoom the words may break, but the bar never makes the page scroll sideways (28 Oct 2026). */
+  nav.steps ol{display:flex;gap:.3rem}
+  nav.steps li{flex:1 1 auto;min-width:0}
   nav.steps{padding-block:.4rem}
   nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
   nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-  nav.steps .short{display:block;font-size:.78rem;font-weight:600;line-height:1.1;overflow-wrap:anywhere}
+  /* "Questions" broke as "Questi ons" at 320px with equal columns (28 Oct 2026). */
+  nav.steps .short{display:block;font-size:clamp(.72rem,3.4vw,.78rem);font-weight:600;line-height:1.1;overflow-wrap:anywhere;max-width:100%}
   nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
 }
 
