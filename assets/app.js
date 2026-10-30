@@ -865,6 +865,14 @@ var exPending=false;
 function closeClear(){document.getElementById("confirmClear").hidden=true;var c=document.getElementById("clearAll");if(c)c.focus();}
 document.getElementById("clearNo").addEventListener("click",closeClear);
 document.getElementById("confirmClear").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeClear();}});
+// Opening a saved file over work in progress asks first (Paul, 30 Oct 2026); "Keep my list" is the safe answer and gets focus.
+var replacePending=null;
+function hasOwnWork(){return !!((state.mode!=="example"&&state.tools.length)||ownSaved());}
+function askReplace(input,status,apply){if(!hasOwnWork()){apply();return;}replacePending={input:input,status:status,apply:apply};document.getElementById("confirmClear").hidden=true;document.getElementById("confirmReplace").hidden=false;status.textContent="Replace your current list?";document.getElementById("replaceNo").focus();}
+function closeReplace(){var p=replacePending;replacePending=null;document.getElementById("confirmReplace").hidden=true;if(p&&document.body.contains(p.input)){p.status.textContent="Your list is unchanged. Nothing was opened.";p.input.focus();}}
+document.getElementById("replaceNo").addEventListener("click",closeReplace);
+document.getElementById("confirmReplace").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeReplace();}});
+document.getElementById("replaceYes").addEventListener("click",function(){var p=replacePending;replacePending=null;document.getElementById("confirmReplace").hidden=true;if(p)p.apply();});
 document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;// Clear everything means everything: the kind of organisation, place and currency go back to the defaults too.
   state=null;try{localStorage.removeItem(KEY);}catch(e){}state=blank();go(1);});
 render();
