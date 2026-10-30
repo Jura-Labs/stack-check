@@ -382,7 +382,7 @@ function renderStart(){
     '<p class="small muted">Prefer to work offline, or in a spreadsheet? The same check as a register template: '+DOWNLOADS+'.</p></section>';
   view.innerHTML=h;
   var co=document.getElementById("carryOn");if(co)co.addEventListener("click",function(){state=own;RESUME=own.step>0?own.step:RESUME;go(RESUME);});
-  document.getElementById("startNew").addEventListener("click",function(){if(own){document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();}else{state=blank();state.mode="own";go(1);}});
+  document.getElementById("startNew").addEventListener("click",function(){if(own)openClear();else{state=blank();state.mode="own";go(1);}});
   document.getElementById("seeExample").addEventListener("click",function(){state=example();go(3);});
   bindOpenFile(document.getElementById("openFile0"),document.getElementById("fileStatus"));
 }
@@ -402,6 +402,8 @@ function render(){
   if(state.step===0)renderStart();else if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
   stepTitle();
   save();
+  // A redraw (a step change) while the replace question is open cancels it: nothing is opened.
+  if(replacePending)closeReplace();
 }
 // The example is read-only (Paul, 29 Sep): changes are stopped before they happen (see exampleGuard),
 // so nothing here turns the example into someone's own list.
@@ -726,7 +728,7 @@ function renderResults(){
   // "Check it in step 2": that tool's questions, with More detail open and focused.
   view.querySelectorAll("[data-detail]").forEach(function(b){b.addEventListener("click",function(){var key=b.dataset.detail,i=ts.findIndex(function(x){return x.key===key;});if(i<0)return;
     MORE_OPEN[key]=true;state.cur=i;go(2);var s=view.querySelector("details.moredetail>summary");if(s){s.focus({preventScroll:true});s.scrollIntoView({block:"center"});}});});
-  document.getElementById("clearAll").addEventListener("click",function(){document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();});
+  document.getElementById("clearAll").addEventListener("click",openClear);
   document.getElementById("copyRows").addEventListener("click",function(){copy(tsv());});
   document.getElementById("copyBoard").addEventListener("click",function(){copy(board());});
 }
@@ -868,11 +870,17 @@ document.getElementById("confirmClear").addEventListener("keydown",function(e){i
 // Opening a saved file over work in progress asks first (Paul, 30 Oct 2026); "Keep my list" is the safe answer and gets focus.
 var replacePending=null;
 function hasOwnWork(){return !!((state.mode!=="example"&&state.tools.length)||ownSaved());}
-function askReplace(input,status,apply){if(!hasOwnWork()){apply();return;}replacePending={input:input,status:status,apply:apply};document.getElementById("confirmClear").hidden=true;document.getElementById("confirmReplace").hidden=false;status.textContent="Replace your current list?";document.getElementById("replaceNo").focus();}
-function closeReplace(){var p=replacePending;replacePending=null;document.getElementById("confirmReplace").hidden=true;if(p&&document.body.contains(p.input)){p.status.textContent="Your list is unchanged. Nothing was opened.";p.input.focus();}}
+// While it is open, Escape anywhere keeps the list, and focused fields scroll clear of the pinned banner (WCAG 2.4.11, a11y audit 30 Oct 2026).
+function replaceEsc(e){if(e.key==="Escape"){e.preventDefault();closeReplace();}}
+function showReplace(on){var b=document.getElementById("confirmReplace");b.hidden=!on;document.documentElement.style.scrollPaddingBottom=on?(b.offsetHeight+16)+"px":"";if(on)document.addEventListener("keydown",replaceEsc);else document.removeEventListener("keydown",replaceEsc);}
+function askReplace(input,status,apply){if(!hasOwnWork()){apply();return;}replacePending={input:input,status:status,apply:apply};document.getElementById("confirmClear").hidden=true;showReplace(true);status.textContent="Replace your current list?";document.getElementById("replaceNo").focus();}
+// Keep my list. If the page was redrawn meanwhile (a step change), the open control is gone: focus the heading and say it in the status line there now.
+function closeReplace(){var p=replacePending;replacePending=null;showReplace(false);if(!p)return;var msg="Your list is unchanged. Nothing was opened.";
+  if(document.body.contains(p.input)){p.status.textContent=msg;p.input.focus();}else{var st=document.getElementById("fileStatus")||document.getElementById("saveAnyStatus");if(st)st.textContent=msg;focusHeading("#view h2");}}
+// Clear everything and the replace question never show together: opening one cancels the other.
+function openClear(){if(replacePending)closeReplace();document.getElementById("confirmClear").hidden=false;document.getElementById("clearNo").focus();}
 document.getElementById("replaceNo").addEventListener("click",closeReplace);
-document.getElementById("confirmReplace").addEventListener("keydown",function(e){if(e.key==="Escape"){e.preventDefault();closeReplace();}});
-document.getElementById("replaceYes").addEventListener("click",function(){var p=replacePending;replacePending=null;document.getElementById("confirmReplace").hidden=true;if(p)p.apply();});
+document.getElementById("replaceYes").addEventListener("click",function(){var p=replacePending;replacePending=null;showReplace(false);if(p)p.apply();});
 document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;// Clear everything means everything: the kind of organisation, place and currency go back to the defaults too.
   state=null;try{localStorage.removeItem(KEY);}catch(e){}state=blank();go(1);});
 render();

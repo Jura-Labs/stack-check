@@ -115,3 +115,80 @@ for (const scheme of ["light", "dark"]) {
     expect(r.violations.filter((v) => v.impact === "serious" || v.impact === "critical").map((v) => `${v.id}: ${v.nodes[0].target.join(" ")}`)).toEqual([]);
   });
 }
+
+// a11y audit of 23aaa04 (30 Oct 2026): WCAG 2.4.11, a step change while the question is open,
+// and Escape after tabbing off. Privacy check: Clear everything never shows with it.
+// At 640x400 the focused field is wholly clear of the banner. At 320x256 the step bar and the banner
+// together are taller than the room left, so the check is 2.4.11's minimum: never entirely hidden.
+for (const [w, h, whole] of [[640, 400, true], [320, 256, false]]) {
+  test(`2.4.11: tabbing off the question at ${w}x${h}, the focused field is ${whole ? "never under" : "never hidden by"} the banner`, async ({ page }) => {
+    await page.setViewportSize({ width: w, height: h });
+    const file = await savedFile(page);
+    await withWork(page);
+    await page.setInputFiles("#openAny", file);
+    await expect(page.locator("#replaceNo")).toBeFocused();
+    let checked = 0;
+    for (let i = 0; i < 30; i++) {
+      await page.keyboard.press("Tab");
+      const r = await page.evaluate(() => {
+        const a = document.activeElement, b = document.getElementById("confirmReplace");
+        if (!a || b.contains(a) || !document.getElementById("view").contains(a)) return null;
+        const el = a.matches("input[type=file].vh") ? a.nextElementSibling : a;
+        const x = el.getBoundingClientRect(), y = b.getBoundingClientRect();
+        return { id: a.id || a.tagName, top: x.top, bottom: x.bottom, bannerTop: y.top, h: x.height };
+      });
+      if (!r || !r.h) continue;
+      checked++;
+      if (whole) expect(r.bottom, `${r.id} is not under the banner`).toBeLessThanOrEqual(r.bannerTop + 0.5);
+      else expect(r.top, `${r.id} is not hidden by the banner`).toBeLessThan(r.bannerTop);
+    }
+    expect(checked).toBeGreaterThan(3);
+    await expect(page.locator("#confirmReplace")).toBeVisible();
+  });
+}
+
+test("a step change while the question is open cancels it: nothing opens, the list is unchanged, and it is said", async ({ page }) => {
+  const errors = watchErrors(page);
+  const file = await savedFile(page);
+  await withWork(page);
+  const before = await page.evaluate(() => JSON.stringify(state.tools));
+  await page.setInputFiles("#openAny", file);
+  await expect(page.locator("#confirmReplace")).toBeVisible();
+  await page.locator("#nav3").evaluate((e) => e.click());
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
+  await expect(page.locator("#confirmReplace")).toBeHidden();
+  await expect(page.locator("#fileStatus")).toHaveText("Your list is unchanged. Nothing was opened.");
+  expect(await page.evaluate(() => document.activeElement.tagName)).not.toBe("BODY");
+  expect(await page.evaluate(() => JSON.stringify(state.tools))).toBe(before);
+  expect(await page.evaluate(() => JSON.stringify(JSON.parse(localStorage.getItem("stackcheck.v5")).tools))).toBe(before);
+  expect(await page.evaluate(() => replacePending)).toBeNull();
+  expect(errors).toEqual([]);
+});
+
+test("Escape keeps the list even after tabbing off the question", async ({ page }) => {
+  const file = await savedFile(page);
+  await withWork(page);
+  await page.setInputFiles("#openAny", file);
+  await expect(page.locator("#replaceNo")).toBeFocused();
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => document.getElementById("confirmReplace").contains(document.activeElement))).toBe(false);
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#confirmReplace")).toBeHidden();
+  await expect(page.locator("#openAny")).toBeFocused();
+  expect(await page.evaluate(() => state.tools.length)).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.style.scrollPaddingBottom)).toBe("");
+});
+
+test("Clear everything while the question is open cancels it first, so the two never show together", async ({ page }) => {
+  const file = await savedFile(page);
+  await withWork(page);
+  await step(page, 3);
+  await page.setInputFiles("#openFile", file);
+  await expect(page.locator("#confirmReplace")).toBeVisible();
+  await page.locator("#clearAll").evaluate((e) => e.click());
+  await expect(page.locator("#confirmReplace")).toBeHidden();
+  await expect(page.locator("#confirmClear")).toBeVisible();
+  await expect(page.locator("#clearNo")).toBeFocused();
+  expect(await page.evaluate(() => state.tools.length)).toBe(1);
+});
