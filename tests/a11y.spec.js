@@ -72,12 +72,11 @@ test("focused fields are kept clear of the sticky step bar", async ({ page }) =>
 });
 
 test("open-file buttons show keyboard focus", async ({ page }) => {
-  await fresh(page);
-  await page.click("#startNew");
-  await page.focus("#openFile1");
+  await fresh(page); // the start screen: "Open a saved file" is only here on the way in (28 Oct 2026)
+  await page.focus("#openFile0");
   await page.keyboard.press("Shift+Tab");
   await page.keyboard.press("Tab");
-  const outline = await page.locator('label[for="openFile1"]').evaluate((el) => getComputedStyle(el).outlineStyle);
+  const outline = await page.locator('label[for="openFile0"]').evaluate((el) => getComputedStyle(el).outlineStyle);
   expect(outline).not.toBe("none");
 });
 
@@ -98,7 +97,12 @@ test("changing the kind says that the questions changed", async ({ page }) => {
   await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["xero"])]; state.cur = 0; });
   await step(page, 2);
   const k = await page.evaluate(() => state.tools[0].key);
+  // A tool from the list has its kind folded behind "(change)" (28 Oct 2026).
+  await page.locator(`#kindFold-${k} > summary`).click();
   await page.locator(`input[name="kind-${k}"][value="Devices"]`).check({ force: true });
+  // The fold stays open after the questions are redrawn, and focus stays on the answer.
+  await expect(page.locator(`#kindFold-${k}`)).toHaveAttribute("open", "");
+  await expect(page.locator(`input[name="kind-${k}"][value="Devices"]`)).toBeFocused();
   await expect(page.locator("#askStatus")).toHaveText(/^Questions changed for Devices: \d+ questions now\.$/);
   await expect(page.locator("#askStatus")).toHaveAttribute("role", "status");
 });

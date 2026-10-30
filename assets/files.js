@@ -139,6 +139,8 @@ function stateFromFile(text) {
     loc: oneOf(s.loc, LOCS.map(function (l) { return l[0]; }), "UK"),
     home: typeof s.home === "string" && /^[A-Z]{2,5}$/.test(s.home) ? s.home : "GB",
     ccy: oneOf(s.ccy, Object.keys(CCY), "GBP"),
+    // A currency the person chose themselves stays chosen (28 Oct 2026). Only a real true counts.
+    ccyMine: s.ccyMine === true,
     mode: "own",
     step: 3, cur: 0, jcur: 0,
     tools: tools,

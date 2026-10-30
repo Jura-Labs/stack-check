@@ -199,7 +199,7 @@ async function run(page, sc) {
     for (const s of t.reasons || []) soft(why, `reasons for ${t.name}`).toContain(s);
     for (const s of t.noReasons || []) soft(why, `reasons for ${t.name} must not say`).not.toContain(s);
     // Invariants by kind and action.
-    if (t.act === "Fix now" && t.L[0] === "R") soft(bold, `Fix now with red Safety (${t.name})`).toMatch(t.kind === "device" ? /^(Upgrade, encrypt or replace these devices\.|Check encryption \(BitLocker or FileVault\) and updates on each device\.)/ : /^Switch on two-step sign-in \(MFA\)/);
+    if (t.act === "Fix now" && t.L[0] === "R") soft(bold, `Fix now with red Safety (${t.name})`).toMatch(t.kind === "device" ? /^(Upgrade, encrypt or replace these devices\.|Check encryption \(BitLocker or FileVault\) and updates on each device\.)/ : t.a && t.a.signin === DK ? /^Check whether two-step sign-in \(MFA\) is on/ : /^Switch on two-step sign-in \(MFA\)/);
     if (t.act === "Fix now" && t.L[0] !== "R") soft(bold, `no MFA step when Safety is not red (${t.name})`).not.toContain("two-step");
     if (t.kind === "platform" || t.kind === "app") {
       soft(bold, `${t.name}: never ask the supplier`).not.toContain("Send the supplier the data questions");
@@ -243,8 +243,15 @@ async function run(page, sc) {
 
   // 8. board(): counts match the tiles and the literals.
   const b = s3.board;
-  soft(b, "board: fixing now").toContain(`2. What we are fixing now (${sc.board.fix})`);
-  soft(b, "board: decisions").toContain(`${sc.decLabel}s (${sc.board.dec}):`);
+  soft(b, "board: fixing now").toContain(`2. What ${sc.org === "sole" ? "I am" : "we are"} fixing now (${sc.board.fix})`);
+  soft(b, "board: decisions").toContain(`${sc.org === "sole" ? "My decision" : sc.decLabel}s (${sc.board.dec}):`);
+  // B2 (28 Oct 2026): "Nothing" under fixing now only when nothing at all is listed there.
+  const sec2 = b.slice(b.indexOf("2. What"), b.indexOf("3. What"));
+  // The lines straight under the heading; a sole trader's "Plan for it" list that follows has its own heading.
+  const sec2Lines = sec2.trim().split("\n").slice(1);
+  const sec2End = sec2Lines.findIndex((l) => !l.startsWith("- "));
+  const sec2Items = (sec2End < 0 ? sec2Lines : sec2Lines.slice(0, sec2End)).filter((l) => l !== "- Nothing");
+  soft(sec2.includes("- Nothing"), "board: Nothing only when section 2 is empty").toBe(sec2Items.length === 0);
   soft(b, "board: this year").toContain(`Reviews this year (${sc.board.year}):`);
   if (sc.board.ren) soft(b, "board: at renewal").toContain(`Reviews at renewal (${sc.board.ren}):`);
   else soft(b, "board: no renewal list").not.toContain("Reviews at renewal");
@@ -359,7 +366,7 @@ S.soleCodes = {
   ],
   group: { title: "You are the only person who can get into 2 tools", names: "Xero, Canva.", when: "Plan for it", bold: "For each one, write down the recovery codes and keep them somewhere a person you trust can reach if you cannot. Tell them where." },
   tiles: { tools: 3, pers: 2, fix: 0, dec: 0, year: 0 }, zones: [1, 2, 0, 0], noOwners: true, costLine: "No costs entered",
-  board: { fix: 0, dec: 0, year: 0, ren: 0, also: 0, lines: ["Technology check: summary, ", "Your decisions (0):", "- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva). Write down the recovery codes and tell someone I trust where they are.", "3. What I need to decide"], noLines: ["Add a second admin"] },
+  board: { fix: 0, dec: 0, year: 0, ren: 0, also: 0, lines: ["Technology check: summary, ", "My decisions (0):", "2. What I am fixing now (0)\n- Nothing\nPlan for it (1):\n- Recovery codes: I am the only person who can get into 2 tools (Xero, Canva). Write down the recovery codes and tell someone I trust where they are.\n\n3. What I need to decide", "1. What I depend on\nI use 3 tools.", "I review the register once a year"], noLines: ["Add a second admin", "(0)\n- Recovery", "What we", "We use", "Your decisions", "We review"] },
 };
 
 S.soleValues = {
@@ -375,7 +382,7 @@ S.soleValues = {
       step: ["Move it to a business account."], reasons: ["It is on a personal account."], noReasons: ["someone's"] },
   ],
   tiles: { tools: 3, pers: 3, fix: 2, dec: 1, year: 0 }, zones: [0, 3, 0, 0], decSub: "Values concerns, and 1 more after a fix",
-  board: { fix: 2, dec: 1, year: 0, ren: 0, also: 1, lines: ["- Canva: Switch on two-step sign-in (MFA).\n", "- Dropbox: Move it to a business account.", "Your decisions (1):\n- ChatGPT: The supplier trains AI on personal data you hold.", "Also to decide, once the fix is done (1):\n- Canva: It does not fit your values."] },
+  board: { fix: 2, dec: 1, year: 0, ren: 0, also: 1, lines: ["- Canva: Switch on two-step sign-in (MFA).\n", "- Dropbox: Move it to a business account.", "My decisions (1):\n- ChatGPT: The supplier trains AI on personal data I hold.", "Also to decide, once the fix is done (1):\n- Canva: It does not fit my values."], noLines: ["- Nothing", "What we", "Your decisions", "your values"] },
 };
 
 S.ukTrustee = {
@@ -520,12 +527,12 @@ S.canada = {
       ownerTask: ["Your board", "After the fix, decide on the Mission concern. It does not fit your mission."] },
     { lib: "chatgpt", name: "ChatGPT", a: g({ data: "Personal", signin: DK, where: ELSE, based: ELSE, terms: "No", exp: "Partial", copy: "No", ai: "Yes", value: "Amber" }), L: "RAAAR", act: "Fix now", zone: "out", map: "United States", owner: ["Office manager", "Your board"],
       ownerTask: ["Your board", "After the fix, decide on the Mission concern. The supplier trains AI on personal data you hold."],
-      step: ["Switch on two-step sign-in (MFA) for everyone.", "Then take the Mission concern to your board."], reasons: ["It holds personal data, and sign-in is not known to be protected.", "The supplier trains AI on personal data you hold."] },
+      step: ["Check whether two-step sign-in (MFA) is on for everyone, and switch it on where it is not.", "Then take the Mission concern to your board."], reasons: ["It holds personal data, and sign-in is not known to be protected.", "The supplier trains AI on personal data you hold."] },
   ],
   group: { title: "2 tools have only one admin", names: "Google Workspace, Zoom.", when: "Fix now", bold: "Add a second admin to each. If that is not possible, write down the recovery codes and keep them with the chair of the board.",
     lines: ["Zoom also has a Mission concern. It does not fit your mission. After the fix, take it to your board."] },
   tiles: { tools: 4, pers: 4, fix: 3, dec: 0, year: 0 }, zones: [0, 4, 0, 0], costLine: "No costs entered", decSub: "Mission concerns, and 2 more after a fix",
-  board: { fix: 3, dec: 0, year: 0, ren: 0, also: 2, lines: ["- ChatGPT: Switch on two-step sign-in (MFA) for everyone.", "- Add a second admin to 2 tools: Google Workspace, Zoom.", "Board decisions (0):", "Also to decide, once the fix is done (2):\n- Zoom: It does not fit your mission.\n- ChatGPT: The supplier trains AI on personal data you hold."], noLines: ["- Zoom: Add", "- Google Workspace:"] },
+  board: { fix: 3, dec: 0, year: 0, ren: 0, also: 2, lines: ["- ChatGPT: Check whether two-step sign-in (MFA) is on for everyone, and switch it on where it is not.", "- Add a second admin to 2 tools: Google Workspace, Zoom.", "Board decisions (0):", "Also to decide, once the fix is done (2):\n- Zoom: It does not fit your mission.\n- ChatGPT: The supplier trains AI on personal data you hold."], noLines: ["- Zoom: Add", "- Google Workspace:"] },
 };
 
 S.payments = {
@@ -610,14 +617,14 @@ S.example = {
     { name: "Microsoft 365 Business Basic", L: "GGRGA", act: "Review this year", zone: "in", map: "London and Cardiff", row: "London and Cardiff, United Kingdom", owner: "Office manager", a: {} },
     { name: "Mailchimp", L: "GRAAA", act: "Fix now", zone: "out", map: "United States", owner: "Comms lead", step: ["Add a second admin."], a: {} },
     { name: "Zoom Pro", L: "AGAAA", act: "Keep", zone: "out", map: "United States", owner: "Office manager", a: {} },
-    { name: "Dropbox", L: "RRARN", act: "Fix now", zone: "out", map: "United States", owner: NOBODY, step: ["Switch on two-step sign-in (MFA) for everyone. Name an owner. Move the work to an organisation account."], a: {} },
+    { name: "Dropbox", L: "RRARN", act: "Fix now", zone: "out", map: "United States", owner: NOBODY, step: ["Check whether two-step sign-in (MFA) is on for everyone, and switch it on where it is not. Name an owner. Move the work to an organisation account."], a: { signin: DK } }, // the example answers "Not sure" to two-step sign-in
     { name: "Canva", L: "GGAGN", act: "Keep", zone: "out", map: "United States", owner: null, a: {} },
     { name: "Donor CRM (UK-hosted)", L: "GGGGN", act: "Keep", zone: "in", map: "United Kingdom", owner: null, a: {} },
     { name: "Plausible Analytics", L: "GGGGN", act: "Keep", zone: "in", map: "Falkenstein", row: "Falkenstein, Germany", owner: null, a: {} },
     { name: "Laptops on Windows 10 (5)", kind: "device", L: "RGRRN", act: "Fix now", zone: "dev", map: "Your office and devices", owner: "Office manager", step: ["Upgrade, encrypt or replace these devices."], a: {} },
     { name: "ChatGPT (staff personal accounts)", L: "RRAGR", act: "Fix now", zone: "out", map: "United States", owner: [NOBODY, "Your trustees"],
       ownerTask: ["Your trustees", "After the fix, decide on the Mission concern. The supplier trains AI on personal data you hold."],
-      step: ["Switch on two-step sign-in (MFA) for everyone. Name an owner. Move the work to an organisation account.", "Then take the Mission concern to your trustees."], reasons: ["The supplier trains AI on personal data you hold."], a: {} },
+      step: ["Check whether two-step sign-in (MFA) is on for everyone, and switch it on where it is not. Name an owner. Move the work to an organisation account.", "Then take the Mission concern to your trustees."], reasons: ["The supplier trains AI on personal data you hold."], a: { signin: DK } },
   ],
   tiles: { tools: 9, pers: 6, fix: 4, dec: 0, year: 1 }, zones: [3, 5, 0, 1], decSub: "Mission concerns, and 1 more after a fix",
   board: { fix: 4, dec: 0, year: 1, ren: 0, also: 1, lines: ["- Mailchimp: Add a second admin.", "Trustee decisions (0):\n- None", "Also to decide, once the fix is done (1):\n- ChatGPT (staff personal accounts): The supplier trains AI on personal data you hold.", "Listed licence costs: £2,106 a year."] },
@@ -680,6 +687,8 @@ test("admins answers read Two or more, One person, Not sure (non-sole); changing
   const key = await page.evaluate(() => state.tools[0].key);
   soft(await page.locator(`input[name="admins-${key}"] + span`).allTextContents()).toEqual(["Two or more", "One person", "Not sure"]);
   soft(await page.locator(`#loc-${key}`).inputValue()).toBe("DE");
+  // More detail no longer opens by itself for a tool added by hand (28 Oct 2026).
+  await page.locator("details.facts > summary", { hasText: "More detail" }).click();
   await page.locator(`label[for="where-${key}-2"]`).click(); // "Not sure"
   await expect.poll(() => page.evaluate(() => state.tools[0].where)).toBe(DK);
   soft(await page.evaluate(() => state.tools[0].loc), "country cleared").toBe("");
