@@ -6,10 +6,12 @@
 // page under the guide (/updates/stay-in-command-of-your-technology/<card>), so "The full card"
 // opens that card, not the Step 4 section.
 // Other names people search for. Matched as well as the tool's name and job.
-var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365","microsoft-teams":"teams","google-workspace":"gmail google drive docs sheets meet g suite","microsoft-365-copilot":"copilot","mobilepay":"vipps","facebook-page":"messenger meta","instagram-professional":"meta","meta-business-suite":"business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
+var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365 teams copilot","google-workspace":"gmail google drive docs sheets meet g suite","mobilepay":"vipps","whatsapp":"whatsapp business","facebook-page":"messenger meta instagram business suite business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
 // charity leader would see it). These are aimed at freelancers and micro-businesses.
-var SEARCH_ONLY={freeagent:1,dinero:1,billy:1};
+// Paul, 28 Oct 2026 (decisions/2026-10-28-stack-check-simplify.md, option 1): the business tools
+// leave the main list too. They keep their ids and facts, so saved files still open.
+var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1};
 // The offline register templates (register v2.2), the same rules as this tool.
 // Analytics (Paul, 30 Sep 2026, decision 2026-09-30-stack-check-analytics-events): Umami counts clicks on
 // a few buttons and links, with fixed names and values only. Nothing a person types or chooses is sent.
@@ -196,7 +198,7 @@ var KEY="stackcheck.v5";
 // The example is never saved, so looking at it cannot overwrite someone's own list.
 function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
-function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];cleanKeys(s.tools);migrateDevices(s.tools);return s;}catch(e){return null;}}
+function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];cleanKeys(s.tools,s.journeys);migrateDevices(s.tools);return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
 var state=null;state=load()||example();
 // Every visit starts on the start screen (step 0); Carry on returns to where they were.
@@ -306,11 +308,13 @@ function factsPanel(t){
   var AI={"yes":"Yes, by default","no":"No","depends-on-plan":"Depends on the plan","not-applicable":"Not applicable","unclear":"Unknown"};
   var RES={"yes-default":"Yes, by default","yes-some-plans":"Only on some plans","yes-on-request":"On request","no":"No","unclear":"Unknown"};
   function row(k,v){return v?'<div><dt>'+k+'</dt><dd>'+esc(v)+'</dd></div>':"";}
-  return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' (checked '+longDate(checkedOn(l.id))+')</summary><dl class="factlist">'+
+  var old=notCheckedSince(l.id);
+  return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' ('+(old?"not checked since ":"checked ")+longDate(checkedOn(l.id))+')</summary>'+
+    (old?'<p class="small">These facts may be out of date. Check them on the supplier\'s own pages before you rely on them.</p>':"")+'<dl class="factlist">'+
     row("Company",(l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par+(PLACE[l.parc]?" ("+PLACE[l.parc]+")":""):""))+
     row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans?": "+l.plans:""))+
     row("Export",known(l.x))+row("Two-step sign-in (MFA)",known(l.mfa))+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
-    row("Nonprofit offer",l.np)+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
+    row("More about it",l.more)+row("Nonprofit offer",npText(l))+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
     '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
 function placeSelect(field,t,label,hint){
@@ -445,9 +449,11 @@ function renderPick(){
     '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
+    // A group whose tools are all search-only keeps its heading, with a line saying how to add one.
+    var allExtra=extra.length===g.items.length,names=extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", ");
     h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
-    g.items.forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
-    h+='</div>'+(extra.length?'<p class="small muted groupmore">Also in the list: '+esc(extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", "))+'. Type a name in Find a tool.</p>':"")+'</div>';
+    byRegion(g.items,state.loc,state.home).forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
+    h+='</div>'+(allExtra?'<p class="small muted groupmore">'+esc(g.g)+' tools, such as '+esc(names)+': type a name in Find a tool to add one.</p>':extra.length?'<p class="small muted groupmore">Also in the list: '+esc(names)+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
      '<div class="addrow"><div class="field"><label for="newName">Tool name</label><input type="text" id="newName" placeholder="For example: Volunteer rota spreadsheet"><span id="newNameErr" class="small err" role="status"></span></div>'+
@@ -466,7 +472,7 @@ function renderPick(){
     state.home=r.value==="UK"?"GB":r.value==="EU"?(state.home&&PLACE[state.home]&&state.home!=="GB"&&state.home!=="US"?state.home:"EU"):r.value;},r.id);});});
   var ft=document.getElementById("findTool");
   function filterTools(){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
-    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=qv?c.dataset.find.indexOf(qv)>=0:(!c.dataset.more||c.getAttribute("aria-pressed")==="true");c.hidden=!show;if(show){any=true;hits++;}});g.hidden=!any;var gm=g.querySelector(".groupmore");if(gm)gm.hidden=!!qv;});
+    view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=qv?c.dataset.find.indexOf(qv)>=0:(!c.dataset.more||c.getAttribute("aria-pressed")==="true");c.hidden=!show;if(show){any=true;hits++;}});g.hidden=qv?!any:false;var gm=g.querySelector(".groupmore");if(gm)gm.hidden=!!qv;});
     // The number found is announced too, so a screen-reader user knows the list changed (28 Oct 2026).
     var none=document.getElementById("findNone");none.textContent=!qv?"":!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':hits+" tool"+(hits===1?"":"s")+" found.";
     if(qv&&!hits){var nn=document.getElementById("newName");if(nn&&!nn.value)nn.value=ft.value.trim();}}
@@ -696,7 +702,7 @@ function renderResults(){
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
     '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
     crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans?": "+B.plans:""))+
-    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",A.np,B.np)+
+    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",npText(A),npText(B))+
     crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td></tr>'+
     '</tbody></table></div></section></details>';
 

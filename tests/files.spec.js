@@ -228,3 +228,68 @@ test("a crafted file cannot inject HTML through a tool's key, from the file or f
   expect(await page.evaluate(() => load().tools[0].key)).toMatch(/^[a-z0-9][a-z0-9-]{0,63}$/);
   expect(navs.some((u) => u.includes("evil.example"))).toBe(false);
 });
+
+// W44-15 (28 Oct 2026): five library entries were merged into others. A file saved before the merge,
+// or answers kept in this browser, still open, and each old tool shows as the merged entry.
+// Files are opened from the start screen (#openFile0), which every version has.
+const MERGE_BASE = { kind: "Software", owner: "Office manager", account: "Organisation", admins: "Two or more", depend: "Important", data: "Internal", signin: "Yes", copy: "No" };
+async function openOld(page, tools, journeys) {
+  const file = JSON.stringify({ app: "stack-check", state: { v: 6, org: "nonprofit", loc: "UK", tools, journeys: journeys || [] } });
+  await page.setInputFiles("#openFile0", { name: "old.json", mimeType: "application/json", buffer: Buffer.from(file) });
+  await expect.poll(() => page.evaluate(() => state.step)).toBe(3);
+}
+
+test("a saved file with a merged library id opens as the merged entry", async ({ page }) => {
+  const errors = watchErrors(page);
+  await fresh(page);
+  const old = { "microsoft-teams": "microsoft-365", "whatsapp-business": "whatsapp", "instagram-professional": "facebook-page" };
+  await openOld(page, Object.keys(old).map((id, i) => Object.assign({ key: "t" + i, lib: id, name: "Old " + id, job: "Saved before the merge" }, MERGE_BASE)));
+  // The answers are the file's own; only the library id changes.
+  expect(await page.evaluate(() => state.tools.map((t) => [t.lib, t.name]))).toEqual(Object.keys(old).map((id) => [old[id], "Old " + id]));
+  await step(page, 1);
+  for (const id of ["microsoft-365", "whatsapp", "facebook-page"]) await expect(page.locator(`button.chip[data-lib="${id}"]`)).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator('button.chip[data-lib="microsoft-teams"]')).toHaveCount(0);
+  await step(page, 2);
+  await expect(page.locator("details.facts summary").first()).toContainText("What we found about Microsoft 365");
+  // The merged entry's longer detail sits in the facts panel, not in the note above the questions.
+  await page.locator("details.facts summary").first().click();
+  await expect(page.locator("details.facts").first().locator("div", { has: page.locator("dt", { hasText: "More about it" }) })).toContainText("flex routing");
+  await expect(page.locator("p.note").first()).not.toContainText("flex routing");
+  // The same ids kept in this browser's storage are rewritten too, and an old id still finds the merged facts.
+  await page.evaluate(() => {
+    localStorage.setItem("stackcheck.v5", JSON.stringify({ v: 6, org: "nonprofit", loc: "UK", mode: "own", step: 1, tools: [{ key: "s1", lib: "instagram-professional", name: "Stored", data: "Internal", kind: "Account on a platform" }], journeys: [] }));
+  });
+  expect(await page.evaluate(() => [load().tools[0].lib, BYID["meta-business-suite"].name, BYID["microsoft-365-copilot"].id])).toEqual(["facebook-page", "Facebook and Instagram", "microsoft-365"]);
+  expect(errors).toEqual([]);
+});
+
+// Fix round 1: a 2.2.8 file can hold two or three tools that are now one entry. They open as one
+// tool: the first one listed, with its own answers. Nothing from the others is added to it.
+for (const [into, ids] of [["microsoft-365", ["microsoft-365", "microsoft-teams", "microsoft-365-copilot"]], ["whatsapp", ["whatsapp-business", "whatsapp"]], ["facebook-page", ["instagram-professional", "facebook-page", "meta-business-suite"]]]) {
+  test(`a saved file with ${ids.join(" and ")} opens as one ${into} tool, with the first one's answers`, async ({ page }) => {
+    const errors = watchErrors(page);
+    await fresh(page);
+    const tools = ids.map((id, i) => Object.assign({}, MERGE_BASE, { key: "m" + i, lib: id, name: "Saved " + id, owner: "Owner " + i, admins: i ? "One person" : "Two or more" }));
+    tools.push(Object.assign({}, MERGE_BASE, { key: "other", lib: "canva", name: "Canva" }));
+    const journeys = [{ title: "A supporter writes in", who: "Supporter", stops: [{ ref: "m1", how: "" }, { ref: "other", how: "Typed in by hand" }] }];
+    await openOld(page, tools, journeys);
+    const s = await page.evaluate(() => ({ tools: state.tools.map((t) => [t.key, t.lib, t.name, t.owner, t.admins]), refs: state.journeys[0].stops.map((x) => x.ref) }));
+    expect(s.tools).toEqual([["m0", into, "Saved " + ids[0], "Owner 0", "Two or more"], ["other", "canva", "Canva", "Office manager", "Two or more"]]);
+    // A journey stop that named a dropped tool now names the kept one.
+    expect(s.refs).toEqual(["m0", "other"]);
+    // Unticking the chip removes the tool, and the chip is no longer pressed.
+    await step(page, 1);
+    const chip = page.locator(`button.chip[data-lib="${into}"]`);
+    await expect(chip).toHaveAttribute("aria-pressed", "true");
+    await chip.click();
+    await expect(page.locator(`button.chip[data-lib="${into}"]`)).toHaveAttribute("aria-pressed", "false");
+    expect(await page.evaluate((id) => state.tools.filter((t) => t.lib === id).length, into)).toBe(0);
+    expect(errors).toEqual([]);
+  });
+}
+
+test("two tools with the same library id that were never merged are both kept", async ({ page }) => {
+  await fresh(page);
+  await openOld(page, [Object.assign({}, MERGE_BASE, { key: "z1", lib: "zoom", name: "Zoom (staff)" }), Object.assign({}, MERGE_BASE, { key: "z2", lib: "zoom", name: "Zoom (board)" })]);
+  expect(await page.evaluate(() => state.tools.map((t) => t.name))).toEqual(["Zoom (staff)", "Zoom (board)"]);
+});
