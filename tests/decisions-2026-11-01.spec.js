@@ -40,7 +40,7 @@ test("the new not-for-profit tools are in the main list, with a checked date and
   for (const id of NEW) await expect(page.locator(`button.chip[data-lib="${id}"]`)).toBeVisible();
   const bad = await page.evaluate((ids) => ids.filter((id) => {
     const t = BYID[id];
-    return !t || SEARCH_ONLY[id] || t.checked !== "2026-10-28" || ["UK", "DK", "EU", "Global"].indexOf(t.region) < 0 || !(t.src || []).length;
+    return !t || SEARCH_ONLY[id] || ["2026-10-28", "2026-11-01"].indexOf(t.checked) < 0 || ["UK", "DK", "EU", "Global"].indexOf(t.region) < 0 || !(t.src || []).length;
   }), NEW);
   expect(bad).toEqual([]);
   // Main list = every library entry less the search-only ones (README "88 common tools").
@@ -62,15 +62,17 @@ test("11a: no '2-hour' anywhere, and one time statement of about 3 minutes a too
   }
   await fresh(page);
   await expect(page.locator("body")).not.toContainText("2-hour");
-  await expect(page.locator("#view")).toContainText("The essentials take about 3 minutes a tool, so 9 tools take about 30 minutes.");
+  await expect(page.locator("#view")).toContainText("The essentials take about 3 minutes a tool, so 10 tools take about 30 minutes.");
   await page.click("#startNew");
-  await expect(page.locator("#view")).toContainText("It takes about 3 minutes a tool.");
+  // Step 1 uses the start screen's words (fix round 1).
+  await expect(page.locator("#view")).toContainText("The essentials take about 3 minutes a tool.");
 });
 
 test("11a: the estimate grows with the number of tools, in the one count that is announced", async ({ page }) => {
   await fresh(page);
-  expect(await page.evaluate(() => [1, 2, 9, 12, 20, 21, 40].map(timeFor))).toEqual([
-    "about 3 minutes", "about 6 minutes", "about 30 minutes", "about 40 minutes", "about 1 hour", "about 1 hour 5 minutes", "about 2 hours",
+  // Exact up to 30 minutes, then the nearest 5; an hour is "about an hour".
+  expect(await page.evaluate(() => [1, 2, 9, 10, 12, 20, 35, 40].map(timeFor))).toEqual([
+    "about 3 minutes", "about 6 minutes", "about 27 minutes", "about 30 minutes", "about 35 minutes", "about an hour", "about 1 hour 45 minutes", "about 2 hours",
   ]);
   await page.click("#startNew");
   await step(page, 1);
@@ -80,11 +82,121 @@ test("11a: the estimate grows with the number of tools, in the one count that is
   await expect(page.locator("#pickCount")).toHaveText("Added Xero. 1 tool chosen: about 3 minutes.");
   await page.click('button.chip[data-lib="canva"]');
   await expect(page.locator("#pickCount")).toHaveText("Added Canva. 2 tools chosen: about 6 minutes.");
-  await expect(page.locator(".navrow .muted.small")).toHaveText("2 tools listed, about 6 minutes");
+  await expect(page.locator(".navrow .muted.small")).toHaveText("2 tools listed, about 6 minutes. You can stop and carry on later.");
   await page.click('button.chip[data-lib="canva"]');
   await expect(page.locator("#pickCount")).toHaveText("Removed Canva. 1 tool chosen: about 3 minutes.");
+  // An own tool is announced the same way.
+  await page.fill("#newName", "Volunteer rota");
+  await page.click("#addTool");
+  await expect(page.locator("#pickCount")).toHaveText("Added Volunteer rota. 2 tools chosen: about 6 minutes.");
+});
+
+test("11c: Welcome back gives the time for the tools not yet answered", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    state = blank(); state.mode = "own";
+    const done = { owner: "Office manager", account: "Organisation", admins: "Two or more", depend: "Important", data: "Personal", signin: "Yes", copy: "No", where: "UK, EU or EEA", based: "UK or Europe", exp: "Yes", terms: "Yes" };
+    state.tools = ["xero", "canva", "trello", "asana"].map((id, i) => i === 0 ? Object.assign(fromLib(BYID[id]), done) : fromLib(BYID[id]));
+    state.step = 0; save(); render();
+  });
+  await expect(page.locator("#startH")).toHaveText("Welcome back");
+  await expect(page.locator("#view")).toContainText("so the 3 tools still to answer take about 9 minutes.");
+  await expect(page.locator("#view")).not.toContainText("10 tools take");
+});
+
+test("12a and 12b: the found count is written once, after a pause, and not again when a chip is ticked", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 1);
+  await page.locator("#findTool").pressSequentially("xer");
+  // Not written while typing: the update waits about half a second.
+  await expect(page.locator("#findNone")).toHaveText("");
+  await expect(page.locator("#findNone")).toHaveText("1 tool found.");
+  // Ticking the found chip redraws the step; the found count is not written (and announced) again.
+  await page.evaluate(() => {
+    window.__writes = 0;
+    const proto = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
+    Object.defineProperty(Node.prototype, "textContent", { configurable: true, get: proto.get, set(v) { if (this.id === "findNone") window.__writes++; return proto.set.call(this, v); } });
+  });
   await page.click('button.chip[data-lib="xero"]');
-  await expect(page.locator("#pickCount")).toHaveText("Removed Xero. 0 tools chosen.");
+  await expect(page.locator("#pickCount")).toHaveText("Added Xero. 1 tool chosen: about 3 minutes.");
+  await page.waitForTimeout(700);
+  expect(await page.evaluate(() => window.__writes)).toBe(0);
+  await expect(page.locator("#findNone")).toHaveText("1 tool found.");
+});
+
+test("12c: the register table can be reached by keyboard, empty or not", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 3);
+  await expect(page.locator('.tablewrap[aria-label="Register table"]')).toHaveAttribute("tabindex", "0");
+});
+
+test("7: TikTok, YouTube and note-takers are not video meetings; Zoom and Jitsi are", async ({ page }) => {
+  await fresh(page);
+  const fam = await page.evaluate(() => ["tiktok-account", "youtube-channel", "otter-ai", "zoom", "jitsi-meet"].map((id) => familyOf(fromLib(BYID[id]))));
+  expect(fam).toEqual(["", "", "", "meetings", "meetings"]);
+  // An own tool for video calls still gets the Meetings card.
+  expect(await page.evaluate(() => familyOf(fromLib({ name: "Whereby", job: "Video calls" })))).toBe("meetings");
+  // On Decide, TikTok marked Replace gets no Jitsi advice and is not grouped with meeting tools.
+  await page.evaluate(() => {
+    state.mode = "own"; state.tools = ["tiktok-account", "youtube-channel", "zoom"].map((id) => Object.assign(fromLib(BYID[id]), { decision: "Replace" })); state.foldCards = true;
+  });
+  await step(page, 3);
+  await expect(page.locator(".card", { hasText: "TikTok" })).toHaveCount(0);
+  await expect(page.locator("ul.dup li", { hasText: "Meetings and chat" })).toHaveCount(0);
+});
+
+test("8: a card never recommends the tool it is for", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    state.mode = "own"; state.tools = ["libreoffice", "jitsi-meet", "bitwarden"].map((id) => Object.assign(fromLib(BYID[id]), { decision: "Replace" })); state.foldCards = true;
+  });
+  await step(page, 3);
+  // LibreOffice: the Documents card is built around LibreOffice, so it is not shown.
+  await expect(page.locator(".card h3", { hasText: "Documents" })).toHaveCount(0);
+  const meet = page.locator(".card", { has: page.locator("h3", { hasText: "Meetings" }) });
+  await expect(meet).toHaveCount(1);
+  await expect(meet).not.toContainText("Jitsi: open source");
+  const pw = page.locator(".card", { has: page.locator("h3", { hasText: "Passwords" }) });
+  await expect(pw).not.toContainText("Bitwarden Teams");
+  await expect(pw).toContainText("KeePassXC");
+});
+
+test("9: search finds tools by the words people use, in English and Danish", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 1);
+  for (const [q, id] of [["ga4", "google-analytics-4"], ["piwik", "matomo-cloud"], ["note taker", "otter-ai"], ["notetaker", "fireflies-ai"], ["statistik", "plausible-analytics"], ["projekt", "asana"], ["medlemmer", "klubmodul"], ["medlemmer", "conventus"]]) {
+    await page.fill("#findTool", q);
+    await expect(page.locator(`button.chip[data-lib="${id}"]`)).toBeVisible();
+  }
+});
+
+test("10: an unknown storage option is shown as Unknown, without the plan text after it", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["caf-donate"]), fromLib(BYID["google-workspace"])]; state.cur = 0; });
+  await step(page, 2);
+  const facts = page.locator("details.facts").first();
+  await facts.locator("summary").click();
+  const storage = facts.locator("div", { has: page.locator("dt", { hasText: "UK or EU storage" }) }).locator("dd");
+  await expect(storage).toHaveText("Unknown");
+  await page.evaluate(() => { state.cur = 1; render(); });
+  await page.locator("details.facts summary").first().click();
+  await expect(page.locator("details.facts").first().locator("div", { has: page.locator("dt", { hasText: "UK or EU storage" }) }).locator("dd")).toHaveText(/^Only on some plans: /);
+});
+
+test("14 and 15: the offer row reads 'Free plan or non-profit offer', and charity-only tools say Not applicable", async ({ page }) => {
+  await fresh(page);
+  const na = await page.evaluate(() => { const o = []; LIB.forEach((g) => g.items.forEach((t) => { if (t.npk === "Not applicable") o.push(t.id); })); return o.sort(); });
+  expect(na).toEqual(["caf-donate", "foreninglet", "localgiving", "membersite"]);
+  expect(await page.evaluate(() => [BYID.conventus.npk, BYID.conventus.np])).toEqual(["Free", "The Gratis plan, for up to 30 users and 3 booking resources."]);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["localgiving"])]; state.cur = 0; });
+  await step(page, 2);
+  const facts = page.locator("details.facts").first();
+  await facts.locator("summary").click();
+  await expect(facts.locator("dt", { hasText: "Nonprofit offer" })).toHaveCount(0);
+  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Free plan or non-profit offer" }) }).locator("dd")).toHaveText(/^Not applicable\. Only for charities and community groups/);
 });
 
 test("7a: Mollie's data location is Unknown, without the third-party profile", async ({ page }) => {

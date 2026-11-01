@@ -8,7 +8,7 @@ register v2.2, Stack Check 2.2.x.
 Paul's decisions of 1 November 2026, and new tools for not-for-profits.
 
 - Eleven tools join the list, each checked on the supplier's own pages
-  on 28 October 2026: LibreOffice, Google Forms, Microsoft Forms, a
+  on 28 October 2026 (some again on 1 November): LibreOffice, Google Forms, Microsoft Forms, a
   YouTube channel, a TikTok account, Localgiving, CAF Donate, Charitylog,
   Lamplight, Conventus and Klubmodul.
 - Nine tools leave the main list: Mattermost Cloud, OpenProject (cloud),
@@ -16,16 +16,33 @@ Paul's decisions of 1 November 2026, and new tools for not-for-profits.
   Analytics, Umami Cloud and Matomo Cloud. Type a name in "Find a tool"
   to find them. Saved files that use any of them still open. The main
   list now has 88 tools.
-- The nonprofit offer says "Free" whenever there is a free option a
-  small charity can use, whether or not it is only for non-profits, and
-  the line names it. Figma, WhatsApp, Signal, Calendly, ChatGPT, Mistral Vibe,
-  HubSpot, SurveyMonkey, Billy, Zapier, "Facebook and Instagram",
-  LinkedIn, X and Bluesky now say Free. Mattermost Cloud's offer is "On
-  request".
+- The nonprofit offer row is now "Free plan or non-profit offer". It
+  says "Free" whenever there is a free option a small charity can use,
+  whether or not it is only for non-profits, and the line names it and
+  its limits. Figma, WhatsApp, Signal, Calendly, ChatGPT, Mistral Vibe,
+  HubSpot, SurveyMonkey, Billy, Zapier, Conventus, "Facebook and
+  Instagram", LinkedIn, X and Bluesky now say Free. Mattermost Cloud's
+  offer is "On request".
+- A new offer label, "Not applicable", is for tools built only for
+  charities, non-profits or associations, with no free plan, where the
+  normal price is the charity price: Localgiving, CAF Donate,
+  ForeningLet and Membersite.
 - Mollie: where data is kept is now Unknown.
-- The time it takes is one statement: about 3 minutes a tool, so 9
-  tools take about 30 minutes. The estimate grows as you tick tools on
-  step 1. "The 2-hour technology check" is now "The technology check".
+- The time it takes is one statement: the essentials take about 3
+  minutes a tool, so 10 tools take about 30 minutes. On step 1 the
+  estimate grows as you add tools, and "Welcome back" gives the time for
+  the tools still to answer. "The 2-hour technology check" is now "The
+  technology check".
+- Where the storage option is Unknown, the plan text is no longer shown
+  after it.
+- TikTok, YouTube and meeting note-takers no longer get the Meetings
+  advice, and a card no longer suggests the tool it is about (for
+  example, LibreOffice no longer gets the Documents card).
+- "Find a tool" knows more words, such as "ga4", "note taker",
+  "statistik", "projekt" and "medlemmer".
+- Screen readers: the number of tools found is read once, after you stop
+  typing, and not again when you tick a tool. The register table can be
+  reached with the keyboard even when it is empty.
 
 ## 2.2.11 (1 November 2026)
 

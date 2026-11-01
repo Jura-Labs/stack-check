@@ -11,7 +11,7 @@ test("first visit opens on a start screen, not on the example's results", async 
   await expect(page).toHaveTitle("Stack Check: stay in command of your technology");
   await expect(page.locator("#exampleBanner")).toBeHidden();
   expect(await page.locator("nav.steps [aria-current]").count()).toBe(0);
-  await expect(page.locator("#view")).toContainText("about 3 minutes a tool, so 9 tools take about 30 minutes");
+  await expect(page.locator("#view")).toContainText("about 3 minutes a tool, so 10 tools take about 30 minutes");
 });
 
 test("start screen: See the example, and Start your own", async ({ page }) => {

@@ -78,7 +78,7 @@ test("B3: step 1 no longer mentions online banking, and the example tool is not 
   await fresh(page);
   await page.click("#startNew");
   await expect(page.locator("#view")).not.toContainText("banking");
-  await expect(page.locator("#view")).toContainText("It takes about 3 minutes a tool.");
+  await expect(page.locator("#view")).toContainText("The essentials take about 3 minutes a tool.");
   const ph = await page.locator("#newName").getAttribute("placeholder");
   const name = ph.replace(/^For example: /, "");
   expect(await page.evaluate((n) => Object.keys(BYID).some((id) => BYID[id].name.toLowerCase() === n.toLowerCase()), name)).toBe(false);
