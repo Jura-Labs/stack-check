@@ -11,7 +11,16 @@ var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel po
 // charity leader would see it). These are aimed at freelancers and micro-businesses.
 // Paul, 28 Oct 2026 (decisions/2026-10-28-stack-check-simplify.md, option 1): the business tools
 // leave the main list too. They keep their ids and facts, so saved files still open.
-var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1};
+// Paul, 1 Nov 2026 (decisions/2026-11-01-stack-check-open-decisions.md, 8a): the nine
+// reviewer-judgement tools (team chat and projects, note-takers, a sales CRM, web analytics) too.
+var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1,
+  "mattermost-cloud":1,"openproject-cloud":1,"fireflies-ai":1,"otter-ai":1,hubspot:1,"google-analytics-4":1,"plausible-analytics":1,"umami-cloud":1,"matomo-cloud":1};
+// Paul, 1 Nov 2026 (11a): one time statement, about 3 minutes a tool, that grows with the list.
+// Under 10 minutes it is exact; above that it is rounded up to the next 5 minutes, so 9 tools say
+// "about 30 minutes", the same as the start screen.
+var MIN_PER_TOOL=3;
+function timeFor(n){var m=n*MIN_PER_TOOL;if(m>=10)m=Math.ceil(m/5)*5;var h=Math.floor(m/60),r=m%60;
+  return "about "+(h?h+" hour"+(h===1?"":"s")+(r?" "+r+" minutes":""):m+" minute"+(m===1?"":"s"));}
 // The offline register templates (register v2.2), the same rules as this tool.
 // Analytics (Paul, 30 Sep 2026, decision 2026-09-30-stack-check-analytics-events): Umami counts clicks on
 // a few buttons and links, with fixed names and values only. Nothing a person types or chooses is sent.
@@ -379,7 +388,7 @@ function renderStart(){
   var own=state.mode!=="example"&&state.tools.length?state:ownSaved(),n=own?own.tools.length:0,a=own?own.tools.filter(essentialsDone).length:0;
   var h='<section class="panel stack" aria-labelledby="startH"><h2 id="startH">'+(own?"Welcome back":"Start here")+'</h2>'+
     (own?'<p><b>'+a+' of '+n+' tool'+(n===1?"":"s")+' answered</b> in this browser.</p><div class="row"><button type="button" class="btn primary" id="carryOn">Carry on where you left off</button></div>':'')+
-    '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 2 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
+    '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 3 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
     '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives.</li></ol>'+
     '<div class="row">'+(own?'<button type="button" class="btn" id="startNew" data-umami-event="start-own" data-umami-event-place="start-new-list">Start a new list</button>':'<button type="button" class="btn primary" id="startNew" data-umami-event="start-own" data-umami-event-place="start">Start your own</button>')+
     '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
@@ -447,7 +456,7 @@ function renderPick(){
   h+='<details class="facts" data-fold1="ccy"'+(FOLD1.ccy?" open":"")+'><summary id="ccySum">More detail (optional: the currency for costs, now '+esc(ccyLabel())+')</summary><div class="s11 s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+CCYS.map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">It follows where you are based. Use one currency for the whole register. The check does not convert between currencies.</span></div></details></section>';
   if(!SOLE())h+='<details class="fold" data-fold1="ask"'+(FOLD1.ask?" open":"")+'><summary>Before you start, ask your team</summary><div class="stack askfold"><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p>'+
     '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></div></details>';
-  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH" tabindex="-1">List every service</h2><p class="muted">Include the free ones, AI tools, and your laptops. It takes about 2 minutes per tool to complete. You can always return and add more detail later.</p></div>'+
+  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH" tabindex="-1">List every service</h2><p class="muted">Include the free ones, AI tools, and your laptops. It takes about 3 minutes a tool. You can always return and add more detail later.</p></div>'+
     '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
@@ -462,7 +471,7 @@ function renderPick(){
      '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: volunteer shifts"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+esc(t.key)+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
-  h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
+  h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tool'+(state.tools.length===1?"":"s")+' listed'+(state.tools.length?", "+timeFor(state.tools.length):"")+'</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h+(state.tools.length?SAVE_ROW:OPEN_ROW);
   bindSaveRow();
   // A currency the person chose stays when they change the location (28 Oct 2026).
@@ -485,7 +494,8 @@ function renderPick(){
     if(idx>=0)state.tools.splice(idx,1);else state.tools.push(fromLib(BYID[id]));
     leaveExample();state.cur=0;render();
     var again=view.querySelector('[data-lib="'+id+'"]');if(again)again.focus();
-    var pc=document.getElementById("pickCount");if(pc)pc.textContent=(idx>=0?"Removed ":"Added ")+BYID[id].name+". "+state.tools.length+" tool"+(state.tools.length===1?"":"s")+" chosen.";
+    // The time estimate rides on this one announcement, so it is heard no more often than the count.
+    var pc=document.getElementById("pickCount"),nt=state.tools.length;if(pc)pc.textContent=(idx>=0?"Removed ":"Added ")+BYID[id].name+". "+nt+" tool"+(nt===1?"":"s")+" chosen"+(nt?": "+timeFor(nt)+".":".");
   });});
   view.querySelectorAll("[data-remove]").forEach(function(b){b.addEventListener("click",function(){
     state.tools=state.tools.filter(function(t){return t.key!==b.dataset.remove;});render();document.getElementById("newName").focus();});});

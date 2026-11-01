@@ -78,7 +78,7 @@ test("B3: step 1 no longer mentions online banking, and the example tool is not 
   await fresh(page);
   await page.click("#startNew");
   await expect(page.locator("#view")).not.toContainText("banking");
-  await expect(page.locator("#view")).toContainText("It takes about 2 minutes per tool to complete.");
+  await expect(page.locator("#view")).toContainText("It takes about 3 minutes a tool.");
   const ph = await page.locator("#newName").getAttribute("placeholder");
   const name = ph.replace(/^For example: /, "");
   expect(await page.evaluate((n) => Object.keys(BYID).some((id) => BYID[id].name.toLowerCase() === n.toLowerCase()), name)).toBe(false);
@@ -152,7 +152,7 @@ test("2: after the start screen the header is short, and the privacy sentence st
     await expect(page.locator(".privacy b")).toBeVisible();
   }
   // The eyebrow's words are unchanged; it is only hidden after the start screen.
-  await expect(page.locator("header.top .eyebrow")).toHaveText("The 2-hour technology check");
+  await expect(page.locator("header.top .eyebrow")).toHaveText("The technology check");
   // On a phone, the first question of step 2 starts on the first screen.
   await step(page, 2);
   const y = await page.locator("#askH").evaluate((e) => e.getBoundingClientRect().top + window.scrollY);

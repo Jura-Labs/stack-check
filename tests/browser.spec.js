@@ -228,6 +228,6 @@ test("business tools are not in the main list, but a search finds them", async (
   await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeVisible();
   await page.fill("#findTool", "");
   await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeHidden();
-  // On the main list: 99 entries less 13 found by search only.
-  expect(await page.evaluate(() => { let n = 0; LIB.forEach((g) => g.items.forEach((t) => { if (!SEARCH_ONLY[t.id]) n++; })); return n; })).toBe(86);
+  // On the main list: 110 entries less 22 found by search only (2.2.12).
+  expect(await page.evaluate(() => { let n = 0; LIB.forEach((g) => g.items.forEach((t) => { if (!SEARCH_ONLY[t.id]) n++; })); return n; })).toBe(88);
 });

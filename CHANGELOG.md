@@ -3,6 +3,30 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.12 (1 November 2026)
+
+Paul's decisions of 1 November 2026, and new tools for not-for-profits.
+
+- Eleven tools join the list, each checked on the supplier's own pages
+  on 28 October 2026: LibreOffice, Google Forms, Microsoft Forms, a
+  YouTube channel, a TikTok account, Localgiving, CAF Donate, Charitylog,
+  Lamplight, Conventus and Klubmodul.
+- Nine tools leave the main list: Mattermost Cloud, OpenProject (cloud),
+  Fireflies.ai, Otter.ai, HubSpot, Google Analytics 4, Plausible
+  Analytics, Umami Cloud and Matomo Cloud. Type a name in "Find a tool"
+  to find them. Saved files that use any of them still open. The main
+  list now has 88 tools.
+- The nonprofit offer says "Free" whenever there is a free option a
+  small charity can use, whether or not it is only for non-profits, and
+  the line names it. Figma, WhatsApp, Signal, Calendly, ChatGPT, Mistral Vibe,
+  HubSpot, SurveyMonkey, Billy, Zapier, "Facebook and Instagram",
+  LinkedIn, X and Bluesky now say Free. Mattermost Cloud's offer is "On
+  request".
+- Mollie: where data is kept is now Unknown.
+- The time it takes is one statement: about 3 minutes a tool, so 9
+  tools take about 30 minutes. The estimate grows as you tick tools on
+  step 1. "The 2-hour technology check" is now "The technology check".
+
 ## 2.2.11 (1 November 2026)
 
 - Opening a saved file when you already have a list in progress now asks
