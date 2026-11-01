@@ -37,9 +37,10 @@ Paul's decisions of 1 November 2026, and new tools for not-for-profits.
   after it.
 - TikTok, YouTube and meeting note-takers no longer get the Meetings
   advice, and a card no longer suggests the tool it is about (for
-  example, LibreOffice no longer gets the Documents card).
+  example, LibreOffice no longer gets the Documents card). A tool you
+  mark Replace or Retire that has no card now gets one line saying so.
 - "Find a tool" knows more words, such as "ga4", "note taker",
-  "statistik", "projekt" and "medlemmer".
+  "website stats", "statistik", "projekt" and "medlemmer".
 - Screen readers: the number of tools found is read once, after you stop
   typing, and not again when you tick a tool. The register table can be
   reached with the keyboard even when it is empty.

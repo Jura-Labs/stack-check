@@ -196,7 +196,7 @@ test("14 and 15: the offer row reads 'Free plan or non-profit offer', and charit
   const facts = page.locator("details.facts").first();
   await facts.locator("summary").click();
   await expect(facts.locator("dt", { hasText: "Nonprofit offer" })).toHaveCount(0);
-  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Free plan or non-profit offer" }) }).locator("dd")).toHaveText(/^Not applicable\. Only for charities and community groups/);
+  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Free plan or non-profit offer" }) }).locator("dd")).toHaveText(/^Not applicable\. It is only for charities and community groups/);
 });
 
 test("7a: Mollie's data location is Unknown, without the third-party profile", async ({ page }) => {
@@ -207,4 +207,42 @@ test("7a: Mollie's data location is Unknown, without the third-party profile", a
   expect(m.store).toMatch(/^Unknown\./);
   expect(m.store).not.toContain("third-party profile");
   expect(m.src).not.toContain("euvetted");
+});
+
+test("fix round 2: 'website stats' finds the four web-analytics tools", async ({ page }) => {
+  await fresh(page);
+  await page.click("#startNew");
+  await step(page, 1);
+  await page.fill("#findTool", "website stats");
+  for (const id of ["google-analytics-4", "plausible-analytics", "umami-cloud", "matomo-cloud"]) {
+    await expect(page.locator(`button.chip[data-lib="${id}"]`)).toBeVisible();
+  }
+});
+
+test("fix round 2: Replace on a tool with no card says so in one plain line", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    state.mode = "own"; state.tools = ["tiktok-account", "youtube-channel", "libreoffice"].map((id) => Object.assign(fromLib(BYID[id]), { decision: "Replace" }));
+    state.tools.push(Object.assign(fromLib({ name: "Rota spreadsheet", job: "Volunteer shifts" }), { decision: "Retire" }));
+    state.foldCards = true;
+  });
+  await step(page, 3);
+  await expect(page.locator("details[data-fold=cards] summary")).toHaveText("Before you move: 4 tools you plan to change");
+  const lines = page.locator("ul.nocard li");
+  await expect(lines).toHaveText([
+    "There is no card for TikTok account. Compare it with another tool below.",
+    "There is no card for YouTube channel. Compare it with another tool below.",
+    "There is no card for LibreOffice. Compare it with another tool below.",
+    "There is no card for Rota spreadsheet.",
+  ]);
+});
+
+test("fix round 2: each Not applicable line is one plain fact", async ({ page }) => {
+  await fresh(page);
+  expect(await page.evaluate(() => ["caf-donate", "localgiving", "foreninglet", "membersite"].map((id) => npText(BYID[id])))).toEqual([
+    "Not applicable. It is only for UK-registered charities.",
+    "Not applicable. It is only for charities and community groups doing charitable work in the UK, registered or not.",
+    "Not applicable. It is built for associations.",
+    "Not applicable. It is built for membership organisations.",
+  ]);
 });

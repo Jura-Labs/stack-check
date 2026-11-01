@@ -8,7 +8,7 @@
 // Other names people search for. Matched as well as the tool's name and job.
 var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365 teams copilot","google-workspace":"gmail google drive docs sheets meet g suite","mobilepay":"vipps","whatsapp":"whatsapp business","facebook-page":"messenger meta instagram business suite business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol",
   // Search words people use (1 Nov 2026), including Danish ones.
-  "google-analytics-4":"ga4 ga website statistics stats visitors statistik","plausible-analytics":"website statistics stats statistik","umami-cloud":"website statistics stats statistik","matomo-cloud":"website statistics stats piwik statistik",
+  "google-analytics-4":"ga4 ga website statistics website stats visitors statistik","plausible-analytics":"website statistics website stats statistik","umami-cloud":"website statistics website stats statistik","matomo-cloud":"website statistics website stats piwik statistik",
   "otter-ai":"note taker notetaker meeting notes","fireflies-ai":"note taker notetaker meeting notes","trello":"projekt","asana":"projekt","openproject-cloud":"projekt",
   "foreninglet":"medlemmer","membersite":"medlemmer","conventus":"medlemmer","klubmodul":"medlemmer"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
@@ -706,11 +706,13 @@ function renderResults(){
   // Thinking of changing a tool? Reference cards and Compare, folded (Paul, 29 Sep)
   h+='<section class="stack" aria-labelledby="chgH"><div class="s4 stack"><h2 id="chgH">Thinking of changing a tool?</h2></div>';
   // Reference cards for tools you plan to change
-  var byFam={},reduceLines=[];
-  ts.forEach(function(t){var f=cardFam(t);if(!f)return;if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
-  var famKeys=Object.keys(byFam);
-  if(famKeys.length||reduceLines.length){
-    h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+(famKeys.length+reduceLines.length)+' tool'+(famKeys.length+reduceLines.length===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
+  // A tool marked Replace or Retire with no card gets one plain line, not silence (1 Nov 2026).
+  var byFam={},reduceLines=[],noCard=[];
+  ts.forEach(function(t){var f=cardFam(t);if(!f){if(t.decision==="Replace"||t.decision==="Retire")noCard.push(t);return;}if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
+  var famKeys=Object.keys(byFam),nChg=famKeys.reduce(function(a,f){return a+byFam[f].length;},0)+reduceLines.length+noCard.length;
+  if(nChg){
+    h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+nChg+' tool'+(nChg===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
+    if(noCard.length)h+='<ul class="dup nocard">'+noCard.map(function(t){var l=t.lib&&BYID[t.lib];return '<li>There is no card for '+esc(t.name)+'.'+(l&&l.src?' Compare it with another tool below.':'')+'</li>';}).join("")+'</ul>';
     if(reduceLines.length)h+='<ul class="dup">'+reduceLines.map(function(x){return '<li><b>'+esc(x[0].name)+', reduce dependency:</b> '+esc(reduceText(x[1]))+'</li>';}).join("")+'</ul>';
     h+=famKeys.map(function(f){return cardHtml(CARDS[f],byFam[f]);}).join("")+'</section></details>';
   }
