@@ -477,7 +477,7 @@ function renderPick(){
     // A group whose tools are all search-only keeps its heading, with a line saying how to add one.
     var allExtra=extra.length===g.items.length,names=extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", ");
     h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
-    byRegion(g.items,state.loc,state.home).forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
+    byRegion(g.items,state.loc,state.home).forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).trim().toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
     h+='</div>'+(allExtra?'<p class="small muted groupmore">'+esc(g.g)+' tools, such as '+esc(names)+': type a name in Find a tool to add one.</p>':extra.length?'<p class="small muted groupmore">Also in the list: '+esc(names)+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
