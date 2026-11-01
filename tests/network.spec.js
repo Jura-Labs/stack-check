@@ -112,6 +112,52 @@ test("nothing typed or chosen is sent anywhere", async ({ page, baseURL }) => {
   }
 });
 
+// Opening a saved file is read in the browser only: a file carrying the marker in tool names, owners
+// and notes is refused with "Keep my list", then opened with "Replace it" (privacy check, 30 Oct 2026).
+test("a saved file's contents are never sent anywhere, whether kept out or opened", async ({ page, baseURL }) => {
+  const requests = [];
+  page.on("request", (r) => requests.push({ url: r.url(), headers: JSON.stringify(r.headers()), body: r.postData() || "" }));
+  page.on("websocket", (ws) => requests.push({ url: ws.url(), headers: "", body: "websocket" }));
+  await page.route("**/index.html", async (route) => {
+    const res = await route.fetch();
+    const html = (await res.text()).replace('data-domains="check.juralabs.org"', 'data-domains="check.juralabs.org,127.0.0.1"');
+    await route.fulfill({ response: res, body: html });
+  });
+  await fresh(page);
+  await page.waitForFunction(() => !!window.umami);
+  // The file: the example's tools, each with the marker in its name, owner, note, job and next step.
+  const text = await page.evaluate((M) => {
+    var keep = state, t = "", d = window.downloadFile;
+    state = example(); state.mode = "own";
+    state.tools.forEach(function (x, i) { x.name = M + " tool " + i; x.owner = M + " owner"; x.note = M + " note"; x.job = M + " job"; x.next = M + " next"; });
+    window.downloadFile = function (n, m, x) { t = x; }; saveToFile(); window.downloadFile = d; state = keep;
+    return t;
+  }, MARKER);
+  expect(text).toContain(MARKER);
+  const file = { name: "saved.json", mimeType: "application/json", buffer: Buffer.from(text) };
+  // A list in progress, so opening the file asks first.
+  await page.click("#startNew");
+  await page.click('[data-lib="xero"]');
+  await page.setInputFiles("#openAny", file);
+  await page.click("#replaceNo");
+  await expect(page.locator("#confirmReplace")).toBeHidden();
+  expect(await page.evaluate(() => JSON.stringify(state))).not.toContain(MARKER);
+  await page.setInputFiles("#openAny", file);
+  await page.click("#replaceYes");
+  await expect.poll(() => page.evaluate(() => JSON.stringify(state))).toContain(MARKER);
+  for (const s of [1, 2, 3, 4]) await step(page, s);
+  expect(await page.evaluate(() => JSON.stringify(localStorage))).toContain(MARKER);
+  expect(page.url()).not.toContain(MARKER);
+
+  const origin = new URL(baseURL).host;
+  const offsite = requests.filter((r) => { const h = new URL(r.url).host; return h !== origin && h !== ANALYTICS; });
+  expect(offsite, "requests to other hosts").toEqual([]);
+  const leaks = requests.filter((r) => (r.url + r.headers + r.body).includes(MARKER));
+  expect(leaks, "requests carrying the file's contents").toEqual([]);
+  expect(page.analyticsSent.length, "Umami counted the visit").toBeGreaterThan(0);
+  for (const sent of page.analyticsSent) expect(sent.body).not.toContain(MARKER);
+});
+
 test("template downloads and guide links are counted with fixed names and values only", async ({ page }) => {
   await page.route("**/index.html", async (route) => {
     const res = await route.fetch();
