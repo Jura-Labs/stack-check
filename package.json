@@ -12,8 +12,8 @@
     "test:browser": "playwright test"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.13.0",
-    "@playwright/test": "1.63.0",
-    "html-validate": "11.16.1"
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "html-validate": "11.17.0"
   }
 }
