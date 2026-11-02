@@ -877,9 +877,13 @@ function stepTitle(){document.title=state.step?"Step "+state.step+" of 4, "+STEP
 // screen-reader users start at the top of the new content (WCAG 2.4.3).
 function focusHeading(sel){var h=document.querySelector(sel||"#view > .banner, #view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
 function go(n){state.step=n;render();window.scrollTo({top:0});focusHeading();}
-// Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11).
-function padForSteps(){var nav=document.querySelector("nav.steps");if(nav)document.documentElement.style.scrollPaddingTop=(nav.offsetHeight+8)+"px";}
+// Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11). A bar taller than a fifth of
+// the screen (large text on a phone) scrolls with the page instead, and then needs no padding (2 Nov 2026).
+function padForSteps(){var nav=document.querySelector("nav.steps");if(!nav)return;var h=nav.offsetHeight;nav.classList.toggle("tall",h>innerHeight/5);
+  document.documentElement.style.scrollPaddingTop=getComputedStyle(nav).position==="sticky"?(h+8)+"px":"";}
 window.addEventListener("resize",padForSteps);
+// Text size can change without a resize, so the bar's own size is watched too.
+if(window.ResizeObserver&&document.querySelector("nav.steps"))new ResizeObserver(function(){padForSteps();}).observe(document.querySelector("nav.steps"));
 
 document.querySelectorAll("nav.steps [data-step]").forEach(function(b){b.addEventListener("click",function(){go(+b.dataset.step);});});
 document.getElementById("startOwn").addEventListener("click",function(){var own=ownSaved();if(own){state=own;go(own.step>0?own.step:1);}else{state=blank();state.mode="own";go(1);}});

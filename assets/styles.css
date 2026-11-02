@@ -269,6 +269,9 @@ input[type=text],input[type=number],input[type=date],select,.opt span,.chip,.btn
 /* M5: at high zoom or on short screens the sticky step bar would cover a
    third or more of the view, so it scrolls with the page instead. */
 @media (max-height:560px){nav.steps{position:static}}
+/* The same when large text makes the bar more than a fifth of the screen (320px wide, text at
+   200%: 145px of 640). app.js measures the bar and sets the class (a11y audit, 2 Nov 2026). */
+nav.steps.tall{position:static}
 
 /* Folded sections on Decide ("Thinking of changing a tool?"). */
 details.fold{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:.2rem .9rem}
@@ -340,14 +343,15 @@ table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width
 nav.steps .short{display:none}
 @media (max-width:560px){
   /* Each step takes the width its word needs, so "Questions" stays on one line where it fits; at
-     high zoom the words may break, but the bar never makes the page scroll sideways (28 Oct 2026). */
-  nav.steps ol{display:flex;gap:.3rem}
-  nav.steps li{flex:1 1 auto;min-width:0}
+     high zoom a step moves to a second row rather than breaking its word, and the bar never makes
+     the page scroll sideways (28 Oct 2026; words no longer break, 2 Nov 2026). */
+  nav.steps ol{display:flex;flex-wrap:wrap;gap:.3rem}
+  nav.steps li{flex:1 1 auto}
   nav.steps{padding-block:.4rem}
   nav.steps button{position:relative;flex-direction:column;justify-content:center;align-items:center;gap:.1rem;padding:.3rem .2rem;text-align:center;min-height:44px}
   nav.steps .lbl{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
   /* "Questions" broke as "Questi ons" at 320px with equal columns (28 Oct 2026). */
-  nav.steps .short{display:block;font-size:clamp(.72rem,3.4vw,.78rem);font-weight:600;line-height:1.1;overflow-wrap:anywhere;max-width:100%}
+  nav.steps .short{display:block;font-size:clamp(.72rem,3.4vw,.78rem);font-weight:600;line-height:1.1;white-space:nowrap}
   nav.steps .n{width:1.35rem;height:1.35rem;font-size:.72rem}
 }
 
