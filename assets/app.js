@@ -6,12 +6,27 @@
 // page under the guide (/updates/stay-in-command-of-your-technology/<card>), so "The full card"
 // opens that card, not the Step 4 section.
 // Other names people search for. Matched as well as the tool's name and job.
-var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365 teams copilot","google-workspace":"gmail google drive docs sheets meet g suite","mobilepay":"vipps","whatsapp":"whatsapp business","facebook-page":"messenger meta instagram business suite business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol"};
+var ALIASES={"microsoft-365":"sharepoint onedrive outlook exchange word excel powerpoint office 365 o365 teams copilot","google-workspace":"gmail google drive docs sheets meet g suite","mobilepay":"vipps","whatsapp":"whatsapp business","facebook-page":"messenger meta instagram business suite business manager business portfolio","google-ads":"ad grants adwords","zettle":"izettle paypal point of sale card reader","sumup":"card reader","justgiving":"fundraising page","e-conomic":"visma","billy":"shine","x-twitter":"twitter tweet","bluesky":"bsky at protocol",
+  // Search words people use (1 Nov 2026), including Danish ones.
+  "google-analytics-4":"ga4 ga website statistics website stats visitors statistik","plausible-analytics":"website statistics website stats statistik","umami-cloud":"website statistics website stats statistik","matomo-cloud":"website statistics website stats piwik statistik",
+  "otter-ai":"note taker notetaker meeting notes","fireflies-ai":"note taker notetaker meeting notes","trello":"projekt","asana":"projekt","openproject-cloud":"projekt",
+  "foreninglet":"medlemmer","membersite":"medlemmer","conventus":"medlemmer","klubmodul":"medlemmer"};
 // Shown only when someone searches for them or has ticked them (Paul, 30 Sep: fewer Money tools, as a
 // charity leader would see it). These are aimed at freelancers and micro-businesses.
 // Paul, 28 Oct 2026 (decisions/2026-10-28-stack-check-simplify.md, option 1): the business tools
 // leave the main list too. They keep their ids and facts, so saved files still open.
-var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1};
+// Paul, 1 Nov 2026 (decisions/2026-11-01-stack-check-open-decisions.md, 8a): the nine
+// reviewer-judgement tools (team chat and projects, note-takers, a sales CRM, web analytics) too.
+var SEARCH_ONLY={freeagent:1,dinero:1,billy:1,shopify:1,squarespace:1,wix:1,"sage-payroll":1,brightpay:1,brighthr:1,"breathe-hr":1,calendly:1,zapier:1,"google-ads":1,
+  "mattermost-cloud":1,"openproject-cloud":1,"fireflies-ai":1,"otter-ai":1,hubspot:1,"google-analytics-4":1,"plausible-analytics":1,"umami-cloud":1,"matomo-cloud":1};
+// Paul, 1 Nov 2026 (11a): one time statement, about 3 minutes a tool, that grows with the list.
+// Exact up to 30 minutes, then to the nearest 5 minutes: 12 tools take "about 35 minutes".
+var MIN_PER_TOOL=3;
+function timeFor(n){var m=n*MIN_PER_TOOL;if(m>30)m=Math.round(m/5)*5;if(m===60)return "about an hour";var h=Math.floor(m/60),r=m%60;
+  return "about "+(h?h+" hour"+(h===1?"":"s")+(r?" "+r+" minutes":""):m+" minute"+(m===1?"":"s"));}
+// The count and the estimate, announced once in #pickCount after a tool is added or removed.
+function announceCount(verb,name){var pc=document.getElementById("pickCount"),nt=state.tools.length;
+  if(pc)pc.textContent=verb+" "+name+". "+nt+" tool"+(nt===1?"":"s")+" chosen"+(nt?": "+timeFor(nt)+".":".");}
 // The offline register templates (register v2.2), the same rules as this tool.
 // Analytics (Paul, 30 Sep 2026, decision 2026-09-30-stack-check-analytics-events): Umami counts clicks on
 // a few buttons and links, with fixed names and values only. Nothing a person types or chooses is sent.
@@ -19,19 +34,19 @@ var DOWNLOADS='<a href="downloads/stay-in-command-register-v2.2.xlsx" download d
 var GUIDE="https://juralabs.org/updates/stay-in-command-of-your-technology";
 var CARDS={
  documents:{title:"Documents",anchor:"/documents",replaces:"Microsoft Word, Excel and PowerPoint, or Google Docs.",reduce:"Save finished documents as PDF or in open formats (ODF) as well as .docx, and keep templates somewhere you control.",
-  options:["LibreOffice: a free desktop office suite, open source, from a German foundation.","For editing together online: the office editor that comes with a hosted Nextcloud. Collabora Online is the established option."],
+  options:["LibreOffice: a free desktop office suite, open source, from a German foundation.","For editing together online: the office editor that comes with a hosted Nextcloud. Collabora Online is the established option."],optLib:["libreoffice","ionos-nextcloud-workspace"],centre:"libreoffice",
   effort:"Medium. The software is easy. The friction comes from funders and partners who send complex Word files.",approach:"Do not ban Microsoft Office. Keep it on one or two machines for the documents that need it. Use LibreOffice for what you create yourself, and send documents out as PDF where you can.",stay:"You rely on Excel macros, Access databases, or complex tracked changes with partners every week."},
  files:{title:"Files and working together",anchor:"/files",replaces:"SharePoint, OneDrive, Google Drive or Dropbox.",reduce:"Keep a regular copy of important folders outside your main service, clear out duplicates, and make sure two people can manage sharing.",
-  options:["IONOS Nextcloud Workspace: files, online office, email, chat and video in one. German data centres.","Hetzner Storage Share: files only, 1 TB, no user limit. Germany.","TAB.DIGITAL Business Cloud: Nextcloud with online office, up to 100 users. Germany."],
+  options:["IONOS Nextcloud Workspace: files, online office, email, chat and video in one. German data centres.","Hetzner Storage Share: files only, 1 TB, no user limit. Germany.","TAB.DIGITAL Business Cloud: Nextcloud with online office, up to 100 users. Germany."],optLib:["ionos-nextcloud-workspace","hetzner-storage-share",""],
   effort:"Medium.",approach:"Do not copy everything across. Clear out duplicates and dead folders first. Move one team's shared folder, not the whole organisation.",stay:"Your files are tied into Teams channels and SharePoint workflows that people use every day, and nobody has time to own a change."},
  analytics:{title:"Website analytics",anchor:"/analytics",replaces:"Google Analytics.",reduce:"Collect only what you use. Ask: how did this data help us last month?",
-  options:["Plausible: hosted in the EU by an Estonian company. Open source. No cookies.","Umami: open source. You can host it yourself. Umami's own cloud service offers EU hosting from a US company."],
+  options:["Plausible: hosted in the EU by an Estonian company. Open source. No cookies.","Umami: open source. You can host it yourself. Umami's own cloud service offers EU hosting from a US company."],optLib:["plausible-analytics","umami-cloud"],
   effort:"Low.",approach:"Run it alongside Google Analytics for a month before you remove anything.",stay:"You use Google Ad Grants. Check its conversion-tracking requirements before you change anything."},
  passwords:{title:"Passwords",anchor:"/passwords",replaces:"Passwords in spreadsheets, notebooks or browsers.",reduce:"This is mainly a safety fix. Any shared password manager with two-step sign-in and two admins is better than a spreadsheet. Do not switch between good password managers just to change supplier.",
-  options:["Bitwarden Teams: open source. A US company, but you can choose EU hosting when you sign up.","Proton Pass: open-source apps from a Swiss company. Nonprofit discounts on request.","KeePassXC: free and open source, stored in a file on your own device. Best for one person, not a team."],
+  options:["Bitwarden Teams: open source. A US company, but you can choose EU hosting when you sign up.","Proton Pass: open-source apps from a Swiss company. Nonprofit discounts on request.","KeePassXC: free and open source, stored in a file on your own device. Best for one person, not a team."],optLib:["bitwarden","proton-pass","keepassxc"],
   effort:"Low.",approach:"Create the organisation account, switch on two-step sign-in for everyone, import passwords from browsers, then turn off password saving in the browser. Name a second admin.",stay:"You already use a password manager with two-step sign-in and a second admin."},
  meetings:{title:"Meetings",anchor:"/meetings",replaces:"Zoom, Microsoft Teams or Google Meet.",reduce:"This is one of the hardest things to move, because the people you meet choose the platform too. Keep your tool, switch on two-step sign-in, and think twice before recording sensitive meetings in the cloud.",
-  options:["The video tool in your file or email bundle: Nextcloud Talk with IONOS Nextcloud Workspace, or Proton Meet with Proton Workspace.","Jitsi: open source. The free public service now needs a Google, GitHub or Facebook login to start a room. Running your own server needs someone technical."],
+  options:["The video tool in your file or email bundle: Nextcloud Talk with IONOS Nextcloud Workspace, or Proton Meet with Proton Workspace.","Jitsi: open source. The free public service now needs a Google, GitHub or Facebook login to start a room. Running your own server needs someone technical."],optLib:["",  "jitsi-meet"],
   effort:"Low for internal meetings.",approach:"Move internal meetings first. Keep Zoom or Teams for large external calls and webinars.",stay:"You run webinars or large events, or your funders and partners only use Teams."},
  windows10:{title:"Laptops still on Windows 10",anchor:"/windows-10",replaces:"",reduce:"Windows 10 stopped getting free security updates on 14 October 2025. Paid extended updates cost US$61 per device for the first year, then double each year.",reduceUK:" Unsupported software also fails Cyber Essentials.",
   options:["Upgrade to Windows 11 if the laptop meets Microsoft's requirements. The PC Health Check app will tell you.","Install Linux Mint: free, open source, supported until 2029, and runs well on older laptops.","Replace the device, refurbished where possible."],
@@ -41,18 +56,24 @@ var FAMILY=[
  ["windows10",function(t){return t.lib==="win10";}],
  ["passwords",function(t){return /password/i.test(t.job||"")||/^(lastpass|1password|bitwarden|proton-pass|keepassxc)$/.test(t.lib||"");}],
  ["analytics",function(t){return /analytics/i.test(t.job||"");}],
- ["meetings",function(t){return /video|meeting|calls/i.test(t.job||"")||/^(zoom|microsoft-teams|jitsi-meet)$/.test(t.lib||"");}],
+ // Video meetings and calls only: not a video channel or a note-taker, and never an account on a platform (1 Nov 2026).
+ ["meetings",function(t){return t.kind!=="Account on a platform"&&(/video ?(meetings?|calls?|conferenc)|\b(online|team) meetings?\b|\bcalls\b/i.test(t.job||"")||/^(zoom|microsoft-teams|jitsi-meet)$/.test(t.lib||""));}],
  ["files",function(t){return /shared files|files/i.test(t.job||"")&&!/email/i.test(t.job||"");}],
  ["documents",function(t){return /email, documents|documents/i.test(t.job||"");}]
 ];
 function familyOf(t){for(var i=0;i<FAMILY.length;i++)if(FAMILY[i][1](t))return FAMILY[i][0];return "";}
+// The card for a tool's family, unless the card is built around that very tool (LibreOffice and the
+// Documents card): advice to replace a tool with itself is no advice (1 Nov 2026).
+function cardFam(t){var f=familyOf(t);return f&&CARDS[f].centre!==t.lib?f:"";}
 var DUPS=[["files and documents",function(t){var f=familyOf(t);return f==="files"||f==="documents";}],["newsletter",function(t){return /newsletter/i.test(t.job||"");}],["meetings and chat",function(t){return familyOf(t)==="meetings"||/chat/i.test(t.job||"");}],["website analytics",function(t){return familyOf(t)==="analytics";}],["passwords",function(t){return familyOf(t)==="passwords";}],["donors and supporters (CRM)",function(t){return /donors|supporters|crm/i.test(t.job||"");}],["accounts",function(t){return /accounting|bookkeeping|^accounts?$/i.test((t.job||"").trim());}],["payroll and HR",function(t){return /payroll|\bHR\b|human resources/i.test(t.job||"");}],["forms and surveys",function(t){return /form|survey/i.test(t.job||"");}],["tasks and projects",function(t){return /task|project/i.test(t.job||"");}],["AI writing and summaries",function(t){return t.kind==="AI tool"&&/writing|summar|draft/i.test(t.job||"");}],["donations, payments and tickets",function(t){return /donat|payment|ticket/i.test(t.job||"");}]];
 // Cyber Essentials is a UK scheme, so its sentence is for UK organisations only (28 Oct 2026).
 function reduceText(c){return c.reduce+(c.reduceUK&&state.loc==="UK"?c.reduceUK:"");}
 function cardHtml(c,tools){
+  // An option that recommends one of the tools the card is for is left out.
+  var mine=tools.map(function(t){return t.lib;}),opts=c.options.filter(function(o,i){return !(c.optLib&&c.optLib[i]&&mine.indexOf(c.optLib[i])>=0);});
   return '<div class="card"><h3>'+esc(c.title)+'</h3><p class="small muted">For: '+esc(tools.map(function(t){return t.name;}).join(", "))+(c.replaces?'. Usually replaces '+esc(c.replaces):"")+'</p><dl>'+
     '<dt>Reduce dependency without moving</dt><dd>'+esc(reduceText(c))+'</dd>'+
-    '<dt>Options if you move</dt><dd><ul>'+c.options.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
+    '<dt>Options if you move</dt><dd><ul>'+opts.map(function(o){return '<li>'+esc(o)+'</li>';}).join("")+'</ul></dd>'+
     '<dt>Effort</dt><dd>'+esc(c.effort)+'</dd><dt>How to approach it</dt><dd>'+esc(c.approach)+'</dd><dt>When to stay put</dt><dd>'+esc(c.stay)+'</dd></dl>'+
     '<p class="small"><a href="'+GUIDE+c.anchor+'" target="_blank" rel="noopener noreferrer" data-umami-event="guide-visit" data-umami-event-place="card">The full card in the guide<span class="vh"> (opens in a new tab)</span></a></p></div>';
 }
@@ -312,9 +333,9 @@ function factsPanel(t){
   return '<p class="note">'+esc(l.note)+'</p><details class="facts"><summary>What we found about '+esc(l.name)+' ('+(old?"not checked since ":"checked ")+longDate(checkedOn(l.id))+')</summary>'+
     (old?'<p class="small">These facts may be out of date. Check them on the supplier\'s own pages before you rely on them.</p>':"")+'<dl class="factlist">'+
     row("Company",(l.co||"")+(PLACE[l.hq]&&l.hq!=="OTHER"?", "+PLACE[l.hq]:"")+(l.par?". Owned by "+l.par+(PLACE[l.parc]?" ("+PLACE[l.parc]+")":""):""))+
-    row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans?": "+l.plans:""))+
+    row("Where data is kept",l.store)+row("UK or EU storage",(RES[l.res]||l.res)+(l.plans&&l.res!=="unclear"?": "+l.plans:""))+
     row("Export",known(l.x))+row("Two-step sign-in (MFA)",known(l.mfa))+row("Trains AI on your data",(AI[l.ai]||l.ai)+(l.aid?". "+l.aid:""))+
-    row("More about it",l.more)+row("Nonprofit offer",npText(l))+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
+    row("More about it",l.more)+row("Free plan or non-profit offer",npText(l))+row("How sure we are",l.conf==="high"?"High: the supplier says so clearly":l.conf==="medium"?"Medium: partly stated, or depends on your plan":"Low: check this yourself")+
     '</dl><p class="small"><b>Sources</b></p><ul class="srcs">'+l.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></details>';
 }
 function placeSelect(field,t,label,hint){
@@ -379,7 +400,7 @@ function renderStart(){
   var own=state.mode!=="example"&&state.tools.length?state:ownSaved(),n=own?own.tools.length:0,a=own?own.tools.filter(essentialsDone).length:0;
   var h='<section class="panel stack" aria-labelledby="startH"><h2 id="startH">'+(own?"Welcome back":"Start here")+'</h2>'+
     (own?'<p><b>'+a+' of '+n+' tool'+(n===1?"":"s")+' answered</b> in this browser.</p><div class="row"><button type="button" class="btn primary" id="carryOn">Carry on where you left off</button></div>':'')+
-    '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 2 minutes a tool, so 9 tools take about 30 minutes. You can stop and carry on later.</p>'+
+    '<p>List every tool your organisation uses, see where your data goes, and get a recommendation on what to do. The essentials take about 3 minutes a tool, '+(own?(n-a?"so the "+(n-a)+" tool"+(n-a===1?"":"s")+" still to answer take"+(n-a===1?"s ":" ")+timeFor(n-a):"and every tool on your list has them answered"):"so 10 tools take about 30 minutes")+'. You can stop and carry on later.</p>'+
     '<ol class="startsteps"><li><b>List your tools.</b> Tick what you use.</li><li><b>Answer the questions,</b> one tool at a time.</li><li><b>Decide:</b> five lights and what to do, ready to take to your '+(BOARD()||"records")+'.</li><li><b>Your data:</b> where it lives.</li></ol>'+
     '<div class="row">'+(own?'<button type="button" class="btn" id="startNew" data-umami-event="start-own" data-umami-event-place="start-new-list">Start a new list</button>':'<button type="button" class="btn primary" id="startNew" data-umami-event="start-own" data-umami-event-place="start">Start your own</button>')+
     '<button type="button" class="btn" id="seeExample">See the example</button><input type="file" id="openFile0" class="vh" accept=".json,application/json"><label class="btn" for="openFile0">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
@@ -417,6 +438,8 @@ function leaveExample(){}
 var ASK="Quick question for everyone: what tools are you using for work?\n\nInclude free apps, AI tools such as ChatGPT or note-takers, WhatsApp groups, anything on your own phone or laptop, and anything you signed up for yourself.\n\nThere are no wrong answers. We just want to know what we have.";
 // Step 1's folds stay as they were when the page is redrawn, for example after a change of location.
 var FOLD1={};
+// The last "found" message in Find a tool, and the timer that writes it.
+var FIND_MSG="",FIND_TIMER=null;
 // The currency that follows the place: the region's, or the country's own where it has one (28 Oct 2026).
 var HOME_CCY={DK:"DKK",SE:"SEK",NO:"NOK",CH:"CHF"};
 function ccyDefault(loc,home){return (loc==="EU"&&HOME_CCY[home])||CCY_FOR[loc];}
@@ -447,14 +470,14 @@ function renderPick(){
   h+='<details class="facts" data-fold1="ccy"'+(FOLD1.ccy?" open":"")+'><summary id="ccySum">More detail (optional: the currency for costs, now '+esc(ccyLabel())+')</summary><div class="s11 s3 field"><label for="ccy">Currency for costs</label><select id="ccy">'+CCYS.map(function(o){return '<option value="'+o[0]+'"'+((state.ccy||"GBP")===o[0]?" selected":"")+'>'+o[1]+'</option>';}).join("")+'</select><span class="small muted">It follows where you are based. Use one currency for the whole register. The check does not convert between currencies.</span></div></details></section>';
   if(!SOLE())h+='<details class="fold" data-fold1="ask"'+(FOLD1.ask?" open":"")+'><summary>Before you start, ask your team</summary><div class="stack askfold"><p class="muted">Ask "What tools are you using for work?", not "What software does the organisation use?" People will always find tools to get their work done. Copy this message and send it round.</p>'+
     '<div class="askbox">'+esc(ASK)+'</div><div class="row"><button type="button" class="btn" id="copyAsk">Copy the message</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div><textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></div></details>';
-  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH" tabindex="-1">List every service</h2><p class="muted">Include the free ones, AI tools, and your laptops. It takes about 2 minutes per tool to complete. You can always return and add more detail later.</p></div>'+
-    '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite"></span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
+  h+='<section class="panel stack" aria-labelledby="pickH"><div class="s5 stack"><h2 id="pickH" tabindex="-1">List every service</h2><p class="muted">Include the free ones, AI tools, and your laptops. The essentials take about 3 minutes a tool. You can always return and add more detail later.</p></div>'+
+    '<div class="s6 field"><label for="findTool">Find a tool</label><input type="search" id="findTool" placeholder="Type to filter the list" autocomplete="off" value="'+esc(state.findQ||"")+'"><span id="findNone" class="small muted" role="status" aria-live="polite">'+(state.findQ?esc(FIND_MSG):"")+'</span></div><p id="pickCount" class="small" role="status" aria-live="polite"></p><div class="groups">';
   LIB.forEach(function(g){
     var extra=g.items.filter(function(t){return SEARCH_ONLY[t.id];});
     // A group whose tools are all search-only keeps its heading, with a line saying how to add one.
     var allExtra=extra.length===g.items.length,names=extra.map(function(t){return t.name.replace(/ \(.*\)$/,"");}).join(", ");
     h+='<div class="group"><h3>'+esc(g.g)+'</h3><div class="chips">';
-    byRegion(g.items,state.loc,state.home).forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
+    byRegion(g.items,state.loc,state.home).forEach(function(t){h+='<button type="button" class="chip"'+(SEARCH_ONLY[t.id]?' data-more="1"'+(chosen[t.id]?"":" hidden"):"")+' data-find="'+esc((t.name+" "+(t.job||"")+" "+(ALIASES[t.id]||"")).trim().toLowerCase())+'" data-lib="'+t.id+'" aria-pressed="'+(chosen[t.id]?"true":"false")+'"><span class="tick" aria-hidden="true">✓</span>'+esc(t.name)+'</button>';});
     h+='</div>'+(allExtra?'<p class="small muted groupmore">'+esc(g.g)+' tools, such as '+esc(names)+': type a name in Find a tool to add one.</p>':extra.length?'<p class="small muted groupmore">Also in the list: '+esc(names)+'. Type a name in Find a tool.</p>':"")+'</div>';
   });
   h+='</div><div class="s7 stack"><h3>Something not on the list?</h3>'+
@@ -462,7 +485,7 @@ function renderPick(){
      '<div class="field"><label for="newJob">The job it does</label><input type="text" id="newJob" placeholder="For example: volunteer shifts"></div>'+
      '<div class="s8 field"><button type="button" class="btn" id="addTool">Add tool</button></div></div>';
   if(customs.length)h+='<div class="chips">'+customs.map(function(t){return '<span class="s9 chip">'+esc(t.name)+' <button type="button" class="s10 btn ghost small" data-remove="'+esc(t.key)+'" aria-label="Remove '+esc(t.name)+'">Remove</button></span>';}).join("")+'</div>';
-  h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tools listed</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
+  h+='</div></section><div class="navrow"><span class="muted small">'+state.tools.length+' tool'+(state.tools.length===1?"":"s")+' listed'+(state.tools.length?", "+timeFor(state.tools.length)+". You can stop and carry on later.":"")+'</span><button type="button" class="btn primary" id="toAsk"'+(state.tools.length?"":" disabled")+'>Next: answer the questions</button></div>';
   view.innerHTML=h+(state.tools.length?SAVE_ROW:OPEN_ROW);
   bindSaveRow();
   // A currency the person chose stays when they change the location (28 Oct 2026).
@@ -473,25 +496,29 @@ function renderPick(){
   view.querySelectorAll('input[name="loc"]').forEach(function(r){r.addEventListener("change",function(){relocate(function(){state.loc=r.value;
     state.home=r.value==="UK"?"GB":r.value==="EU"?(state.home&&PLACE[state.home]&&state.home!=="GB"&&state.home!=="US"?state.home:"EU"):r.value;},r.id);});});
   var ft=document.getElementById("findTool");
-  function filterTools(){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
+  function filterTools(typed){var qv=ft.value.trim().toLowerCase(),hits=0;state.findQ=ft.value;
     view.querySelectorAll(".group").forEach(function(g){var any=false;g.querySelectorAll("[data-lib]").forEach(function(c){var show=qv?c.dataset.find.indexOf(qv)>=0:(!c.dataset.more||c.getAttribute("aria-pressed")==="true");c.hidden=!show;if(show){any=true;hits++;}});g.hidden=qv?!any:false;var gm=g.querySelector(".groupmore");if(gm)gm.hidden=!!qv;});
     // The number found is announced too, so a screen-reader user knows the list changed (28 Oct 2026).
-    var none=document.getElementById("findNone");none.textContent=!qv?"":!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':hits+" tool"+(hits===1?"":"s")+" found.";
+    // A redraw after ticking a chip does not write it again, so "found" is not announced twice; while
+    // typing, it waits until the person pauses (1 Nov 2026).
+    var msg=!qv?"":!hits?'Nothing called "'+ft.value.trim()+'" in the list. Add it under "Something not on the list?" below.':hits+" tool"+(hits===1?"":"s")+" found.";
+    if(typed){clearTimeout(FIND_TIMER);FIND_TIMER=setTimeout(function(){var none=document.getElementById("findNone");if(none)none.textContent=msg;FIND_MSG=msg;},500);}
     if(qv&&!hits){var nn=document.getElementById("newName");if(nn&&!nn.value)nn.value=ft.value.trim();}}
-  ft.addEventListener("input",filterTools);if(ft.value)filterTools();
+  ft.addEventListener("input",function(){filterTools(true);});if(ft.value)filterTools(false);
   var ca=document.getElementById("copyAsk");if(ca)ca.addEventListener("click",function(){copy(ASK);});
   view.querySelectorAll("[data-lib]").forEach(function(b){b.addEventListener("click",function(){
     var id=b.dataset.lib,idx=state.tools.findIndex(function(t){return t.lib===id;});
     if(idx>=0)state.tools.splice(idx,1);else state.tools.push(fromLib(BYID[id]));
     leaveExample();state.cur=0;render();
     var again=view.querySelector('[data-lib="'+id+'"]');if(again)again.focus();
-    var pc=document.getElementById("pickCount");if(pc)pc.textContent=(idx>=0?"Removed ":"Added ")+BYID[id].name+". "+state.tools.length+" tool"+(state.tools.length===1?"":"s")+" chosen.";
+    // The time estimate rides on this one announcement, so it is heard no more often than the count.
+    announceCount(idx>=0?"Removed":"Added",BYID[id].name);
   });});
   view.querySelectorAll("[data-remove]").forEach(function(b){b.addEventListener("click",function(){
     state.tools=state.tools.filter(function(t){return t.key!==b.dataset.remove;});render();document.getElementById("newName").focus();});});
   document.getElementById("addTool").addEventListener("click",function(){
     var n=document.getElementById("newName").value.trim(),nm=document.getElementById("newName");if(!n){nm.setAttribute("aria-invalid","true");nm.setAttribute("aria-describedby","newNameErr");var er=document.getElementById("newNameErr");if(er)er.textContent="Type the tool's name first.";nm.focus();return;}
-    state.tools.push(fromLib({name:n,job:document.getElementById("newJob").value.trim()}));leaveExample();render();document.getElementById("newName").focus();
+    state.tools.push(fromLib({name:n,job:document.getElementById("newJob").value.trim()}));leaveExample();render();document.getElementById("newName").focus();announceCount("Added",n);
   });
   document.getElementById("toAsk").addEventListener("click",function(){go(2);});
 }
@@ -659,7 +686,7 @@ function renderResults(){
   // Register table: four columns so it fits the page (Paul, 30 Sep: twelve were too many).
   // The five lights share one column; decision, next step and date stack in the last.
   h+='<section class="stack" aria-labelledby="regH"><div class="s17 row"><h2 id="regH">Your register</h2><div class="legend" aria-hidden="true"><span>'+bare("Green","")+'</span><span>'+bare("Amber","")+'</span><span>'+bare("Red","")+'</span></div></div>'+
-   '<div class="tablewrap" role="region" aria-label="Register table"><table class="reg"><thead><tr><th scope="col">Tool</th><th scope="col">Lights</th><th scope="col">Suggested action</th><th scope="col">Your decision</th></tr></thead><tbody>';
+   '<div class="tablewrap" role="region" aria-label="Register table" tabindex="0"><table class="reg"><thead><tr><th scope="col">Tool</th><th scope="col">Lights</th><th scope="col">Suggested action</th><th scope="col">Your decision</th></tr></thead><tbody>';
   ts.forEach(function(t){
     h+='<tr><td><b>'+esc(t.name)+'</b>'+(t.job?'<div class="small muted">'+esc(t.job)+'</div>':"")+
       '<div class="small">Owner: '+(own(t)?esc(ownerName(t)):'<span class="light r">'+SHAPE.Red+'Nobody</span>')+'</div><div class="small muted">Data: '+esc(t.data||"not answered")+'</div></td>'+
@@ -679,11 +706,13 @@ function renderResults(){
   // Thinking of changing a tool? Reference cards and Compare, folded (Paul, 29 Sep)
   h+='<section class="stack" aria-labelledby="chgH"><div class="s4 stack"><h2 id="chgH">Thinking of changing a tool?</h2></div>';
   // Reference cards for tools you plan to change
-  var byFam={},reduceLines=[];
-  ts.forEach(function(t){var f=familyOf(t);if(!f)return;if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
-  var famKeys=Object.keys(byFam);
-  if(famKeys.length||reduceLines.length){
-    h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+(famKeys.length+reduceLines.length)+' tool'+(famKeys.length+reduceLines.length===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
+  // A tool marked Replace or Retire with no card gets one plain line, not silence (1 Nov 2026).
+  var byFam={},reduceLines=[],noCard=[];
+  ts.forEach(function(t){var f=cardFam(t);if(!f){if(t.decision==="Replace"||t.decision==="Retire")noCard.push(t);return;}if(t.decision==="Replace"||t.decision==="Retire")(byFam[f]=byFam[f]||[]).push(t);else if(t.decision==="Reduce dependency")reduceLines.push([t,CARDS[f]]);});
+  var famKeys=Object.keys(byFam),nChg=famKeys.reduce(function(a,f){return a+byFam[f].length;},0)+reduceLines.length+noCard.length;
+  if(nChg){
+    h+='<details class="fold" data-fold="cards"'+(state.foldCards?" open":"")+'><summary>Before you move: '+nChg+' tool'+(nChg===1?"":"s")+' you plan to change</summary><section class="stack" aria-labelledby="cardH"><div class="s4 stack"><h3 id="cardH">Before you move</h3><p class="muted">From the guide, for the tools you have marked Replace, Retire or Reduce dependency. Pick one tool, pilot it for at least four weeks with at least two people, and then decide.</p></div>';
+    if(noCard.length)h+='<ul class="dup nocard">'+noCard.map(function(t){var l=t.lib&&BYID[t.lib];return '<li>There is no card for '+esc(t.name)+'.'+(l&&l.src?' Compare it with another tool below.':'')+'</li>';}).join("")+'</ul>';
     if(reduceLines.length)h+='<ul class="dup">'+reduceLines.map(function(x){return '<li><b>'+esc(x[0].name)+', reduce dependency:</b> '+esc(reduceText(x[1]))+'</li>';}).join("")+'</ul>';
     h+=famKeys.map(function(f){return cardHtml(CARDS[f],byFam[f]);}).join("")+'</section></details>';
   }
@@ -703,8 +732,8 @@ function renderResults(){
     '<div class="qgrid"><div class="field"><label for="cmpA">This tool</label>'+sel("cmpA",ca)+'</div><div class="field"><label for="cmpB">Compared with</label>'+sel("cmpB",cb)+'</div></div>'+
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
     '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
-    crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans?": "+B.plans:""))+
-    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Nonprofit offer",npText(A),npText(B))+
+    crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans&&A.res!=="unclear"?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans&&B.res!=="unclear"?": "+B.plans:""))+
+    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Free plan or non-profit offer",npText(A),npText(B))+
     crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td></tr>'+
     '</tbody></table></div></section></details>';
 
@@ -723,7 +752,7 @@ function renderResults(){
   document.getElementById("saveFile").addEventListener("click",function(){saveToFile();document.getElementById("fileStatus").textContent="Saved. Look in your downloads folder.";});
   bindOpenFile(document.getElementById("openFile"),document.getElementById("fileStatus"));
   var f=document.getElementById("finish");if(f)f.addEventListener("click",function(){state.cur=ts.findIndex(function(t){return !answered(t);});go(2);});
-  view.querySelectorAll("[data-dec]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.dec;});t.decision=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();var ds=document.getElementById("decStatus");if(ds&&(s.value==="Replace"||s.value==="Retire"||s.value==="Reduce dependency")&&familyOf(t))ds.textContent="Advice for "+t.name+" is under Thinking of changing a tool, below.";});});
+  view.querySelectorAll("[data-dec]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.dec;});t.decision=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();var ds=document.getElementById("decStatus");if(ds&&(s.value==="Replace"||s.value==="Retire"||s.value==="Reduce dependency")&&cardFam(t))ds.textContent="Advice for "+t.name+" is under Thinking of changing a tool, below.";});});
   view.querySelectorAll("[data-next]").forEach(function(s){s.addEventListener("input",function(){var t=ts.find(function(x){return x.key===s.dataset.next;});t.next=s.value;leaveExample();save();});});
   view.querySelectorAll("[data-due]").forEach(function(s){s.addEventListener("change",function(){var t=ts.find(function(x){return x.key===s.dataset.due;});t.due=s.value;leaveExample();render();var e=document.getElementById(s.id);if(e)e.focus();});});
   var cA=document.getElementById("cmpA"),cB=document.getElementById("cmpB");

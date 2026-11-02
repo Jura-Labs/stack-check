@@ -23,14 +23,14 @@ test("search keeps its text after ticking, and a count is announced", async ({ p
   await page.click('[data-lib="xero"]');
   await expect(page.locator("#findTool")).toHaveValue("xero");
   await expect(page.locator('[data-lib="asana"]')).toBeHidden();
-  await expect(page.locator("#pickCount")).toHaveText("Added Xero. 1 tool chosen.");
+  await expect(page.locator("#pickCount")).toHaveText("Added Xero. 1 tool chosen: about 3 minutes.");
 });
 
 test("no match says so and offers the name for 'Something not on the list?'", async ({ page }) => {
   await startOwn(page);
-  await page.fill("#findTool", "Charitylog");
-  await expect(page.locator("#findNone")).toContainText('Nothing called "Charitylog"');
-  await expect(page.locator("#newName")).toHaveValue("Charitylog");
+  await page.fill("#findTool", "Infoflo");
+  await expect(page.locator("#findNone")).toContainText('Nothing called "Infoflo"');
+  await expect(page.locator("#newName")).toHaveValue("Infoflo");
 });
 
 test("the step bar shows how many tools are chosen and answered", async ({ page }) => {

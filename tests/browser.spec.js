@@ -150,7 +150,7 @@ test("the nonprofit offer is a fixed choice, always shown the same way in the fa
     const out = [];
     LIB.forEach((g) => g.items.forEach((t) => {
       if (t.k === "Devices") return;
-      if (["Free", "Discount", "On request", "None", "Unknown"].indexOf(t.npk) < 0) out.push(t.id + ".npk");
+      if (["Free", "Discount", "On request", "None", "Unknown", "Not applicable"].indexOf(t.npk) < 0) out.push(t.id + ".npk");
       if (t.np && /\d+ ?%|[£$€]|\bUSD\b|\bkr\b/.test(t.np)) out.push(t.id + ".np has a price");
       if (t.npk === "Unknown" && t.np) out.push(t.id + ".np with Unknown");
     }));
@@ -162,10 +162,10 @@ test("the nonprofit offer is a fixed choice, always shown the same way in the fa
   await step(page, 2);
   const facts = page.locator("details.facts").first();
   await facts.locator("summary").click();
-  await expect(facts.locator("dt", { hasText: "Nonprofit offer" })).toHaveCount(1);
-  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Nonprofit offer" }) }).locator("dd")).toHaveText("Unknown");
+  await expect(facts.locator("dt", { hasText: "Free plan or non-profit offer" })).toHaveCount(1);
+  await expect(facts.locator("div", { has: page.locator("dt", { hasText: "Free plan or non-profit offer" }) }).locator("dd")).toHaveText("Unknown");
   await step(page, 3);
-  const row = page.locator("table.cmp tr", { has: page.locator("th", { hasText: "Nonprofit offer" }) });
+  const row = page.locator("table.cmp tr", { has: page.locator("th", { hasText: "Free plan or non-profit offer" }) });
   await expect(row.locator("td").nth(0)).toHaveText("Unknown");
   await expect(row.locator("td").nth(1)).toHaveText(await page.evaluate(() => npText(BYID["canva"])));
   expect(await page.evaluate(() => npText(BYID["canva"]))).toMatch(/^Free\. /);
@@ -228,6 +228,6 @@ test("business tools are not in the main list, but a search finds them", async (
   await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeVisible();
   await page.fill("#findTool", "");
   await expect(page.locator('button.chip[data-lib="brightpay"]')).toBeHidden();
-  // On the main list: 99 entries less 13 found by search only.
-  expect(await page.evaluate(() => { let n = 0; LIB.forEach((g) => g.items.forEach((t) => { if (!SEARCH_ONLY[t.id]) n++; })); return n; })).toBe(86);
+  // On the main list: 110 entries less 22 found by search only (2.2.12).
+  expect(await page.evaluate(() => { let n = 0; LIB.forEach((g) => g.items.forEach((t) => { if (!SEARCH_ONLY[t.id]) n++; })); return n; })).toBe(88);
 });
