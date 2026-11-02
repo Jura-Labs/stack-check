@@ -87,12 +87,28 @@ function oneOf(v, list, fallback) {
 // hyphens are kept. Anything else (a crafted file could hold HTML) gets a fresh key. Used for
 // opened files and for answers loaded from this browser (live privacy check, 30 Sep 2026).
 var KEY_OK = /^[a-z0-9][a-z0-9-]{0,63}$/;
-function cleanKeys(tools) {
-  var seen = {};
+function cleanKeys(tools, journeys) {
+  var seen = {}, merged = {};
   (tools || []).forEach(function (t, i) {
     if (typeof t.key !== "string" || !KEY_OK.test(t.key) || seen[t.key]) t.key = "tool-" + i + "-" + Math.random().toString(36).slice(2, 7);
     seen[t.key] = 1;
+    // A library entry merged into another (LIB_ALIAS in tools.js) opens as the merged entry.
+    if (typeof t.lib === "string" && Object.prototype.hasOwnProperty.call(LIB_ALIAS, t.lib)) { t.lib = LIB_ALIAS[t.lib]; merged[t.lib] = 1; }
   });
+  // A file from before the merge can hold two of the merged tools (Microsoft 365 and Microsoft Teams).
+  // They are now one tool: the first one listed is kept with its own answers, and nothing is added to
+  // it from the others. Journey stops that named a dropped tool name the kept one.
+  if (tools && tools.length) {
+    var first = {}, moved = {}, kept = tools.filter(function (t) {
+      if (!t.lib || !merged[t.lib]) return true;
+      if (!first[t.lib]) { first[t.lib] = t.key; return true; }
+      moved[t.key] = first[t.lib]; return false;
+    });
+    if (kept.length !== tools.length) {
+      tools.length = 0; Array.prototype.push.apply(tools, kept);
+      (journeys || []).forEach(function (j) { (j && j.stops || []).forEach(function (st) { if (st && moved[st.ref]) st.ref = moved[st.ref]; }); });
+    }
+  }
   return tools;
 }
 
@@ -108,13 +124,13 @@ function stateFromFile(text) {
   if (!Array.isArray(s.tools)) throw new Error("This file has no tools in it.");
   if (s.tools.length > FILE_MAX_TOOLS) throw new Error("This file has more tools than Stack Check can open.");
   var tools = s.tools.map(plainObject).filter(function (t) { return typeof t.name === "string" && t.name; });
-  cleanKeys(tools);
   tools.forEach(function (t) { if (s.v === 5 && t.where === "UK or EU") t.where = EU; });
   var journeys = (Array.isArray(s.journeys) ? s.journeys : []).slice(0, 50).map(function (j) {
     var o = plainObject(j);
     o.stops = (j && Array.isArray(j.stops) ? j.stops : []).slice(0, 50).map(plainObject);
     return o;
   });
+  cleanKeys(tools, journeys);
   migrateDevices(tools);
   return {
     v: 6,
@@ -132,7 +148,7 @@ function stateFromFile(text) {
   };
 }
 
-// Wires an <input type="file"> so choosing a file replaces the current answers.
+// Wires an <input type="file"> so choosing a file replaces the current answers (askReplace is in app.js).
 function bindOpenFile(input, status) {
   if (!input) return;
   input.addEventListener("change", function () {
@@ -141,17 +157,18 @@ function bindOpenFile(input, status) {
     if (f.size > FILE_MAX_BYTES) { status.textContent = "This file is too large to be a Stack Check file."; input.value = ""; return; }
     var r = new FileReader();
     r.onload = function () {
-      try {
-        state = stateFromFile(String(r.result));
+      var s;
+      try { s = stateFromFile(String(r.result)); } catch (e) { status.textContent = e.message; input.value = ""; return; }
+      input.value = "";
+      // A file that can be opened replaces the current list only after asking, if there is work in it (30 Oct 2026).
+      askReplace(input, status, function () {
+        state = s;
         render();
         var h = document.querySelector("#view h2");
         var msg = document.getElementById("fileStatus");
         if (msg) msg.textContent = "Opened " + f.name + ": " + state.tools.length + " tools.";
         if (h) { h.setAttribute("tabindex", "-1"); h.focus(); }
-      } catch (e) {
-        status.textContent = e.message;
-      }
-      input.value = "";
+      });
     };
     r.onerror = function () { status.textContent = "The file could not be read."; input.value = ""; };
     r.readAsText(f);

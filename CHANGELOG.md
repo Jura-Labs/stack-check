@@ -3,6 +3,93 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.12 (1 November 2026)
+
+Paul's decisions of 1 November 2026, and new tools for not-for-profits.
+
+- Eleven tools join the list, each checked on the supplier's own pages
+  on 28 October 2026 (some again on 1 November): LibreOffice, Google Forms, Microsoft Forms, a
+  YouTube channel, a TikTok account, Localgiving, CAF Donate, Charitylog,
+  Lamplight, Conventus and Klubmodul.
+- Nine tools leave the main list: Mattermost Cloud, OpenProject (cloud),
+  Fireflies.ai, Otter.ai, HubSpot, Google Analytics 4, Plausible
+  Analytics, Umami Cloud and Matomo Cloud. Type a name in "Find a tool"
+  to find them. Saved files that use any of them still open. The main
+  list now has 88 tools.
+- The nonprofit offer row is now "Free plan or non-profit offer". It
+  says "Free" whenever there is a free option a small charity can use,
+  whether or not it is only for non-profits, and the line names it and
+  its limits. Figma, WhatsApp, Signal, Calendly, ChatGPT, Mistral Vibe,
+  HubSpot, SurveyMonkey, Billy, Zapier, Conventus, "Facebook and
+  Instagram", LinkedIn, X and Bluesky now say Free. Mattermost Cloud's
+  offer is "On request".
+- A new offer label, "Not applicable", is for tools built only for
+  charities, non-profits or associations, with no free plan, where the
+  normal price is the charity price: Localgiving, CAF Donate,
+  ForeningLet and Membersite.
+- Mollie: where data is kept is now Unknown.
+- The time it takes is one statement: the essentials take about 3
+  minutes a tool, so 10 tools take about 30 minutes. On step 1 the
+  estimate grows as you add tools, and "Welcome back" gives the time for
+  the tools still to answer. "The 2-hour technology check" is now "The
+  technology check".
+- Where the storage option is Unknown, the plan text is no longer shown
+  after it.
+- TikTok, YouTube and meeting note-takers no longer get the Meetings
+  advice, and a card no longer suggests the tool it is about (for
+  example, LibreOffice no longer gets the Documents card). A tool you
+  mark Replace or Retire that has no card now gets one line saying so.
+- "Find a tool" knows more words, such as "ga4", "note taker",
+  "website stats", "statistik", "projekt" and "medlemmer".
+- Screen readers: the number of tools found is read once, after you stop
+  typing, and not again when you tick a tool. The register table can be
+  reached with the keyboard even when it is empty.
+
+## 2.2.11 (1 November 2026)
+
+- Opening a saved file when you already have a list in progress now asks
+  "Replace your current list?" first. "Keep my list" leaves your answers
+  as they are; "Replace it" opens the file. With no list of your own, the
+  file opens straight away as before.
+
+## 2.2.10 (30 October 2026)
+
+A shorter library for small charities (Paul's decisions of 28 October
+2026, options 1 to 4 and 8).
+
+- Business tools leave the main list: Shopify, Squarespace, Wix,
+  FreeAgent, Sage Payroll, BrightPay, BrightHR, Breathe, Calendly,
+  Zapier and Google Ads. Type a name in "Find a tool" to find them.
+  The "Staff, payroll and HR" group keeps its heading and says so.
+  Meta Business Suite is merged into "Facebook and Instagram" (below).
+  Saved files that use any of them still open.
+- Near-duplicates are merged: Microsoft 365 now covers Teams and Copilot,
+  WhatsApp covers WhatsApp Business, and "Facebook and Instagram" covers
+  a Facebook Page, an Instagram professional account and Meta Business
+  Suite. A file saved with one of the old tools opens with the merged
+  entry; if it held two of them, they open as one tool with the first
+  one's answers. The note above the questions is kept to about three
+  sentences, and the rest is under "More about it" in the facts.
+  Zoom and Zoom AI Companion stay separate, because their facts about
+  where data is kept differ.
+- Each tool's nonprofit offer is now one of Free, Discount, On request,
+  None or Unknown, with one short line. Prices and percentages are in
+  the linked sources. The offer is always shown, in the facts and in
+  the comparison.
+- Library text no longer describes what a supplier's pages do not say.
+  Where a fact is not known, it says "Unknown", and a sentence that
+  only said a point was unknown is removed.
+- Tools in each group are listed with those from where you are first:
+  UK tools for the UK, Danish and then EU tools for Denmark, EU tools
+  elsewhere in Europe.
+- A tool whose facts have not been checked for six months says "not
+  checked since" and the date.
+- Nonprofit offers for Calendly, Dropbox, Enthuse, Mattermost Cloud and
+  Zoom AI Companion were checked on 28 October 2026 on the suppliers' own
+  pages. Calendly offers special pricing on request; for Dropbox it is
+  unknown. The footer's range now runs to 28 October 2026.
+- The main list has 86 tools; 99 in all with those found by searching.
+
 ## 2.2.9 (28 October 2026)
 
 Simpler steps for small charities, and three bug fixes. The lights and
