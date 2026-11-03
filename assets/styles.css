@@ -56,6 +56,8 @@ nav.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:
    step wider than the page wraps between words, so the bar never scrolls sideways (#32). */
 nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}
 nav.steps li{flex:1 1 0;min-width:fit-content;max-width:100%}
+nav.steps.half li{flex-basis:calc(50% - .25rem)}
+nav.steps.full li{flex-basis:100%}
 nav.steps button{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.45rem .7rem;cursor:pointer;display:flex;gap:.55rem;align-items:center;min-height:44px}
 nav.steps button[aria-current="step"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 nav.steps .n{font:600 .8rem var(--f-data);width:1.6rem;height:1.6rem;border-radius:50%;display:grid;place-items:center;background:var(--tint);flex:none}
@@ -327,7 +329,7 @@ footer{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:1.4rem;fon
 /* Register: four columns that fit the page; on phones each tool becomes a card. */
 table.reg{min-width:0;table-layout:fixed}
 table.reg th:nth-child(1){width:28%}
-table.reg th:nth-child(2){width:24%}
+table.reg th:nth-child(2){width:20%}
 table.reg th:nth-child(3){width:16%}
 table.reg td{overflow-wrap:anywhere}
 table.reg td>div+div{margin-top:.15rem}
@@ -336,8 +338,8 @@ table.reg td>div+div{margin-top:.15rem}
 /* Decision and date side by side where they fit, one under the other where they do not, so
    neither is squeezed under the other at large text (#33). */
 .decgrid{display:flex;flex-wrap:wrap;gap:.4rem .5rem}
-.decgrid>.field{flex:1 1 7rem;min-width:0}
-.decgrid>.field:nth-child(2){flex-basis:9.5rem}
+.decgrid>.field{flex:1 1 10.5rem;min-width:0}
+.decgrid>.field:nth-child(2){flex-basis:8rem}
 .decgrid .decnext{flex-basis:100%}
 .decgrid label{font-size:.74rem;font-weight:600;color:var(--muted)}
 table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width:0;width:100%;min-height:36px;padding:.3rem .45rem}

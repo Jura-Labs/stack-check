@@ -880,7 +880,12 @@ function focusHeading(sel){var h=document.querySelector(sel||"#view > .banner, #
 function go(n){state.step=n;render();window.scrollTo({top:0});focusHeading();}
 // Keep focused fields clear of the sticky step bar (WCAG 2.2, 2.4.11). A bar taller than a fifth of
 // the screen (large text on a phone) scrolls with the page instead, and then needs no padding (2 Nov 2026).
-function padForSteps(){var nav=document.querySelector("nav.steps");if(!nav)return;var h=nav.offsetHeight;nav.classList.toggle("tall",h>innerHeight/5);
+// Above phone width the four steps are one row where they fit, otherwise two rows of two, never
+// three and one (a11y audit of PR #35). "half" is set only after measuring the row without it.
+function stepRows(nav){nav.classList.remove("half","full");if(!matchMedia("(min-width:561px)").matches)return;
+  function rows(){var t={};[].forEach.call(nav.querySelectorAll("li"),function(l){t[l.offsetTop]=1;});return Object.keys(t).length;}
+  if(rows()===1)return;nav.classList.add("half");if(rows()!==2)nav.classList.replace("half","full");}
+function padForSteps(){var nav=document.querySelector("nav.steps");if(!nav)return;stepRows(nav);var h=nav.offsetHeight;nav.classList.toggle("tall",h>innerHeight/5);
   document.documentElement.style.scrollPaddingTop=getComputedStyle(nav).position==="sticky"?(h+8)+"px":"";}
 window.addEventListener("resize",padForSteps);
 // Text size can change without a resize, so the bar's own size is watched too.
@@ -934,7 +939,10 @@ window.addEventListener("storage",function(e){
   replacePending=null;showReplace(false);document.getElementById("confirmClear").hidden=true;
   var s=load();state=s||example();RESUME=s&&s.step>0?s.step:1;state.step=0;
   adopting=true;try{render();}finally{adopting=false;}
+  // The control that had focus is gone, so focus goes to the heading, and the reason is said once
+  // (after a moment, so a status line that has just been drawn is read out).
   window.scrollTo({top:0});focusHeading();
+  setTimeout(function(){var st=document.getElementById("fileStatus");if(st)st.textContent="Your list was cleared or replaced in another tab.";},150);
 });
 render();
 padForSteps();
