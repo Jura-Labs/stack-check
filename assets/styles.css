@@ -43,14 +43,19 @@ button,input,select{font:inherit;color:inherit}
 .row{display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
 .stack{display:grid;gap:1rem}
 
-header.top{display:grid;gap:.7rem;margin-bottom:1.1rem}
+/* minmax(0,1fr): the header shrinks to the page at large text instead of pushing it wider (#32). */
+header.top{display:grid;grid-template-columns:minmax(0,1fr);gap:.7rem;margin-bottom:1.1rem}
+header.top h1{overflow-wrap:break-word}
 .privacy{display:flex;gap:.6rem;align-items:flex-start;background:var(--tint);border-radius:10px;padding:.7rem .9rem;font-size:.9rem}
 .privacy b{font-weight:650}
+.privacy>span{min-width:0;overflow-wrap:break-word}
 .lock{flex:none;width:18px;height:18px;margin-top:2px}
 
 nav.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:.6rem;border-bottom:1px solid var(--line);margin-bottom:1.2rem}
-nav.steps ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
-@media (max-width:760px){nav.steps ol{grid-template-columns:repeat(2,1fr)}}
+/* Equal steps in one row where they fit; at large text a step moves to the next row, and a
+   step wider than the page wraps between words, so the bar never scrolls sideways (#32). */
+nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:.5rem}
+nav.steps li{flex:1 1 0;min-width:fit-content;max-width:100%}
 nav.steps button{width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:.45rem .7rem;cursor:pointer;display:flex;gap:.55rem;align-items:center;min-height:44px}
 nav.steps button[aria-current="step"]{border-color:var(--accent);box-shadow:inset 0 -3px 0 var(--accent)}
 nav.steps .n{font:600 .8rem var(--f-data);width:1.6rem;height:1.6rem;border-radius:50%;display:grid;place-items:center;background:var(--tint);flex:none}
@@ -120,7 +125,10 @@ details.facts summary{cursor:pointer;font-weight:600}
 .tile.alert .num{color:var(--bad)}
 .tile.warn{border-color:var(--warn)}
 .prio{list-style:none;margin:0;padding:0;display:grid;gap:.55rem}
-.prio li{display:grid;grid-template-columns:auto 1fr;gap:.7rem;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.7rem .85rem}
+/* The label sits beside the advice where both fit and above it where they do not (#34). */
+.prio li{display:flex;flex-wrap:wrap;gap:.7rem;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:.7rem .85rem}
+.prio li>*{flex:1 1 10em;min-width:0;overflow-wrap:break-word}
+.prio li>.when{flex:none;max-width:100%}
 .prio .when{font:600 .72rem/1.3 var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:.25rem .45rem;border-radius:6px;white-space:nowrap}
 .when.now{background:var(--bad-bg);color:var(--bad)}
 .when.year{background:var(--warn-bg);color:var(--warn)}
@@ -301,7 +309,8 @@ details.kindfold[open]>summary{margin-bottom:.6rem}
 ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
 
 /* Header: theme switch and a larger Jura Labs logo, linked to juralabs.org (Paul, 30 Sep). */
-.brandright{display:flex;align-items:center;gap:1rem}
+.brandright{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;min-width:0;max-width:100%}
+.brandrow>*{min-width:0;overflow-wrap:break-word}
 .logolink{display:block;border-radius:6px}
 .themebtn{font-size:.85rem;min-height:40px}
 .themebtn::before{content:"\263E" / "";margin-right:.4rem}
@@ -324,12 +333,16 @@ table.reg td{overflow-wrap:anywhere}
 table.reg td>div+div{margin-top:.15rem}
 .minis{display:flex;flex-wrap:wrap;gap:.3rem}
 .minis .light{font-size:.8rem}
-.decgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,9.5rem);gap:.4rem .5rem}
-.decgrid .decnext{grid-column:1/-1}
+/* Decision and date side by side where they fit, one under the other where they do not, so
+   neither is squeezed under the other at large text (#33). */
+.decgrid{display:flex;flex-wrap:wrap;gap:.4rem .5rem}
+.decgrid>.field{flex:1 1 7rem;min-width:0}
+.decgrid>.field:nth-child(2){flex-basis:9.5rem}
+.decgrid .decnext{flex-basis:100%}
 .decgrid label{font-size:.74rem;font-weight:600;color:var(--muted)}
 table.reg select,table.reg input[type=text],table.reg input[type=date]{min-width:0;width:100%;min-height:36px;padding:.3rem .45rem}
 @media (max-width:700px){
-  .decgrid{grid-template-columns:1fr}
+  .decgrid>.field{flex-basis:100%}
   table.reg thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
   table.reg,table.reg tbody,table.reg tr,table.reg td{display:block;width:auto}
   table.reg tr{padding:.7rem .2rem;border-bottom:1px solid var(--line)}

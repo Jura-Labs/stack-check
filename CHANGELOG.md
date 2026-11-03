@@ -3,6 +3,24 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.14 (3 November 2026)
+
+Large text, and Clear everything with two tabs open.
+
+- With very large text, the page header and the step bar stay inside
+  the screen: the theme button, the logo and the privacy sentence wrap,
+  and a step that does not fit moves to the next row.
+- On Decide, the decision and the date sit one under the other when
+  they do not fit side by side, so neither is squeezed too small to use.
+- On Decide, a priority's label sits above its advice on a narrow
+  screen with large text, so the page no longer scrolls sideways.
+- "Copy for owners": each owner's line now starts with "Owner:", so no
+  line starts with whatever was typed as the owner.
+- If the tool is open in two tabs and you use Clear everything in one,
+  the other tab drops its copy of the list and goes back to the start
+  screen, so it cannot save the old list again. The same happens when
+  another tab opens a different list.
+
 ## 2.2.13 (2 November 2026)
 
 The step bar never covers what you are working on.

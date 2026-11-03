@@ -217,7 +217,8 @@ function nextStep(t,skipAdmin){
 // ---------- State ----------
 var KEY="stackcheck.v5";
 // The example is never saved, so looking at it cannot overwrite someone's own list.
-function save(){if(!state||state.mode==="example")return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
+var adopting=false;
+function save(){if(!state||state.mode==="example"||adopting)return;try{var s=state.step===0?Object.assign({},state,{step:RESUME}):state;localStorage.setItem(KEY,JSON.stringify(s));}catch(e){}}
 function ownSaved(){var s=load();return s&&s.mode!=="example"&&s.tools&&s.tools.length?s:null;}
 function load(){try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(!s||!s.tools||(s.v!==5&&s.v!==6))return null;if(s.v===5){s.tools.forEach(function(t){if(t.where==="UK or EU")t.where=EU;});s.v=6;}s.journeys=s.journeys||[];cleanKeys(s.tools,s.journeys);migrateDevices(s.tools);return s;}catch(e){return null;}}
 function blank(){return {v:6,showLaw:true,org:state?state.org:"nonprofit",loc:state?state.loc:"UK",home:state?state.home:"GB",ccy:state?state.ccy:"GBP",mode:"own",step:1,cur:0,jcur:0,tools:[],journeys:[]};}
@@ -787,8 +788,8 @@ function ownerTasks(){
 function oneLine(v){return String(v==null?"":v).replace(/[\t\n\r]+/g," ");}
 function ownersText(){
   var by=ownerTasks(),L=[];
-  // An owner's name starts its own line, so it gets the same guard as a copied cell.
-  Object.keys(by).forEach(function(o){L.push(tsvCell(o));by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
+  // Each line starts with fixed text, never with what was typed: "Owner: " or "- " (#19).
+  Object.keys(by).forEach(function(o){L.push("Owner: "+oneLine(o).trim());by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
   return L.join("\n");
 }
 
@@ -922,5 +923,18 @@ document.getElementById("replaceNo").addEventListener("click",closeReplace);
 document.getElementById("replaceYes").addEventListener("click",function(){var p=replacePending;replacePending=null;showReplace(false);if(p)p.apply();});
 document.getElementById("clearYes").addEventListener("click",function(){document.getElementById("confirmClear").hidden=true;// Clear everything means everything: the kind of organisation, place and currency go back to the defaults too.
   state=null;try{localStorage.removeItem(KEY);}catch(e){}state=blank();go(1);});
+// Another tab cleared the saved list, or replaced it with a different one (#21). This tab drops its
+// own copy and shows the start screen with what is saved now, so it never writes an old list back
+// after Clear everything. An edit to the same list in another tab does not reset this one. It does
+// not save while doing so, or the two tabs could keep resetting each other.
+function listKeys(s){return s&&s.mode!=="example"&&s.tools?s.tools.map(function(t){return t.key;}).sort().join("\n"):"";}
+window.addEventListener("storage",function(e){
+  if(e.storageArea!==localStorage||(e.key!==KEY&&e.key!==null)||!state||state.mode==="example")return;
+  if(listKeys(load())===listKeys(state))return;
+  replacePending=null;showReplace(false);document.getElementById("confirmClear").hidden=true;
+  var s=load();state=s||example();RESUME=s&&s.step>0?s.step:1;state.step=0;
+  adopting=true;try{render();}finally{adopting=false;}
+  window.scrollTo({top:0});focusHeading();
+});
 render();
 padForSteps();
