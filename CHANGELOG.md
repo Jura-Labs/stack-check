@@ -15,8 +15,10 @@ Large text, and Clear everything with two tabs open.
   On a laptop the decision column is wider, so "Reduce dependency" fits.
 - On Decide, a priority's label sits above its advice on a narrow
   screen with large text, so the page no longer scrolls sideways.
-- "Copy for owners": each owner's line now starts with "Owner:", so no
-  line starts with whatever was typed as the owner.
+- "Copy for owners": each named owner's line now starts with "Owner:",
+  so no line starts with whatever was typed as the owner. Unusual line
+  breaks pasted into a name or a next step are turned into spaces, here
+  and in the register copy.
 - If the tool is open in two tabs and you use Clear everything in one,
   the other tab drops its copy of the list and goes back to the start
   screen, so it cannot save the old list again, and says why. The same

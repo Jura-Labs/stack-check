@@ -143,7 +143,8 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
   expect(lines).toContain("Owner: Finance lead");
   // A line break inside a tool name or a next step cannot start a line of its own.
   for (const line of lines) expect(line).not.toMatch(/^\s*[=+@]/);
-  for (const line of lines) expect(line === "" || /^(- |Owner: )/.test(line), line).toBe(true);
+  // The tool's own group names are fixed text too.
+  for (const line of lines) expect(line === "" || /^(- |Owner: |Nobody yet: name an owner$|Your (trustees|board)$)/.test(line), line).toBe(true);
 });
 
 test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {

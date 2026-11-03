@@ -785,11 +785,15 @@ function ownerTasks(){
   var r={};keys.forEach(function(k){r[k]=out[k];});return r;
 }
 // A tab or a line break inside a name or a next step must not start a new line or column in copied text.
-function oneLine(v){return String(v==null?"":v).replace(/[\t\n\r]+/g," ");}
+// Unicode line and paragraph separators, VT, FF and NEL count as line breaks too (privacy check, PR #35).
+function oneLine(v){return String(v==null?"":v).replace(/[\t\n\r\v\f\u0085\u2028\u2029]+/g," ");}
 function ownersText(){
   var by=ownerTasks(),L=[];
-  // Each line starts with fixed text, never with what was typed: "Owner: " or "- " (#19).
-  Object.keys(by).forEach(function(o){L.push("Owner: "+oneLine(o).trim());by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
+  // Each line starts with fixed text, never with what was typed: "Owner: " or "- " (#19). The tool's
+  // own group names ("Nobody yet: name an owner", "Your trustees") are fixed text already.
+  var FIXED=["Nobody yet: name an owner","Your trustees","Your board","You"],typed={};
+  state.tools.forEach(function(t){if(own(t))typed[ownerName(t)]=1;});
+  Object.keys(by).forEach(function(o){L.push(FIXED.indexOf(o)>=0&&!typed[o]?o:"Owner: "+oneLine(o).trim());by[o].forEach(function(x){L.push("- "+oneLine(x.tool)+": "+oneLine(x.task));});L.push("");});
   return L.join("\n");
 }
 
@@ -932,9 +936,15 @@ document.getElementById("clearYes").addEventListener("click",function(){document
 // own copy and shows the start screen with what is saved now, so it never writes an old list back
 // after Clear everything. An edit to the same list in another tab does not reset this one. It does
 // not save while doing so, or the two tabs could keep resetting each other.
-function listKeys(s){return s&&s.mode!=="example"&&s.tools?s.tools.map(function(t){return t.key;}).sort().join("\n"):"";}
+// "The same list" means the same tools and the same kind of organisation, place and currency, so a
+// clear is noticed even when the list has no tools yet (privacy check, PR #35).
+function listKeys(s){return s&&s.mode!=="example"&&s.tools?[s.org,s.loc,s.home,s.ccy].join("|")+"\n"+s.tools.map(function(t){return t.key;}).sort().join("\n"):"";}
 window.addEventListener("storage",function(e){
-  if(e.storageArea!==localStorage||(e.key!==KEY&&e.key!==null)||!state||state.mode==="example")return;
+  if(e.storageArea!==localStorage||(e.key!==KEY&&e.key!==null))return;adoptSaved();});
+// A page brought back with the Back button may have missed the storage event while it was away.
+window.addEventListener("pageshow",function(e){if(e.persisted)adoptSaved();});
+function adoptSaved(){
+  if(!state||state.mode==="example")return;
   if(listKeys(load())===listKeys(state))return;
   replacePending=null;showReplace(false);document.getElementById("confirmClear").hidden=true;
   var s=load();state=s||example();RESUME=s&&s.step>0?s.step:1;state.step=0;
@@ -943,6 +953,6 @@ window.addEventListener("storage",function(e){
   // (after a moment, so a status line that has just been drawn is read out).
   window.scrollTo({top:0});focusHeading();
   setTimeout(function(){var st=document.getElementById("fileStatus");if(st)st.textContent="Your list was cleared or replaced in another tab.";},150);
-});
+}
 render();
 padForSteps();

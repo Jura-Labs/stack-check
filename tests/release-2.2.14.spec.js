@@ -157,3 +157,43 @@ test("#21: an edit to the same list in another tab does not reset this tab; a di
   await page.waitForTimeout(200);
   expect(await page.evaluate(() => state.step)).toBe(2);
 });
+
+test("#21: Clear everything with no tools listed is not undone by a second tab (privacy check, PR #35)", async ({ page, context }) => {
+  await fresh(page);
+  await page.evaluate(() => { state = blank(); state.mode = "own"; state.org = "cci"; state.loc = "EU"; state.home = "DK"; state.ccy = "DKK"; render(); });
+  await step(page, 3);
+  expect(await page.evaluate(() => localStorage.getItem("stackcheck.v5"))).toContain("DKK");
+  const other = await context.newPage();
+  await stubAnalytics(other);
+  await other.goto("/index.html");
+  await other.waitForFunction(() => typeof render === "function" && !!document.querySelector("#view").children.length);
+  await other.evaluate(() => { state = load(); go(3); });
+  expect(await other.evaluate(() => state.ccy)).toBe("DKK");
+
+  await page.click("#clearAll");
+  await page.click("#clearYes");
+  await expect.poll(() => other.evaluate(() => state.step)).toBe(0);
+  await other.click("#startNew");
+  await other.click("#nav3");
+  const saved = await page.evaluate(() => localStorage.getItem("stackcheck.v5") || "");
+  for (const old of ['"cci"', '"DK"', "DKK"]) expect(saved).not.toContain(old);
+});
+
+test("#19: no unicode line break in a name or next step can start a line of Copy for owners, or get into a register cell", async ({ page }) => {
+  await fresh(page);
+  await page.evaluate(() => {
+    window.__copied = [];
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText: (t) => { window.__copied.push(t); return Promise.resolve(); } } });
+    state.mode = "own";
+    state.tools[0].owner = "A\u2028=1+1"; state.tools[1].owner = "B\u2029@X"; state.tools[2].owner = "C\v=2"; state.tools[3].owner = "D\f=3";
+    state.tools[4].owner = "E\u0085-4"; state.tools[3].name = "N\u2028=HYPERLINK(1)"; state.tools[3].next = "Tidy\u2029=1+1";
+    render();
+  });
+  await step(page, 3);
+  await page.click("#copyOwners");
+  await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
+  const text = await page.evaluate(() => window.__copied[0]);
+  for (const line of text.split(/[\n\r\v\f\u0085\u2028\u2029]/)) expect(line === "" || /^(- |Owner: |Nobody yet|Your )/.test(line), JSON.stringify(line)).toBe(true);
+  const cells = await page.evaluate(() => [...state.tools.slice(0, 5).map((t) => tsvCell(t.owner)), tsvCell(state.tools[3].name)]);
+  for (const c of cells) expect(c).not.toMatch(/[\v\f\u0085\u2028\u2029]/);
+});

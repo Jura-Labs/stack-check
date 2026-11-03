@@ -39,7 +39,7 @@ function formulaSafe(v) {
 // would start a new column, a leading double quote can be unwrapped on
 // paste, and a spreadsheet may trim spaces in front of a formula.
 function tsvCell(v) {
-  var s = (v == null ? "" : String(v)).replace(/[\t\n\r]/g, " ");
+  var s = (v == null ? "" : String(v)).replace(/[\t\n\r\v\f\u0085\u2028\u2029]/g, " ");
   return /^\s*["=+\-@]/.test(s) ? "'" + s : s;
 }
 
