@@ -314,7 +314,7 @@ ol.startsteps{margin:0;padding-left:1.3rem;display:grid;gap:.3rem}
 .brandright{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;min-width:0;max-width:100%}
 .brandrow>*{min-width:0;overflow-wrap:break-word}
 .logolink{display:block;border-radius:6px}
-.themebtn{font-size:.85rem;min-height:40px}
+.themebtn{font-size:.85rem;min-height:40px;max-width:100%;white-space:normal;overflow-wrap:break-word}
 .themebtn::before{content:"\263E" / "";margin-right:.4rem}
 .tagline{font-family:var(--f-display);font-weight:600;font-size:1.05rem;color:var(--accent)}
 
@@ -328,7 +328,7 @@ footer{margin-top:2.5rem;border-top:1px solid var(--line);padding-top:1.4rem;fon
 
 /* Register: four columns that fit the page; on phones each tool becomes a card. */
 table.reg{min-width:0;table-layout:fixed}
-table.reg th:nth-child(1){width:28%}
+table.reg th:nth-child(1){width:25%}
 table.reg th:nth-child(2){width:20%}
 table.reg th:nth-child(3){width:16%}
 table.reg td{overflow-wrap:anywhere}
