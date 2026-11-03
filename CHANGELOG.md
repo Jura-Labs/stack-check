@@ -3,6 +3,17 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## 2.2.13 (2 November 2026)
+
+The step bar never covers what you are working on.
+
+- On a narrow screen with large text, a step name that does not fit
+  moves to a second row instead of breaking in the middle of the word.
+- When large text makes the step bar more than a fifth of the screen
+  tall, it scrolls away with the page instead of staying at the top.
+- Where the bar stays at the top, a control you move to with the
+  keyboard is scrolled clear of it, also after the text size changes.
+
 ## 2.2.12 (1 November 2026)
 
 Paul's decisions of 1 November 2026, and new tools for not-for-profits.
