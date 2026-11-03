@@ -136,13 +136,15 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
   await page.click("#copyOwners");
   await expect.poll(() => page.evaluate(() => window.__copied.length)).toBe(1);
   const lines = (await page.evaluate(() => window.__copied[0])).split("\n");
-  expect(lines).toContain("'=1+1");
-  expect(lines).toContain("'-2+3");
-  expect(lines).toContain("'@SUM(1)");
-  expect(lines).toContain("Finance lead");
+  // Each owner's line starts with the fixed word "Owner:", never with what was typed (#19).
+  expect(lines).toContain("Owner: =1+1");
+  expect(lines).toContain("Owner: -2+3");
+  expect(lines).toContain("Owner: @SUM(1)");
+  expect(lines).toContain("Owner: Finance lead");
   // A line break inside a tool name or a next step cannot start a line of its own.
   for (const line of lines) expect(line).not.toMatch(/^\s*[=+@]/);
-  for (const line of lines) expect(line === "" || /^(- |'|[A-Za-z])/.test(line)).toBe(true);
+  // The tool's own group names are fixed text too.
+  for (const line of lines) expect(line === "" || /^(- |Owner: |Nobody yet: name an owner$|Your (trustees|board)$)/.test(line), line).toBe(true);
 });
 
 test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {
