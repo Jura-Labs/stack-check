@@ -1,6 +1,6 @@
 # Security and privacy
 
-Stack Check runs entirely in your browser. There is no account and no
+Technology Check runs entirely in your browser. There is no account and no
 server-side code. Your answers are kept in your browser's local storage
 and are never sent anywhere. You can check this yourself: open your
 browser's developer tools, go to the Network tab, fill in the tool, and

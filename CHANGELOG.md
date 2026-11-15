@@ -3,6 +3,14 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## Unreleased
+
+- The tool is now called **Technology Check by Jura Labs** (formerly Stack
+  Check), on the page, in the browser tab, the link preview, the printout,
+  the footer, the save and open messages, the README and SECURITY.md.
+  The web address, the repository name and saved files are unchanged:
+  files saved under the old name still open.
+
 ## 2.2.14 (3 November 2026)
 
 Large text, and Clear everything with two tabs open.
