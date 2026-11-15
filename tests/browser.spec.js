@@ -5,9 +5,10 @@ const { watchErrors, fresh, step } = require("./helpers");
 
 test("the footer's checked dates match the library, and each tool shows its own", async ({ page }) => {
   await fresh(page);
-  const d = await page.evaluate(() => ({ first: longDate(CHECKED), last: longDate(lastChecked()), bs: longDate(checkedOn("betalingsservice")), ms: longDate(checkedOn("microsoft-365")) }));
+  const d = await page.evaluate(() => ({ first: longDate(CHECKED), last: longDate(lastChecked()), bs: longDate(checkedOn("betalingsservice")), ms: longDate(checkedOn("microsoft-365")), gw: longDate(checkedOn("google-workspace")) }));
   expect(d.first).toBe("29 September 2026");
-  expect(d.ms).toBe("29 September 2026");
+  expect(d.gw).toBe("29 September 2026");
+  expect(d.ms).toBe("15 November 2026");
   expect(d.bs).not.toBe("29 September 2026");
   const footer = await page.locator("footer").innerText();
   expect(footer).toContain("between " + d.first.replace(" 2026", "") + " and " + d.last);
@@ -175,8 +176,8 @@ test("the nonprofit offer is a fixed choice, always shown the same way in the fa
 test("facts older than six months say 'not checked since', with the date", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2027-04-01T12:00:00"));
   await fresh(page);
-  expect(await page.evaluate(() => [notCheckedSince("microsoft-365"), notCheckedSince("betalingsservice")])).toEqual([true, false]);
-  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["microsoft-365"]), fromLib(BYID["betalingsservice"])]; state.cur = 0; });
+  expect(await page.evaluate(() => [notCheckedSince("google-workspace"), notCheckedSince("betalingsservice")])).toEqual([true, false]);
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["google-workspace"]), fromLib(BYID["betalingsservice"])]; state.cur = 0; });
   await step(page, 2);
   const s = page.locator("details.facts summary").first();
   await expect(s).toContainText("(not checked since 29 September 2026)");
@@ -188,7 +189,7 @@ test("facts older than six months say 'not checked since', with the date", async
 test("facts checked in the last six months show their checked date only", async ({ page }) => {
   await page.clock.setFixedTime(new Date("2026-10-28T12:00:00"));
   await fresh(page);
-  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["microsoft-365"])]; state.cur = 0; });
+  await page.evaluate(() => { state.mode = "own"; state.tools = [fromLib(BYID["google-workspace"])]; state.cur = 0; });
   await step(page, 2);
   await expect(page.locator("details.facts summary").first()).toContainText("(checked 29 September 2026)");
   await expect(page.locator("details.facts").first()).not.toContainText("may be out of date");
