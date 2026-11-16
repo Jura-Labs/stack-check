@@ -10,6 +10,10 @@ register v2.2, Stack Check 2.2.x.
   the footer, the save and open messages, the README and SECURITY.md.
   The web address, the repository name and saved files are unchanged:
   files saved under the old name still open.
+- The suggested credit in LICENSE-CONTENT and the NOTICE use the new name;
+  credits that name Stack Check remain valid. The link-preview image
+  (assets/social.png) is redrawn with the new name, and no longer says
+  "The 2-hour technology check". Its source is tools/social-image.html.
 
 ## 2.2.14 (3 November 2026)
 
