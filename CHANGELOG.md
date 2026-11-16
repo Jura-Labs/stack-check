@@ -3,6 +3,20 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## Unreleased
+
+- Library: Microsoft 365 re-checked against Microsoft's own pages on
+  15 November 2026. Teams meeting recordings are now saved to the
+  organiser's OneDrive, not the OneDrive of the person who pressed record
+  (Microsoft changed this; its page was updated on 12 November). The AI
+  training text uses Microsoft's new product names and drops a sentence
+  about the consumer Copilot app that Microsoft's pages do not support.
+  The flex-routing text now follows Microsoft's own page (on by default
+  for EU and EFTA tenants created after 25 March 2026) and cites it in
+  place of a third-party article. The lights and suggested actions are
+  unchanged.
+- Footer: supplier facts checked between 29 September and 15 November 2026.
+
 ## 2.2.14 (3 November 2026)
 
 Large text, and Clear everything with two tabs open.
