@@ -45,7 +45,7 @@ test("step change: focus moves to the new step's heading, and the page title nam
   for (const [n, name] of [[1, "List your tools"], [2, "Answer the questions"], [3, "Decide"], [4, "Your data"]]) {
     await step(page, n);
     expect(await page.evaluate(() => document.activeElement.tagName)).toBe("H2");
-    await expect(page).toHaveTitle(`Step ${n} of 4, ${name}: Stack Check`);
+    await expect(page).toHaveTitle(`Step ${n} of 4, ${name}: Technology Check`);
   }
 });
 

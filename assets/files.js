@@ -115,14 +115,14 @@ function cleanKeys(tools, journeys) {
 // Returns a clean state, or throws an Error with a message for the user.
 function stateFromFile(text) {
   var data;
-  try { data = JSON.parse(text); } catch (e) { throw new Error("This is not a Stack Check file. It could not be read."); }
+  try { data = JSON.parse(text); } catch (e) { throw new Error("This is not a Technology Check file. It could not be read."); }
   if (!data || data.app !== FILE_APP || !data.state || typeof data.state !== "object") {
-    throw new Error("This is not a Stack Check file.");
+    throw new Error("This is not a Technology Check file.");
   }
   var s = data.state;
-  if (s.v !== 5 && s.v !== 6) throw new Error("This file was saved by a different version of Stack Check, and cannot be opened here.");
+  if (s.v !== 5 && s.v !== 6) throw new Error("This file was saved by a different version of Technology Check, and cannot be opened here.");
   if (!Array.isArray(s.tools)) throw new Error("This file has no tools in it.");
-  if (s.tools.length > FILE_MAX_TOOLS) throw new Error("This file has more tools than Stack Check can open.");
+  if (s.tools.length > FILE_MAX_TOOLS) throw new Error("This file has more tools than Technology Check can open.");
   var tools = s.tools.map(plainObject).filter(function (t) { return typeof t.name === "string" && t.name; });
   tools.forEach(function (t) { if (s.v === 5 && t.where === "UK or EU") t.where = EU; });
   var journeys = (Array.isArray(s.journeys) ? s.journeys : []).slice(0, 50).map(function (j) {
@@ -154,7 +154,7 @@ function bindOpenFile(input, status) {
   input.addEventListener("change", function () {
     var f = input.files && input.files[0];
     if (!f) return;
-    if (f.size > FILE_MAX_BYTES) { status.textContent = "This file is too large to be a Stack Check file."; input.value = ""; return; }
+    if (f.size > FILE_MAX_BYTES) { status.textContent = "This file is too large to be a Technology Check file."; input.value = ""; return; }
     var r = new FileReader();
     r.onload = function () {
       var s;

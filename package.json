@@ -2,7 +2,7 @@
   "name": "stack-check",
   "version": "2.2.14",
   "private": true,
-  "description": "Stack Check: stay in command of your technology. Development and test tooling only; nothing here ships to the page.",
+  "description": "Technology Check by Jura Labs (formerly Stack Check): stay in command of your technology. Development and test tooling only; nothing here ships to the page.",
   "license": "MIT",
   "scripts": {
     "serve": "python3 tools/serve.py 8080",

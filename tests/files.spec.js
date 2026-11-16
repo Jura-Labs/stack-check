@@ -147,12 +147,12 @@ test("Copy for owners: an owner's name that looks like a formula cannot start a 
   for (const line of lines) expect(line === "" || /^(- |Owner: |Nobody yet: name an owner$|Your (trustees|board)$)/.test(line), line).toBe(true);
 });
 
-test("opening something that is not a Stack Check file changes nothing and says why", async ({ page }) => {
+test("opening something that is not a Technology Check file changes nothing and says why", async ({ page }) => {
   await fresh(page);
   const before = await page.evaluate(() => JSON.stringify(state)); // on the start screen, where "Open a saved file" is
   for (const [body, msg] of [
-    ["not json", "not a Stack Check file"],
-    [JSON.stringify({ app: "something-else", state: {} }), "not a Stack Check file"],
+    ["not json", "not a Technology Check file"],
+    [JSON.stringify({ app: "something-else", state: {} }), "not a Technology Check file"],
     [JSON.stringify({ app: "stack-check", state: { v: 99, tools: [] } }), "different version"],
   ]) {
     await page.setInputFiles("#openFile0", { name: "x.json", mimeType: "application/json", buffer: Buffer.from(body) });

@@ -123,7 +123,7 @@ test("fix 6: 'Open a saved file' is on steps 1 and 2, before and after there is 
   await expect(page.locator("#saveAny")).toBeVisible();
   await expect(page.locator('label[for="openAny"]')).toBeVisible();
   await page.setInputFiles("#openAny", { name: "x.json", mimeType: "application/json", buffer: Buffer.from("not json") });
-  await expect(page.locator("#saveAnyStatus")).toContainText("not a Stack Check file");
+  await expect(page.locator("#saveAnyStatus")).toContainText("not a Technology Check file");
 });
 
 test("fix 7: the owner hint names a role and says what a blank means", async ({ page }) => {

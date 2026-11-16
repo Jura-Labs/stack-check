@@ -8,7 +8,7 @@ const { watchErrors, fresh, step } = require("./helpers");
 test("first visit opens on a start screen, not on the example's results", async ({ page }) => {
   await fresh(page);
   await expect(page.locator("#startH")).toHaveText("Start here");
-  await expect(page).toHaveTitle("Stack Check: stay in command of your technology");
+  await expect(page).toHaveTitle("Technology Check by Jura Labs: stay in command of your technology");
   await expect(page.locator("#exampleBanner")).toBeHidden();
   expect(await page.locator("nav.steps [aria-current]").count()).toBe(0);
   await expect(page.locator("#view")).toContainText("about 3 minutes a tool, so 10 tools take about 30 minutes");
