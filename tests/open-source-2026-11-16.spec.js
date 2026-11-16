@@ -66,3 +66,9 @@ test("item 4: the open-source hint says it does not mean safer or cheaper", asyn
   expect(html).toContain("Open source does not mean safer or cheaper. It means another provider could run the same software for you.");
   expect(html).not.toContain("do not treat it as proof that a tool is safer");
 });
+
+test("issue #44: where the open-source fact is not established, nothing is pre-filled", async ({ page }) => {
+  await fresh(page);
+  const r = await page.evaluate(() => ["mailbox-org", "enthuse", "wordpress-com", "x-twitter", "byod"].map((id) => [BYID[id].o, fromLib(BYID[id]).open]));
+  expect(r).toEqual([[undefined, ""], [undefined, ""], [undefined, ""], [undefined, ""], [undefined, ""]]);
+});

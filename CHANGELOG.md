@@ -5,6 +5,11 @@ register v2.2, Stack Check 2.2.x.
 
 ## Unreleased
 
+- Library: the open-source fact re-checked on the suppliers' own pages
+  for the other 90 library entries, 16 November 2026. 86 stay "No"; the
+  evidence is in research/open-source-check-2026-11-16.csv. For
+  mailbox.org, Enthuse, WordPress.com and X it is not established, so the
+  tool no longer pre-fills an answer for them.
 - The one-page summary says how many critical tools have a full export
   and a tested copy (devices and desktop apps: a tested backup), from the
   answers already given. The lights and the suggested action are
