@@ -152,7 +152,7 @@ test("2: after the start screen the header is short, and the privacy sentence st
     await expect(page.locator(".privacy b")).toBeVisible();
   }
   // The eyebrow's words are unchanged; it is only hidden after the start screen.
-  await expect(page.locator("header.top .eyebrow")).toHaveText("The technology check");
+  await expect(page.locator("header.top .eyebrow")).toHaveText("Technology Check by Jura Labs");
   // On a phone, the first question of step 2 starts on the first screen.
   await step(page, 2);
   const y = await page.locator("#askH").evaluate((e) => e.getBoundingClientRect().top + window.scrollY);
@@ -256,7 +256,7 @@ test("6: print leaves out the copy and save buttons and 'Thinking of changing', 
   await expect(page.locator("#regH")).toBeVisible();
   await expect(page.locator("#printDate")).toBeVisible();
   const today = await page.evaluate(() => new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }));
-  await expect(page.locator("#printDate")).toHaveText(new RegExp(`^Printed ${today} from Stack Check \\d+\\.\\d+\\.\\d+\\.$`));
+  await expect(page.locator("#printDate")).toHaveText(new RegExp(`^Printed ${today} from Technology Check \\d+\\.\\d+\\.\\d+\\.$`));
 });
 
 test("6: when two-step sign-in is 'Not sure', the step is to check it first; scoring is unchanged", async ({ page }) => {

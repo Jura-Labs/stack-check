@@ -5,6 +5,15 @@ register v2.2, Stack Check 2.2.x.
 
 ## Unreleased
 
+- The tool is now called **Technology Check by Jura Labs** (formerly Stack
+  Check), on the page, in the browser tab, the link preview, the printout,
+  the footer, the save and open messages, the README and SECURITY.md.
+  The web address, the repository name and saved files are unchanged:
+  files saved under the old name still open.
+- The suggested credit in LICENSE-CONTENT and the NOTICE use the new name;
+  credits that name Stack Check remain valid. The link-preview image
+  (assets/social.png) is redrawn with the new name, and no longer says
+  "The 2-hour technology check". Its source is tools/social-image.html.
 - Library: Microsoft 365 re-checked against Microsoft's own pages on
   15 November 2026. Teams meeting recordings are now saved to the
   organiser's OneDrive, not the OneDrive of the person who pressed record

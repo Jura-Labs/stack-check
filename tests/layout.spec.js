@@ -49,7 +49,7 @@ test("See it on the map goes to Your data", async ({ page }) => {
   await step(page, 3);
   await page.click("#toData");
   await expect.poll(() => page.evaluate(() => state.step)).toBe(4);
-  await expect(page).toHaveTitle("Step 4 of 4, Your data: Stack Check");
+  await expect(page).toHaveTitle("Step 4 of 4, Your data: Technology Check");
 });
 
 test("Your data: the map only, then a way back and print (Follow one person removed, Paul 30 Sep)", async ({ page }) => {

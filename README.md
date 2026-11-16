@@ -1,9 +1,11 @@
-# Stack Check
+# Technology Check by Jura Labs
+
+*Formerly Stack Check. The repository keeps its name, `stack-check`.*
 
 **Stay in command of your technology.** List every tool your organisation
 uses, see where your data goes, and get a recommendation on what to do.
 
-Stack Check is the online version of the free
+Technology Check is the online version of the free
 [Stay in command register](https://juralabs.org/updates/stay-in-command-of-your-technology)
 from Jura Labs. It is written for small charities, non-profits, cultural
 organisations and sole traders in the UK, Europe and beyond, most of whom

@@ -422,7 +422,7 @@ function render(){
   if(top)top.classList.toggle("inner",state.step>=1);
   // On step 1 the link goes past "Who is this for?" to the list of tools itself.
   var sk=document.querySelector("a.skip");if(sk){sk.textContent=["Skip to the start","Skip to your tools","Skip to the questions","Skip to what to do","Skip to your data"][state.step]||"Skip to the questions";sk.setAttribute("href",state.step===1?"#pickH":"#view");}
-  var pd=document.getElementById("printDate");if(pd)pd.textContent="Printed "+new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})+" from Stack Check "+document.getElementById("version").textContent+".";
+  var pd=document.getElementById("printDate");if(pd)pd.textContent="Printed "+new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"})+" from Technology Check "+document.getElementById("version").textContent+".";
   stepCounts();
   [1,2,3,4].forEach(function(n){var b=document.getElementById("nav"+n);if(state.step===n)b.setAttribute("aria-current","step");else b.removeAttribute("aria-current");});
   if(state.step===0)renderStart();else if(state.step===1)renderPick();else if(state.step===2)renderAsk();else if(state.step===3)renderResults();else renderJourneys();
@@ -701,7 +701,7 @@ function renderResults(){
   h+='<section class="panel stack" aria-labelledby="outH"><div class="s4 stack"><h2 id="outH">'+(SOLE()?"Keep a summary":"Take it to your "+TR())+'</h2><p class="muted">'+(SOLE()?"Copy three things for your records: what I depend on, what I am fixing now, and what I need to decide":"Copy three things for your "+TR()+": what we depend on, what we are fixing now, and what we need you to decide")+'. Or copy the full register: the columns match the register spreadsheet.</p></div>'+
    '<div class="row"><button type="button" class="btn primary" id="copyBoard">'+(SOLE()?"Copy a summary":"Copy summary for your "+TR())+'</button><button type="button" class="btn" id="copyRows">Copy register for a spreadsheet</button><span id="copied" class="toast" role="status" aria-live="polite"></span></div>'+
    '<div class="row"><button type="button" class="btn" id="dlCsv">Download the register (CSV)</button><button type="button" class="btn" id="printIt">Print or save as PDF</button></div>'+
-   '<div class="s4 stack"><h3>Save a record of your audit</h3><p>Stack Check does not keep your data on any server. You can save a record of your audit to a file on your computer, and open it here at a later date.</p></div>'+
+   '<div class="s4 stack"><h3>Save a record of your audit</h3><p>Technology Check does not keep your data on any server. You can save a record of your audit to a file on your computer, and open it here at a later date.</p></div>'+
    '<div class="row"><button type="button" class="btn" id="saveFile">Save to a file</button><input type="file" id="openFile" class="vh" accept=".json,application/json"><label class="btn" for="openFile">Open a saved file</label><span id="fileStatus" class="toast" role="status" aria-live="polite"></span></div>'+
    '<textarea id="copyArea" class="copyout" readonly aria-label="Copied text" hidden></textarea></section>';
   // Thinking of changing a tool? Reference cards and Compare, folded (Paul, 29 Sep)
@@ -877,7 +877,7 @@ function copy(text){
   else fallback();
 }
 var STEP_NAMES=["List your tools","Answer the questions","Decide","Your data"];
-function stepTitle(){document.title=state.step?"Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Stack Check":"Stack Check: stay in command of your technology";}
+function stepTitle(){document.title=state.step?"Step "+state.step+" of 4, "+STEP_NAMES[state.step-1]+": Technology Check":"Technology Check by Jura Labs: stay in command of your technology";}
 // On a step change, move focus to the new step's first heading, so keyboard and
 // screen-reader users start at the top of the new content (WCAG 2.4.3).
 function focusHeading(sel){var h=document.querySelector(sel||"#view > .banner, #view h2");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true});}}
