@@ -10,7 +10,7 @@ function fromLib(l){
     // A supplier fact of "Don't know" is not pre-filled as the person's answer: "Not sure" scores
     // Control or Exit red before they have seen the question (review, 30 Sep). Blank is neutral,
     // as in the register; the facts panel still shows what we found.
-    t.where=l.w&&l.w!==DK?l.w:"";t.based=l.b||"";t.open=l.o?"Yes":"No";t.exp=l.x&&l.x!==DK?l.x:"";t.loc=l.loc&&l.loc!=="UNKNOWN"?l.loc:(l.w===ELSE?"OTHER":"");t.hq=l.hq||"";t.note="";
+    t.where=l.w&&l.w!==DK?l.w:"";t.based=l.b||"";t.open=OPENW(l.o);t.exp=l.x&&l.x!==DK?l.x:"";t.loc=l.loc&&l.loc!=="UNKNOWN"?l.loc:(l.w===ELSE?"OTHER":"");t.hq=l.hq||"";t.note="";
     // A UK data centre is only right for UK customers: elsewhere in Europe, use the EU region the supplier lists.
     if(t.loc==="GB"&&typeof state!=="undefined"&&state&&state.loc&&state.loc!=="UK"&&(l.locs||[]).some(function(c){return c!=="GB";}))t.loc=(l.locs||[]).filter(function(c){return c!=="GB";})[0];
     // Register v2.2: an app on our computers is not asked about location, supplier or export.

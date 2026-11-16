@@ -102,7 +102,7 @@ function supplierEmail(t){
 
 // ---------- Plain-English reasons ----------
 // What fromLib (example.js) pre-fills from our research. A value still equal to it was not changed by the person.
-function libValue(t,f){var l=t.lib&&BYID[t.lib];if(!l||l.k==="Devices"||l.k==="App on our computers")return "";return f==="where"?(l.w&&l.w!==DK?l.w:""):f==="based"?(l.b||""):f==="exp"?(l.x&&l.x!==DK?l.x:""):f==="open"?(l.o?"Yes":"No"):"";}
+function libValue(t,f){var l=t.lib&&BYID[t.lib];if(!l||l.k==="Devices"||l.k==="App on our computers")return "";return f==="where"?(l.w&&l.w!==DK?l.w:""):f==="based"?(l.b||""):f==="exp"?(l.x&&l.x!==DK?l.x:""):f==="open"?OPENW(l.o):"";}
 function fromResearch(t,f){var v=libValue(t,f);return !!v&&t[f]===v;}
 function prefilledAny(t){return ["where","based","exp","open"].some(function(f){return fromResearch(t,f);});}
 // Decide says which reasons rest on an answer the person may not have seen: one pre-filled from our
@@ -577,13 +577,13 @@ function renderAsk(){
     '<div class="field"><label for="renewalDate-'+esc(t.key)+'">Next renewal date (optional)</label><input type="date" id="renewalDate-'+esc(t.key)+'" value="'+esc(t.renewalDate)+'"><span class="small muted">Used for the "Coming up" list on the results page.</span></div>'+
     '</div>';
   if(loc)h+='<div class="sect"><h3>Control</h3><p class="small muted">An app on your computers has no supplier holding your data, so where it is kept, the supplier and data protection terms are not asked.</p><div class="qgrid">'+
-      q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+'</div></div>';
+      q("open",t,"Open source?","Open source does not mean safer or cheaper. It means another provider could run the same software for you.")+'</div></div>';
   else if(!d){
     h+='<div class="sect"><h3>Control'+(prefilledAny(t)?' <span class="s12 muted">(some answers pre-filled, check them)</span>':"")+'</h3>'+OUTSIDE_NOTE()+'<div class="qgrid">'+
       q("where",t,"Where is the data kept?",(plat?"Most platforms do not say. If you cannot find it, answer Not sure: for an account on a platform that gives amber, not red. ":"")+"Check the supplier's privacy page or trust centre. If you cannot find it, ask them. The EEA is the EU plus Norway, Iceland and Liechtenstein, where GDPR applies. Switzerland counts as Elsewhere: transfers there are lawful under adequacy decisions, but it is outside the EEA.",["UK, EU or EEA","Elsewhere","Not sure"])+
       q("based",t,"Where is the supplier based?","Control is not about where a company is based. It is about whether you understand and manage the relationship.",["UK or Europe","Elsewhere"])+
       q("terms",t,"Data protection terms in place?",plat?"Not needed for an account on a platform. Record it if you have them.":"A contract or data processing agreement that says what the supplier may do with your data.",["Yes","No","Not sure"])+
-      q("open",t,"Open source?","Record it, but do not treat it as proof that a tool is safer. It matters mainly because open-source tools can be moved to another provider.")+
+      q("open",t,"Open source?","Open source does not mean safer or cheaper. It means another provider could run the same software for you.")+
       placeSelect("loc",t,"Which country is the data in? (for the map)","Only used for the map. The lights use the answer above.")+
       placeSelect("hq",t,"Supplier's home country (for the map)","Its own law still applies, wherever the data sits.")+
       '</div></div>';
@@ -734,7 +734,7 @@ function renderResults(){
     (same.length?'<div class="row small"><span class="muted">Same group:</span>'+same.slice(0,8).map(function(l){return '<button type="button" class="pdot" data-cmpb="'+l.id+'"'+(l.id===cb?' aria-current="true"':"")+'>'+esc(l.name)+'</button>';}).join("")+'</div>':"")+
     '<div class="tablewrap" role="region" aria-label="Comparison table (scrolls sideways)" tabindex="0"><table class="cmp"><thead><tr><th scope="col"></th><th scope="col">'+esc(A.name)+'</th><th scope="col">'+esc(B.name)+'</th></tr></thead><tbody>'+
     crow("In one line",A.note,B.note)+crow("Company",co(A),co(B))+crow("Where data is kept",A.store,B.store)+crow("UK or EU storage",(RESW[A.res]||A.res)+(A.plans&&A.res!=="unclear"?": "+A.plans:""),(RESW[B.res]||B.res)+(B.plans&&B.res!=="unclear"?": "+B.plans:""))+
-    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",A.o?"Yes":"No",B.o?"Yes":"No")+crow("Free plan or non-profit offer",npText(A),npText(B))+
+    crow("Full export",A.x,B.x)+crow("Two-step sign-in",A.mfa,B.mfa)+crow("Trains AI on your data",(AIW[A.ai]||A.ai)+(A.aid?". "+A.aid:""),(AIW[B.ai]||B.ai)+(B.aid?". "+B.aid:""))+crow("Open source",OPENW(A.o)||"Unknown",OPENW(B.o)||"Unknown")+crow("Free plan or non-profit offer",npText(A),npText(B))+
     crow("How sure we are",A.conf,B.conf)+'<tr><th scope="row">Sources</th><td><ul class="srcs">'+A.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td><td><ul class="srcs">'+B.src.map(function(x){return '<li><a href="'+esc(x[1])+'" target="_blank" rel="noopener noreferrer">'+esc(x[0])+'<span class="vh"> (opens in a new tab)</span></a></li>';}).join("")+'</ul></td></tr>'+
     '</tbody></table></div></section></details>';
 
@@ -843,6 +843,15 @@ function board(){
   var open=state.tools.length-d.length;
   L.push(me?"1. What I depend on":"1. What we depend on");
   L.push((me?"I use ":"We use ")+state.tools.length+" tools"+(ai?", including "+ai+" AI tool"+(ai===1?"":"s"):"")+". "+crit+" are critical and "+pers+" hold personal or sensitive data."+(cost>0?" Listed licence costs: "+money(cost)+" a year.":""));
+  // Exit for critical tools (Paul, 16 Nov 2026, decisions/2026-11-16-stack-check-open-source.md, item 2): how many
+  // could be moved, from the Exit answers the tool already has, in place of an open-source count. Summary only: the
+  // lights and the suggested action are unchanged. Devices and desktop apps have no export question, so they are counted
+  // on their own, by their backup.
+  var cr=d.filter(function(t){return t.depend==="Critical";}),our=me?"my":"our";
+  function exitLine(list,noun,nouns,has){if(!list.length)return;var g=list.filter(function(t){return exitL(t)==="Green";}).length;
+    L.push(list.length===1?(me?"My ":"Our ")+"critical "+noun+(g?" "+has[0]:" "+has[1])+".":g+" of "+our+" "+list.length+" critical "+nouns+" "+(g===1?has[0]:has[2])+".");}
+  exitLine(cr.filter(function(t){return !dev(t)&&!app(t);}),"tool","tools",["has a full export and a tested copy","does not yet have a full export and a tested copy","have a full export and a tested copy"]);
+  exitLine(cr.filter(function(t){return dev(t)||app(t);}),"device or desktop app","devices or desktop apps",["has a tested backup","does not yet have a tested backup","have a tested backup"]);
   if(open)L.push(open+" tool"+(open===1?" is":"s are")+" not answered yet and not included below.");
   L.push("");
   // One line for the tools whose only fix is a second admin, not one line each.

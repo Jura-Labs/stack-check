@@ -3,6 +3,23 @@
 Stack Check's version follows the guide and the register it implements:
 register v2.2, Stack Check 2.2.x.
 
+## Unreleased
+
+- The one-page summary says how many critical tools have a full export
+  and a tested copy (devices and desktop apps: a tested backup), from the
+  answers already given. The lights and the suggested action are
+  unchanged. There is no open-source count (Paul, 16 November 2026).
+- One rule for the library's open-source fact: Yes when the supplier
+  publishes the core software that holds your data under an open-source
+  (OSI-approved) licence, open core included; No for open-source apps on
+  a closed server or an open protocol alone. Plausible, Umami Cloud,
+  Mattermost Cloud, Element, pretix and Matomo Cloud are corrected to Yes,
+  from the licences already among their sources (read 16 November 2026).
+  A tool you add yourself no longer starts with "No": only a checked value
+  pre-fills the answer.
+- New hint on "Open source?": "Open source does not mean safer or cheaper.
+  It means another provider could run the same software for you."
+
 ## 2.2.14 (3 November 2026)
 
 Large text, and Clear everything with two tabs open.
